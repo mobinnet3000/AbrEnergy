@@ -1,78 +1,135 @@
 'use client';
 import Link from 'next/link';
-import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Sparkles } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Sparkles, Ruler, Maximize2, Droplets } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { CardContent } from '@/components/ui/card';
 import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
 import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection } from '@/components/home';
-import { useRef } from 'react';
 
-function ServiceCard({ icon: Icon, title, desc, href }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string }) {
+/* ===== Service Card — 3D hover with glow ===== */
+function ServiceCard({ icon: Icon, title, desc, href, i }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string; i: number }) {
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+
   return (
-    <GlassCard hover delay={0.1}>
-      <Link href={href}>
-        <CardContent className="p-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-            <Icon className="h-7 w-7 text-primary" />
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.6, delay: i * 0.1, ease: [0.25, 0.4, 0.25, 1] }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setRotateY(((e.clientX - rect.left) / rect.width - 0.5) * 8);
+        setRotateX(((e.clientY - rect.top) / rect.height - 0.5) * -8);
+      }}
+      onMouseLeave={() => { setRotateX(0); setRotateY(0); }}
+      style={{ perspective: '800px' }}
+      className="group"
+    >
+      <motion.div
+        style={{ rotateX, rotateY }}
+        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+      >
+        <Link href={href}>
+          <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-xl p-8 overflow-hidden hover:border-emerald-500/20 transition-colors duration-500 h-full">
+            {/* Hover glow */}
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            {/* Icon */}
+            <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-emerald-500/10 transition-all duration-500">
+              <Icon className="h-7 w-7 text-emerald-400" />
+            </div>
+            
+            <h3 className="relative font-heading font-semibold text-xl text-white mb-3">{title}</h3>
+            <p className="relative text-white/50 leading-relaxed text-sm">{desc}</p>
+            
+            <span className="relative inline-flex items-center gap-2 text-sm font-medium text-emerald-400 mt-6 group-hover:gap-3 transition-all duration-300">
+              Learn more <ArrowRight className="h-4 w-4" />
+            </span>
           </div>
-          <h3 className="font-heading font-semibold text-xl mb-3">{title}</h3>
-          <p className="text-muted-foreground leading-relaxed">{desc}</p>
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-primary mt-6 group-hover:gap-3 transition-all">
-            Learn more <ArrowRight className="h-4 w-4" />
-          </span>
-        </CardContent>
-      </Link>
-    </GlassCard>
+        </Link>
+      </motion.div>
+    </motion.div>
   );
 }
 
-function ArticleCard({ article }: { article: Record<string, unknown> }) {
-  return (
-    <GlassCard hover>
-      <Link href={`/articles/${article.slug}`}>
-        <div className="aspect-[16/9] bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
-          {(article as { cover_image_url?: string }).cover_image_url ? (
-            <img src={(article as { cover_image_url: string }).cover_image_url} alt={article.title as string} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-          ) : (
-            <div className="flex items-center justify-center h-full"><Sun className="h-12 w-12 text-muted-foreground/30" /></div>
-          )}
-        </div>
-        <CardContent className="p-6">
-          <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
-            {(article as { category_title?: string }).category_title || 'Article'}
-          </p>
-          <h3 className="font-heading font-semibold text-lg leading-snug">{article.title as string}</h3>
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{(article as { short_description?: string }).short_description || ''}</p>
-        </CardContent>
-      </Link>
-    </GlassCard>
-  );
-}
-
+/* ===== Project Card — Showcase style ===== */
 function ProjectCard({ project }: { project: Record<string, unknown> }) {
   return (
-    <GlassCard hover>
+    <motion.div
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.7, ease: [0.25, 0.4, 0.25, 1] }}
+      className="group"
+    >
       <Link href={`/projects/${project.slug}`}>
-        <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
-          {(project as { cover_image?: string }).cover_image ? (
-            <img src={(project as { cover_image: string }).cover_image} alt={project.title as string} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-          ) : (
-            <div className="flex items-center justify-center h-full"><Building2 className="h-12 w-12 text-muted-foreground/30" /></div>
-          )}
-          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium">
-            {(project as { capacity: number }).capacity} kW
+        <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] bg-black/40 backdrop-blur-sm">
+          {/* Image */}
+          <div className="aspect-[4/3] relative overflow-hidden">
+            {(project as { cover_image?: string }).cover_image ? (
+              <img src={(project as { cover_image: string }).cover_image} alt={project.title as string} loading="lazy" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" />
+            ) : (
+              <div className="flex items-center justify-center h-full"><Building2 className="h-16 w-16 text-white/10" /></div>
+            )}
+            {/* Glass overlay on hover */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            
+            {/* Top badge */}
+            <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-xs font-medium text-white/80">
+              {(project as { capacity: number }).capacity} kW
+            </div>
+            <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/20 text-xs font-medium text-emerald-300">
+              {project.project_type as string}
+            </div>
+          </div>
+          
+          {/* Info */}
+          <div className="p-6">
+            <h3 className="font-heading font-semibold text-lg text-white group-hover:text-emerald-400 transition-colors duration-300">{project.title as string}</h3>
+            <p className="text-sm text-white/40 mt-1">{project.location as string}</p>
           </div>
         </div>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-primary uppercase tracking-wider">{project.project_type as string}</span>
-          </div>
-          <h3 className="font-heading font-semibold">{project.title as string}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{project.location as string}</p>
-        </CardContent>
       </Link>
-    </GlassCard>
+    </motion.div>
+  );
+}
+
+/* ===== Article Card ===== */
+function ArticleCard({ article }: { article: Record<string, unknown> }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+      className="group"
+    >
+      <Link href={`/articles/${article.slug}`}>
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:border-white/[0.12] transition-all duration-500 h-full">
+          <div className="aspect-[16/9] relative overflow-hidden">
+            {(article as { cover_image_url?: string }).cover_image_url ? (
+              <img src={(article as { cover_image_url: string }).cover_image_url} alt={article.title as string} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            ) : (
+              <div className="flex items-center justify-center h-full text-white/10"><Sun className="h-12 w-12" /></div>
+            )}
+          </div>
+          <div className="p-6">
+            <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-2">
+              {(article as { category_title?: string }).category_title || 'Article'}
+            </p>
+            <h3 className="font-heading font-semibold text-lg text-white leading-snug group-hover:text-emerald-400 transition-colors duration-300">
+              {article.title as string}
+            </h3>
+            <p className="text-sm text-white/40 mt-2 line-clamp-2">
+              {(article as { short_description?: string }).short_description || ''}
+            </p>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }
 
@@ -95,24 +152,18 @@ export default function HomePage() {
     <div className="flex flex-col">
       <CursorGlow />
 
-      {/* ===== 1. HERO — Cinematic 3D Experience ===== */}
+      {/* ===== 1. HERO — Cinematic 3D ===== */}
       <motion.section
         ref={heroRef}
         style={{ opacity: heroOpacity }}
+        data-section="hero"
         className="relative min-h-screen flex items-center bg-black text-white overflow-hidden"
       >
         <Hero3D />
-
-        {/* Cinematic overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black z-[1]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,transparent_0%,black_70%)] z-[1]" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-[1]" />
-
-        {/* Content */}
-        <motion.div
-          style={{ y: heroY, scale: heroScale }}
-          className="container-page relative z-10 py-32 w-full"
-        >
+        
+        <motion.div style={{ y: heroY, scale: heroScale }} className="container-page relative z-10 py-32 w-full">
           <div className="max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -135,9 +186,7 @@ export default function HomePage() {
                 {settings?.hero_title?.split(' ').slice(1).join(' ') || 'the Future'}
               </span>
               <br />
-              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white/50 font-light">
-                with Solar Energy
-              </span>
+              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white/50 font-light">with Solar Energy</span>
             </motion.h1>
 
             <motion.p
@@ -155,19 +204,12 @@ export default function HomePage() {
               transition={{ delay: 0.8, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
               className="flex flex-wrap gap-5"
             >
-              <Link
-                href="/calculator"
-                className="group relative inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white hover:from-emerald-400 hover:to-emerald-600 transition-all duration-500 shadow-2xl shadow-emerald-500/25 hover:shadow-emerald-500/40"
-              >
+              <Link href="/calculator" className="group relative inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white hover:from-emerald-400 hover:to-emerald-600 transition-all duration-500 shadow-2xl shadow-emerald-500/25 hover:shadow-emerald-500/40">
                 <span className="relative z-10 flex items-center gap-2">
-                  Calculate Solar System
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
+                  Calculate Solar System <ArrowRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
                 </span>
               </Link>
-              <Link
-                href="/projects"
-                className="inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.06] hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
-              >
+              <Link href="/projects" className="inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.06] hover:border-white/30 transition-all duration-300 backdrop-blur-sm">
                 View Projects
               </Link>
             </motion.div>
@@ -182,74 +224,85 @@ export default function HomePage() {
       <AboutSection />
 
       {/* ===== 4. SERVICES ===== */}
-      <section className="relative py-32 bg-gradient-to-b from-background to-muted/20 overflow-hidden">
-        <div className="container-page">
-          <ScrollReveal>
-            <div className="text-center mb-16">
-              <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">What We Do</p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold mb-4">Our Services</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Comprehensive solar energy solutions from design to commissioning</p>
-            </div>
-          </ScrollReveal>
+      <section data-section="services" className="relative py-32 md:py-40 overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/5 to-black" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        
+        <div className="container-page relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+            className="text-center mb-16"
+          >
+            <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">What We Do</p>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Our Services</h2>
+            <p className="text-white/40 text-lg max-w-2xl mx-auto">Comprehensive solar energy solutions from design to commissioning</p>
+          </motion.div>
 
           {servicesLoading ? (
             <CardLoading count={3} />
           ) : services.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {services.slice(0, 6).map((s: Record<string, unknown>, i: number) => (
-                <ScrollReveal key={s.id as string} delay={i * 0.1}>
-                  <ServiceCard icon={Sun} title={s.title as string} desc={s.short_description as string} href={`/services/${s.slug}`} />
-                </ScrollReveal>
+                <ServiceCard key={s.id as string} icon={Sun} title={s.title as string} desc={s.short_description as string} href={`/services/${s.slug}`} i={i} />
               ))}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[{ icon: Sun, t: 'Solar Design & EPC', d: 'Complete engineering, procurement, and construction services for solar power plants.' },
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {[
+                { icon: Sun, t: 'Solar Design & EPC', d: 'Complete engineering, procurement, and construction services for solar power plants.' },
                 { icon: Zap, t: 'On Grid Systems', d: 'Grid-tied solar systems for residential, commercial, and industrial applications.' },
                 { icon: Shield, t: 'Off Grid Systems', d: 'Independent solar power systems with battery storage for remote locations.' },
               ].map((s, i) => (
-                <ScrollReveal key={s.t} delay={i * 0.1}>
-                  <ServiceCard icon={s.icon} title={s.t} desc={s.d} href="/services" />
-                </ScrollReveal>
+                <ServiceCard key={s.t} icon={s.icon} title={s.t} desc={s.d} href="/services" i={i} />
               ))}
             </div>
           )}
 
-          <ScrollReveal>
-            <div className="text-center mt-14">
-              <Link href="/services" className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all text-lg">
-                View All Services <ArrowRight className="h-5 w-5" />
-              </Link>
-            </div>
-          </ScrollReveal>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-14"
+          >
+            <Link href="/services" className="inline-flex items-center gap-2 text-emerald-400 font-medium hover:text-emerald-300 transition-colors text-lg group">
+              View All Services <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
       {/* ===== 5. FEATURED PROJECTS ===== */}
-      <section className="relative py-32 overflow-hidden">
-        <div className="container-page">
-          <ScrollReveal>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
-              <div>
-                <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">Our Work</p>
-                <h2 className="font-heading text-4xl md:text-5xl font-bold">Featured Projects</h2>
-              </div>
-              <Link href="/projects" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                View All <ArrowRight className="h-4 w-4" />
-              </Link>
+      <section data-section="projects" className="relative py-32 md:py-40 overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-950/5 to-black" />
+        
+        <div className="container-page relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+            className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
+          >
+            <div>
+              <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">Our Work</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Featured Projects</h2>
             </div>
-          </ScrollReveal>
+            <Link href="/projects" className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
 
           {projectsLoading ? (
             <CardLoading count={3} />
           ) : projectsError ? (
             <ErrorState title="Failed to load projects" message="Could not load featured projects." />
           ) : projects.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projects.slice(0, 3).map((p: Record<string, unknown>, i: number) => (
-                <ScrollReveal key={p.id as string} delay={i * 0.15}>
-                  <ProjectCard project={p} />
-                </ScrollReveal>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {projects.slice(0, 3).map((p: Record<string, unknown>) => (
+                <ProjectCard key={p.id as string} project={p} />
               ))}
             </div>
           ) : null}
@@ -257,59 +310,94 @@ export default function HomePage() {
       </section>
 
       {/* ===== 6. CALCULATOR CTA ===== */}
-      <section className="relative py-32 bg-gradient-to-br from-emerald-950 via-emerald-900 to-black text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-400 rounded-full blur-[150px] animate-pulse" />
-        </div>
-        <div className="container-page text-center relative z-10">
-          <ScrollReveal>
+      <section data-section="calculator" className="relative py-32 md:py-40 overflow-hidden bg-black">
+        {/* Animated energy background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[200px]">
             <motion.div
-              animate={{ rotate: [0, 5, 0, -5, 0], scale: [1, 1.05, 1] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              className="inline-flex"
+              className="w-full h-full bg-gradient-to-r from-emerald-500/20 via-amber-500/15 to-emerald-500/20"
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+            />
+          </div>
+          <motion.div
+            className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full bg-emerald-400/5 blur-[100px]"
+            animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            className="absolute bottom-1/3 right-1/3 w-80 h-80 rounded-full bg-amber-400/5 blur-[100px]"
+            animate={{ x: [0, -40, 0], y: [0, 30, 0] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+
+        <div className="container-page text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: [0.25, 0.4, 0.25, 1] }}
+          >
+            <motion.div
+              animate={{ rotate: [0, 8, 0, -8, 0], scale: [1, 1.08, 1] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+              className="inline-flex mb-8"
             >
-              <Calculator className="h-20 w-20 text-emerald-400/80 mb-8" />
+              <div className="relative">
+                <Calculator className="h-24 w-24 text-emerald-400/60" />
+                <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 to-transparent rounded-full blur-2xl" />
+              </div>
             </motion.div>
-            <h2 className="font-heading text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            
+            <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Design Your Solar System
             </h2>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-              Use our solar calculator to estimate system size, battery capacity, inverter power, and return on investment for your project.
+            <p className="text-white/40 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
+              Estimate system size, battery capacity, inverter power, and return on investment for your project in seconds.
             </p>
             <Link
               href="/calculator"
-              className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-400 hover:to-orange-500 transition-all duration-300 shadow-xl shadow-amber-500/25"
+              className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold rounded-2xl overflow-hidden transition-all duration-500"
             >
-              <Calculator className="h-5 w-5 mr-2" /> Start Calculator
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500" />
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+              <span className="relative z-10 flex items-center gap-2 text-white">
+                <Calculator className="h-5 w-5" /> Start Calculator
+              </span>
             </Link>
-          </ScrollReveal>
+          </motion.div>
         </div>
       </section>
 
       {/* ===== 7. ARTICLES ===== */}
       {articles.length > 0 && (
-        <section className="relative py-32">
-          <div className="container-page">
-            <ScrollReveal>
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
-                <div>
-                  <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">Insights</p>
-                  <h2 className="font-heading text-4xl md:text-5xl font-bold">Latest Articles</h2>
-                </div>
-                <Link href="/articles" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                  View All <ArrowRight className="h-4 w-4" />
-                </Link>
+        <section data-section="articles" className="relative py-32 md:py-40 overflow-hidden bg-black">
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-teal-950/5 to-black" />
+          
+          <div className="container-page relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+              className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
+            >
+              <div>
+                <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">Insights</p>
+                <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Latest Articles</h2>
               </div>
-            </ScrollReveal>
+              <Link href="/articles" className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+                View All <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
 
             {articlesLoading ? (
               <CardLoading count={3} />
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {articles.slice(0, 3).map((a: Record<string, unknown>, i: number) => (
-                  <ScrollReveal key={a.id as string} delay={i * 0.15}>
-                    <ArticleCard article={a} />
-                  </ScrollReveal>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                {articles.slice(0, 3).map((a: Record<string, unknown>) => (
+                  <ArticleCard key={a.id as string} article={a} />
                 ))}
               </div>
             )}
@@ -318,31 +406,43 @@ export default function HomePage() {
       )}
 
       {/* ===== 8. CONTACT CTA ===== */}
-      <section className="relative py-32 bg-gradient-to-b from-muted/20 to-background border-t border-white/5">
-        <div className="container-page text-center">
-          <ScrollReveal>
-            <Phone className="h-16 w-16 mx-auto mb-8 text-primary/60" />
-            <h2 className="font-heading text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Ready to Start Your Solar Project?
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-              Contact our team today for a free consultation and a personalized solar solution tailored to your needs.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-xl shadow-primary/25"
-              >
-                Contact Us <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold rounded-xl border border-border bg-background hover:bg-muted transition-all duration-300"
-              >
-                Request a Quote
-              </Link>
+      <section data-section="contact" className="relative py-32 md:py-40 overflow-hidden bg-black">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/10 to-black" />
+        
+        <div className="container-page text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+          >
+            <div className="max-w-2xl mx-auto p-12 md:p-16 rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-xl">
+              <Phone className="h-16 w-16 mx-auto mb-8 text-emerald-400/60" />
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                Ready to Start Your Solar Project?
+              </h2>
+              <p className="text-white/40 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
+                Contact our team today for a free consultation and a personalized solar solution tailored to your needs.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white hover:from-emerald-400 hover:to-emerald-600 transition-all duration-500 shadow-2xl shadow-emerald-500/20 group"
+                >
+                  Contact Us <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold rounded-2xl border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.06] hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
+                >
+                  Request a Quote
+                </Link>
+              </div>
             </div>
-          </ScrollReveal>
+          </motion.div>
         </div>
       </section>
     </div>
