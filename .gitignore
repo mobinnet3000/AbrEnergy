@@ -44,3 +44,6 @@ yarn-error.log*
 .pnpm-debug.log*
 .secrets
 *.key
+
+abr-energy-frontend/frontend.err
+abr-energy-frontend/next-dev.log
