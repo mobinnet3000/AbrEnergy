@@ -4,7 +4,6 @@ import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Users, Glob
 import { Card, CardContent } from '@/components/ui/card';
 import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { useLocale } from '@/i18n';
 
 function StatCard({ icon: Icon, value, label }: { icon: React.ElementType; value: string; label: string }) {
   return (
