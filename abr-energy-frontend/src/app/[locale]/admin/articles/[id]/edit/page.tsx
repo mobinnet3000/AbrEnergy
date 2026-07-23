@@ -14,6 +14,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
+import { RichTextEditor } from '@/components/shared/rich-text-editor';
+import { MediaUpload } from '@/components/shared/media-upload';
 import Link from 'next/link';
 
 const locales = [
@@ -148,7 +150,12 @@ export default function AdminArticleEditPage() {
                     </div>
                     <div>
                       <label className="text-sm font-medium mb-1 block">Content ({l.label})</label>
-                      <Textarea className="min-h-40" value={form[`content_${l.value}` as keyof FormData] as string} onChange={(e) => update(`content_${l.value}`, e.target.value)} />
+                      <RichTextEditor
+                        content={form[`content_${l.value}` as keyof FormData] as string}
+                        onChange={(html) => update(`content_${l.value}`, html)}
+                        dir={l.value === 'en' ? 'ltr' : 'rtl'}
+                        placeholder="Write article content..."
+                      />
                     </div>
                   </TabsContent>
                 ))}
@@ -185,8 +192,11 @@ export default function AdminArticleEditPage() {
                 <Input type="date" value={form.publish_date} onChange={(e) => update('publish_date', e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Cover Image URL</label>
-                <Input value={form.cover_image_url} onChange={(e) => update('cover_image_url', e.target.value)} />
+                <MediaUpload
+                  onUpload={(url) => update('cover_image_url', url)}
+                  currentImage={form.cover_image_url}
+                  label="Cover Image"
+                />
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox checked={form.is_featured} onCheckedChange={(v) => update('is_featured', v)} />

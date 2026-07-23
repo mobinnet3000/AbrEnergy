@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { RichTextEditor } from '@/components/shared/rich-text-editor';
+import { MediaUpload } from '@/components/shared/media-upload';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -104,12 +104,12 @@ export default function NewArticlePage() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-1 block">Content (HTML)</label>
-        <textarea
-          className="flex h-64 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
-          value={(translations as Record<string, Record<string, string>>)[code].content}
-          onChange={(e) => handleTransChange(code, 'content', e.target.value)}
-          placeholder="<p>Article content in HTML...</p>"
+        <label className="text-sm font-medium mb-1 block">Content</label>
+        <RichTextEditor
+          content={(translations as Record<string, Record<string, string>>)[code].content}
+          onChange={(html) => handleTransChange(code, 'content', html)}
+          dir={code === 'en' ? 'ltr' : 'rtl'}
+          placeholder="Write article content..."
         />
       </div>
     </TabsContent>
@@ -171,8 +171,11 @@ export default function NewArticlePage() {
                 <input type="date" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Cover Image URL</label>
-                <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={coverImage} onChange={(e) => setCoverImage(e.target.value)} placeholder="https://..." />
+                <MediaUpload
+                  onUpload={(url) => setCoverImage(url)}
+                  currentImage={coverImage}
+                  label="Cover Image"
+                />
               </div>
               <div className="flex items-end pb-2">
                 <label className="flex items-center gap-2 text-sm">
