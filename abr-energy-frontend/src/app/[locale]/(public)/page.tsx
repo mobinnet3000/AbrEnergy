@@ -1,11 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Users, Globe, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Sparkles } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { CardContent } from '@/components/ui/card';
 import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { ScrollReveal, AnimatedCounter, GlassCard, CursorGlow, Hero3D } from '@/components/home';
+import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection } from '@/components/home';
+import { useRef } from 'react';
 
 function ServiceCard({ icon: Icon, title, desc, href }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string }) {
   return (
@@ -80,6 +81,11 @@ export default function HomePage() {
   const { data: featured, isLoading: projectsLoading, error: projectsError } = useFeaturedProjects();
   const { data: articlesData, isLoading: articlesLoading } = useArticles({ is_featured: 'true' });
   const { data: servicesData, isLoading: servicesLoading } = useServices();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
   const articles = Array.isArray(articlesData?.results) ? articlesData.results : (Array.isArray(articlesData) ? articlesData : []);
   const projects = Array.isArray(featured?.results) ? featured.results : (Array.isArray(featured) ? featured : []);
@@ -89,144 +95,91 @@ export default function HomePage() {
     <div className="flex flex-col">
       <CursorGlow />
 
-      {/* ===== 1. HERO ===== */}
-      <section className="relative min-h-screen flex items-center bg-black text-white overflow-hidden">
+      {/* ===== 1. HERO — Cinematic 3D Experience ===== */}
+      <motion.section
+        ref={heroRef}
+        style={{ opacity: heroOpacity }}
+        className="relative min-h-screen flex items-center bg-black text-white overflow-hidden"
+      >
         <Hero3D />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black" />
-        <div className="container-page relative z-10 py-32 w-full">
-          <ScrollReveal>
-            <div className="max-w-4xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-sm mb-8"
-              >
-                <Sparkles className="h-4 w-4 text-emerald-400" />
-                {settings?.company_name_en || 'AbrEnergy'} — {settings?.company_name || 'ابر انرژی'}
-              </motion.div>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
-                className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-tight mb-8"
+        {/* Cinematic overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black z-[1]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,transparent_0%,black_70%)] z-[1]" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-[1]" />
+
+        {/* Content */}
+        <motion.div
+          style={{ y: heroY, scale: heroScale }}
+          className="container-page relative z-10 py-32 w-full"
+        >
+          <div className="max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] text-sm mb-10"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              <span className="text-white/70">{settings?.company_name_en || 'AbrEnergy'} — {settings?.company_name || 'ابر انرژی'}</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.9, ease: [0.25, 0.4, 0.25, 1] }}
+              className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] tracking-tight mb-8"
+            >
+              <span className="text-white">{settings?.hero_title?.split(' ')[0] || 'Powering'} </span>
+              <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">
+                {settings?.hero_title?.split(' ').slice(1).join(' ') || 'the Future'}
+              </span>
+              <br />
+              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white/50 font-light">
+                with Solar Energy
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+              className="text-lg md:text-xl text-white/40 max-w-2xl leading-relaxed mb-14"
+            >
+              {settings?.hero_subtitle || 'From design to commissioning — delivering turnkey solar power plants for residential, commercial, and utility-scale projects.'}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+              className="flex flex-wrap gap-5"
+            >
+              <Link
+                href="/calculator"
+                className="group relative inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white hover:from-emerald-400 hover:to-emerald-600 transition-all duration-500 shadow-2xl shadow-emerald-500/25 hover:shadow-emerald-500/40"
               >
-                {settings?.hero_title || 'Powering the Future'}
-                <br />
-                <span className="bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
-                  with Solar Energy
+                <span className="relative z-10 flex items-center gap-2">
+                  Calculate Solar System
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
                 </span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="text-lg md:text-xl text-white/60 max-w-2xl leading-relaxed mb-12"
+              </Link>
+              <Link
+                href="/projects"
+                className="inline-flex items-center justify-center px-9 py-4 text-base font-semibold rounded-2xl border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.06] hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
               >
-                {settings?.hero_subtitle || 'From design to commissioning — delivering turnkey solar power plants for residential, commercial, and utility-scale projects.'}
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                className="flex flex-wrap gap-4"
-              >
-                <Link
-                  href="/calculator"
-                  className="group relative inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-400 hover:to-green-500 transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40"
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Calculate Solar System <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Link>
-                <Link
-                  href="/projects"
-                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold rounded-xl border border-white/20 text-white hover:bg-white/5 transition-all duration-300 backdrop-blur-sm"
-                >
-                  View Projects
-                </Link>
-              </motion.div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+                View Projects
+              </Link>
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.section>
 
       {/* ===== 2. STATISTICS ===== */}
-      <section className="relative py-24 bg-gradient-to-b from-black to-background">
-        <div className="container-page">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
-            <ScrollReveal delay={0.1}>
-              <AnimatedCounter target={25} suffix=" MW+" label="Installed Capacity" icon={Zap} />
-            </ScrollReveal>
-            <ScrollReveal delay={0.2}>
-              <AnimatedCounter target={150} suffix="+" label="Completed Projects" icon={Building2} />
-            </ScrollReveal>
-            <ScrollReveal delay={0.3}>
-              <AnimatedCounter target={10} suffix="+" label="Years Experience" icon={Shield} />
-            </ScrollReveal>
-            <ScrollReveal delay={0.4}>
-              <AnimatedCounter target={98} suffix="%" label="Client Satisfaction" icon={Users} />
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
+      <StatsSection />
 
       {/* ===== 3. ABOUT ===== */}
-      <section className="relative py-32 bg-gradient-to-b from-background via-muted/30 to-background overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]">
-          <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-primary rounded-full blur-[120px]" />
-        </div>
-        <div className="container-page">
-          <div className="grid md:grid-cols-2 gap-16 lg:gap-24 items-center">
-            <ScrollReveal>
-              <div>
-                <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-4">About AbrEnergy</p>
-                <h2 className="font-heading text-4xl md:text-5xl font-bold leading-tight mb-8">
-                  Engineering the <span className="bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">Energy Transition</span>
-                </h2>
-                <div className="text-muted-foreground leading-relaxed space-y-5 text-lg">
-                  <p>{settings?.about_us || 'AbrEnergy is a leading solar energy company specializing in the design, engineering, and construction of solar power plants.'}</p>
-                  <p>Our team of experienced engineers and project managers ensures every installation meets international standards, delivering reliable and cost-effective solar energy systems.</p>
-                </div>
-                <Link href="/about" className="inline-flex items-center gap-2 text-primary font-medium mt-8 hover:gap-3 transition-all">
-                  Learn more about us <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal direction="right">
-              <div className="relative">
-                <div className="aspect-[4/3] rounded-3xl bg-gradient-to-br from-emerald-900/20 via-emerald-800/10 to-transparent border border-white/10 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 opacity-20">
-                    <svg viewBox="0 0 400 300" className="w-full h-full">
-                      <defs>
-                        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#059669" />
-                          <stop offset="100%" stopColor="transparent" />
-                        </radialGradient>
-                      </defs>
-                      <circle cx="200" cy="150" r="80" fill="url(#glow)" opacity={0.5}>
-                        <animate attributeName="r" values="60;90;60" dur="4s" repeatCount="indefinite" />
-                      </circle>
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <line key={i} x1="200" y1="150" x2={200 + 120 * Math.cos(i * Math.PI / 4)} y2={150 + 120 * Math.sin(i * Math.PI / 4)} stroke="#059669" strokeWidth="0.5" opacity={0.3}>
-                          <animate attributeName="opacity" values="0.1;0.4;0.1" dur={`${2 + i * 0.3}s`} repeatCount="indefinite" />
-                        </line>
-                      ))}
-                    </svg>
-                  </div>
-                  <div className="text-center relative z-10">
-                    <Globe className="h-24 w-24 text-primary/40 mx-auto mb-4 animate-pulse" />
-                    <p className="text-muted-foreground">Sustainable Energy Solutions</p>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
+      <AboutSection />
 
       {/* ===== 4. SERVICES ===== */}
       <section className="relative py-32 bg-gradient-to-b from-background to-muted/20 overflow-hidden">

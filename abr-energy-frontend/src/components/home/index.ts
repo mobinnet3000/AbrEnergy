@@ -5,3 +5,5 @@ export { CursorGlow } from './CursorGlow';
 export { EnergyBackground } from './EnergyBackground';
 export { ParallaxSection } from './ParallaxSection';
 export { Hero3D } from './Hero3D';
+export { StatsSection } from './StatsSection';
+export { AboutSection } from './AboutSection';
