@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {% trans 'AbrEnergy Admin' %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" height="40" alt="AbrEnergy" style="vertical-align: middle;">
+        {% endif %}
+        <span style="margin-left: 8px;">{% trans 'AbrEnergy Admin Panel' %}</span>
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    :root {
+        --primary: #2563eb;
+        --secondary: #1e40af;
+        --accent: #f59e0b;
+        --header-color: #ffffff;
+        --breadcrumbs-bg: #f1f5f9;
+    }
+    body {
+        font-family: 'Vazirmatn', 'IranSans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .module caption {
+        background: var(--primary);
+    }
+    #changelist-filter li.selected a {
+        color: var(--primary);
+    }
+    .button, input[type=submit], input[type=button], .submit-row input, a.button {
+        background: var(--primary);
+    }
+    .button:hover, input[type=submit]:hover, input[type=button]:hover {
+        background: var(--secondary);
+    }
+    .dashboard #content {
+        width: 100%;
+    }
+    .dashboard .module table {
+        width: 100%;
+    }
+    img[alt="Avatar"] {
+        border-radius: 50%;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}

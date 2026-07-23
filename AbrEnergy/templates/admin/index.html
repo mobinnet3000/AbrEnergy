@@ -1,0 +1,26 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div id="content-main">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: #2563eb; color: white; padding: 20px; border-radius: 12px;">
+            <h3 style="margin: 0 0 8px; font-size: 14px; opacity: 0.8;">{% trans 'Total Users' %}</h3>
+            <p style="margin: 0; font-size: 32px; font-weight: bold;">{{ total_users|default:0 }}</p>
+        </div>
+        <div style="background: #059669; color: white; padding: 20px; border-radius: 12px;">
+            <h3 style="margin: 0 0 8px; font-size: 14px; opacity: 0.8;">{% trans 'Total Articles' %}</h3>
+            <p style="margin: 0; font-size: 32px; font-weight: bold;">{{ total_articles|default:0 }}</p>
+        </div>
+        <div style="background: #d97706; color: white; padding: 20px; border-radius: 12px;">
+            <h3 style="margin: 0 0 8px; font-size: 14px; opacity: 0.8;">{% trans 'Total Projects' %}</h3>
+            <p style="margin: 0; font-size: 32px; font-weight: bold;">{{ total_projects|default:0 }}</p>
+        </div>
+        <div style="background: #dc2626; color: white; padding: 20px; border-radius: 12px;">
+            <h3 style="margin: 0 0 8px; font-size: 14px; opacity: 0.8;">{% trans 'Pending Requests' %}</h3>
+            <p style="margin: 0; font-size: 32px; font-weight: bold;">{{ pending_contacts|default:0 }}</p>
+        </div>
+    </div>
+    {{ block.super }}
+</div>
+{% endblock %}
