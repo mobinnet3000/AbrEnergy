@@ -1,18 +1,8 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-interface Particle {
-  x: number; y: number;
-  vx: number; vy: number;
-  ox: number; oy: number;
-  r: number; o: number;
-}
-
 export function FloatingParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -9999, y: -9999 });
-  const particlesRef = useRef<Particle[]>([]);
-  const rafRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -21,6 +11,11 @@ export function FloatingParticles() {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isMobile || prefersReduced) return;
+
+    let rafId = 0;
+    const mouse = { x: -9999, y: -9999 };
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -29,68 +24,56 @@ export function FloatingParticles() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Create particles
-    const count = isMobile ? 0 : 100;
-    particlesRef.current = Array.from({ length: count }, () => ({
+    const count = 100;
+    const particles = Array.from({ length: count }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
-      ox: Math.random() * canvas.width,
-      oy: Math.random() * canvas.height,
       r: Math.random() * 1.5 + 0.5,
       o: Math.random() * 0.3 + 0.05,
     }));
 
-    if (isMobile) return;
-
     const mouseMove = (e: MouseEvent) => {
-      mouseRef.current.x = e.clientX;
-      mouseRef.current.y = e.clientY;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
     };
     window.addEventListener('mousemove', mouseMove, { passive: true });
 
     const animate = () => {
-      const w = canvas!.width;
-      const h = canvas!.height;
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
 
-      ctx!.clearRect(0, 0, w, h);
-
-      for (const p of particlesRef.current) {
-        // Mouse repulsion
-        const dx = p.x - mx;
-        const dy = p.y - my;
+      for (const p of particles) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < 150 && dist > 0) {
           const force = (150 - dist) / 150 * 0.6;
           p.vx += (dx / dist) * force * 0.02;
           p.vy += (dy / dist) * force * 0.02;
         }
-        // Damping
         p.vx *= 0.99;
         p.vy *= 0.99;
-        // Move
         p.x += p.vx;
         p.y += p.vy;
-        // Wrap around
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
         if (p.y < -10) p.y = h + 10;
         if (p.y > h + 10) p.y = -10;
 
-        ctx!.beginPath();
-        ctx!.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(16,185,129,${p.o})`;
-        ctx!.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16,185,129,${p.o})`;
+        ctx.fill();
       }
-      rafRef.current = requestAnimationFrame(animate);
+      rafId = requestAnimationFrame(animate);
     };
-    rafRef.current = requestAnimationFrame(animate);
+    rafId = requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(rafId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', mouseMove);
     };

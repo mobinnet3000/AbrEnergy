@@ -7,7 +7,8 @@ export function MouseRipple() {
 
   useEffect(() => {
     const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
-    if (isMobile) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isMobile || prefersReduced) return;
 
     let lastMoveTime = Date.now();
 
