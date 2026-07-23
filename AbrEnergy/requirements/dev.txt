@@ -1,0 +1,7 @@
+-r base.txt
+pytest>=8.2,<8.3
+pytest-django>=4.8,<4.9
+pytest-cov>=5.0,<5.1
+factory-boy>=3.3,<3.4
+faker>=25.0,<25.1
+django-debug-toolbar>=4.3,<4.4
