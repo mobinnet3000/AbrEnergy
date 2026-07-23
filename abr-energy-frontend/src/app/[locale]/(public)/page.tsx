@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { CardContent } from '@/components/ui/card';
 import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection } from '@/components/home';
+import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh } from '@/components/home';
 
 /* ===== Service Card — 3D hover with glow ===== */
 function ServiceCard({ icon: Icon, title, desc, href, i }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string; i: number }) {
@@ -149,7 +149,10 @@ export default function HomePage() {
   const services = Array.isArray(servicesData?.results) ? servicesData.results : (Array.isArray(servicesData) ? servicesData : []);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col noise-overlay">
+      <GradientMesh />
+      <FloatingParticles />
+      <MouseRipple />
       <CursorGlow />
 
       {/* ===== 1. HERO — Cinematic 3D ===== */}

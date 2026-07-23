@@ -244,3 +244,53 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
 }
+
+/* ===== Mouse Ripple Animation ===== */
+@keyframes mouseRipple {
+  0% { transform: scale(1); opacity: 0.5; border-color: rgba(16, 185, 129, 0.4); }
+  100% { transform: scale(3); opacity: 0; border-color: rgba(16, 185, 129, 0); }
+}
+.mouse-ripple {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: mouseRipple 1.2s ease-out forwards;
+  will-change: transform, opacity;
+  backdrop-filter: blur(4px);
+}
+
+/* ===== Noise Texture ===== */
+.noise-overlay::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0.02;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  animation: noiseShift 8s steps(4) infinite;
+}
+@keyframes noiseShift {
+  0% { background-position: 0 0; }
+  25% { background-position: 128px 64px; }
+  50% { background-position: 64px 128px; }
+  75% { background-position: 192px 32px; }
+  100% { background-position: 0 0; }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .mouse-ripple,
+  .noise-overlay::after {
+    display: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,16 +1,16 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const sectionColors: Record<string, string> = {
-  hero: 'rgba(5, 150, 105, 0.12)',
-  stats: 'rgba(59, 130, 246, 0.1)',
-  about: 'rgba(16, 185, 129, 0.12)',
-  services: 'rgba(217, 119, 6, 0.1)',
-  projects: 'rgba(5, 150, 105, 0.1)',
-  calculator: 'rgba(249, 115, 22, 0.12)',
-  articles: 'rgba(20, 184, 166, 0.1)',
-  contact: 'rgba(5, 150, 105, 0.1)',
+  hero: 'rgba(16,185,129,',
+  stats: 'rgba(59,130,246,',
+  services: 'rgba(217,119,6,',
+  projects: 'rgba(6,182,212,',
+  calculator: 'rgba(249,115,22,',
+  articles: 'rgba(168,85,247,',
+  contact: 'rgba(244,63,94,',
+  footer: 'rgba(255,255,255,',
 };
 
 function getSection(x: number, y: number): string {
@@ -21,54 +21,57 @@ function getSection(x: number, y: number): string {
 }
 
 export function CursorGlow() {
-  const [isMobile, setIsMobile] = useState(true);
-  const [color, setColor] = useState(sectionColors.hero);
   const cursorX = useMotionValue(-1000);
   const cursorY = useMotionValue(-1000);
-  const springX = useSpring(cursorX, { stiffness: 30, damping: 15 });
-  const springY = useSpring(cursorY, { stiffness: 30, damping: 15 });
+  const springX = useSpring(cursorX, { stiffness: 120, damping: 22, mass: 0.4 });
+  const springY = useSpring(cursorY, { stiffness: 120, damping: 22, mass: 0.4 });
+  const glowEl = useRef<HTMLDivElement>(null);
+  const lightEl = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  useEffect(() => {
+    const isMobile = window.innerWidth < 768 || 'ontouchstart' in window;
     if (isMobile) return;
-    let frameId: number;
+
+    const colorTimeout: ReturnType<typeof setTimeout>[] = [];
+
     const move = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        setColor(getSection(e.clientX, e.clientY));
-      });
+
+      const t = setTimeout(() => {
+        const section = getSection(e.clientX, e.clientY);
+        const base = sectionColors[section] || sectionColors.hero;
+        if (glowEl.current) {
+          glowEl.current.style.background = `
+            radial-gradient(600px circle at ${cursorX.get()}px ${cursorY.get()}px, ${base}0.20) 0%, ${base}0.10) 25%, ${base}0.05) 55%, transparent 80%)
+          `;
+        }
+      }, 50);
+      colorTimeout.push(t);
     };
-    window.addEventListener('mousemove', move);
+
+    window.addEventListener('mousemove', move, { passive: true });
     return () => {
       window.removeEventListener('mousemove', move);
-      cancelAnimationFrame(frameId);
+      colorTimeout.forEach(clearTimeout);
     };
-  }, [isMobile, cursorX, cursorY]);
-
-  if (isMobile) return null;
+  }, [cursorX, cursorY]);
 
   return (
     <>
-      {/* Outer glow */}
       <motion.div
-        className="pointer-events-none fixed inset-0 z-50"
+        ref={glowEl}
+        className="pointer-events-none fixed inset-0 z-50 will-change-transform"
         style={{
-          background: `radial-gradient(600px circle at ${springX}px ${springY}px, ${color}, transparent 70%)`,
+          background: `radial-gradient(600px circle at ${springX}px ${springY}px, rgba(16,185,129,0.20) 0%, rgba(16,185,129,0.10) 25%, rgba(16,185,129,0.05) 55%, transparent 80%)`,
         }}
       />
-      {/* Inner glow */}
       <motion.div
-        className="pointer-events-none fixed inset-0 z-50"
+        ref={lightEl}
+        className="pointer-events-none fixed inset-0 z-40 will-change-transform"
         style={{
-          background: `radial-gradient(200px circle at ${springX}px ${springY}px, rgba(255, 255, 255, 0.03), transparent 60%)`,
+          mixBlendMode: 'screen' as const,
+          background: `radial-gradient(800px circle at ${springX}px ${springY}px, rgba(255,255,255,0.06), transparent 60%)`,
         }}
       />
     </>

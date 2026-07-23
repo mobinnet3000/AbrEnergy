@@ -10,7 +10,7 @@ export function Footer() {
   const { locale, setLocale, t } = useLocale();
 
   return (
-    <footer className="relative bg-black border-t border-white/[0.04] overflow-hidden">
+    <footer data-section="footer" className="relative bg-black border-t border-white/[0.04] overflow-hidden">
       {/* Animated top border glow */}
       <div className="absolute top-0 left-0 right-0 h-px">
         <motion.div
