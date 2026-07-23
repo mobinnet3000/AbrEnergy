@@ -13,6 +13,11 @@ axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Add locale header for multilingual content
+    const locale = localStorage.getItem('locale') || 'fa';
+    if (config.headers) {
+      config.headers['Accept-Language'] = locale;
+    }
   }
   return config;
 });

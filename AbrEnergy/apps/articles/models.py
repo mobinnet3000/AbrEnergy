@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 from django.utils.text import slugify
-from ckeditor.fields import RichTextField
 from versatileimagefield.fields import VersatileImageField
 
 
@@ -60,10 +59,6 @@ class Article(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=500)
-    slug = models.SlugField(unique=True, allow_unicode=True, max_length=500)
-    short_description = models.TextField(max_length=1000)
-    content = RichTextField()
     cover_image = models.ForeignKey(
         "media_manager.MediaFile", on_delete=models.SET_NULL,
         null=True, blank=True, related_name="articles_as_cover",
@@ -81,11 +76,7 @@ class Article(models.Model):
     publish_date = models.DateTimeField(null=True, blank=True)
     view_count = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
-    meta_title = models.CharField(max_length=255, blank=True, default="")
-    meta_description = models.TextField(blank=True, default="")
-    keywords = models.TextField(blank=True, default="")
     schema_json = models.JSONField(null=True, blank=True)
-    canonical_url = models.URLField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -98,12 +89,11 @@ class Article(models.Model):
         ]
 
     def __str__(self):
-        return self.title
+        t = self.get_translation("en") or self.translations.first()
+        return t.title if t else str(self.id)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title, allow_unicode=True)
-        super().save(*args, **kwargs)
+    def get_translation(self, language):
+        return self.translations.filter(language=language).first()
 
 
 class ArticleImage(models.Model):
@@ -121,4 +111,8 @@ class ArticleImage(models.Model):
         ordering = ["order"]
 
     def __str__(self):
-        return f"Image for {self.article.title}"
+        t = self.article.get_translation("en") or self.article.translations.first()
+        return f"Image for {t.title if t else self.article.id}"
+
+
+from apps.articles.translation_models import ArticleTranslation

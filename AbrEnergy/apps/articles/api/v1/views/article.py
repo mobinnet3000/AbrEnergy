@@ -21,6 +21,11 @@ class ArticleListView(generics.ListCreateAPIView):
             return ArticleListSerializer
         return ArticleWriteSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
@@ -45,6 +50,11 @@ class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ["PUT", "PATCH"]:
             return ArticleWriteSerializer
         return ArticleDetailSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
 
     def get_permissions(self):
         if self.request.method == "GET":
@@ -130,6 +140,11 @@ class CategoryArticlesView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ArticleListSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_queryset(self):
         slug = self.kwargs["slug"]
         return Article.objects.filter(
@@ -140,6 +155,11 @@ class CategoryArticlesView(generics.ListAPIView):
 class TagArticlesView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ArticleListSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
 
     def get_queryset(self):
         slug = self.kwargs["slug"]

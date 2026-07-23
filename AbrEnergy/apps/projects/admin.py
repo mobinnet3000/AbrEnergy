@@ -21,10 +21,9 @@ class ProjectImageInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["title", "project_type", "status", "capacity", "location", "is_featured", "created_at"]
+    list_display = ["id", "project_type", "status", "capacity", "location", "is_featured", "created_at"]
     list_filter = ["project_type", "status", "is_featured"]
-    search_fields = ["title", "slug", "location"]
-    prepopulated_fields = {"slug": ("title",)}
+    search_fields = ["location"]
     list_editable = ["is_featured"]
     date_hierarchy = "created_at"
     inlines = [ProjectImageInline]

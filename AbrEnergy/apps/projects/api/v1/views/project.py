@@ -14,6 +14,11 @@ class ProjectListView(generics.ListCreateAPIView):
             return ProjectListSerializer
         return ProjectWriteSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
@@ -39,6 +44,11 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             return ProjectWriteSerializer
         return ProjectDetailSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
@@ -52,6 +62,11 @@ class ProjectFeaturedView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ProjectListSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_queryset(self):
         return Project.objects.filter(is_featured=True).prefetch_related("images__media_file")
 
@@ -59,6 +74,11 @@ class ProjectFeaturedView(generics.ListAPIView):
 class ProjectByTypeView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ProjectListSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
 
     def get_queryset(self):
         return Project.objects.filter(

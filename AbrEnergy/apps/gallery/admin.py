@@ -4,10 +4,8 @@ from apps.gallery.models import GalleryCategory, GalleryImage
 
 @admin.register(GalleryCategory)
 class GalleryCategoryAdmin(admin.ModelAdmin):
-    list_display = ["title", "order", "is_active"]
+    list_display = ["id", "order", "is_active"]
     list_filter = ["is_active"]
-    search_fields = ["title"]
-    prepopulated_fields = {"slug": ("title",)}
 
 
 @admin.register(GalleryImage)

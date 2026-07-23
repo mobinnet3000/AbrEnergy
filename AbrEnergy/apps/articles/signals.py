@@ -14,12 +14,6 @@ def unique_slug(instance, title, slug_field="slug"):
     return slug
 
 
-@receiver(pre_save, sender=Article)
-def article_pre_save(sender, instance, **kwargs):
-    if not instance.slug:
-        instance.slug = unique_slug(instance, instance.title)
-
-
 @receiver(pre_save, sender=Category)
 def category_pre_save(sender, instance, **kwargs):
     if not instance.slug:

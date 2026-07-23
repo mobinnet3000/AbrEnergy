@@ -15,6 +15,11 @@ class ServiceListView(generics.ListCreateAPIView):
             return ServiceListSerializer
         return ServiceWriteSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
@@ -31,6 +36,11 @@ class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ["PUT", "PATCH"]:
             return ServiceWriteSerializer
         return ServiceDetailSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
 
     def get_permissions(self):
         if self.request.method == "GET":

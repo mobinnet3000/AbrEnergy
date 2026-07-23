@@ -12,12 +12,10 @@ class ArticleImageInline(admin.TabularInline):
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
     list_display = [
-        "title", "author_name", "category", "status",
+        "id", "author_name", "category", "status",
         "publish_date", "view_count", "is_featured", "created_at",
     ]
     list_filter = ["status", "category", "is_featured"]
-    search_fields = ["title", "slug", "content"]
-    prepopulated_fields = {"slug": ("title",)}
     list_per_page = 25
     date_hierarchy = "created_at"
     inlines = [ArticleImageInline]
@@ -30,6 +28,11 @@ class ArticleAdmin(admin.ModelAdmin):
     def author_name(self, obj):
         return obj.author.full_name if obj.author else "-"
     author_name.short_description = "Author"
+
+    def get_title(self, obj):
+        t = obj.get_translation("en") or obj.translations.first()
+        return t.title if t else str(obj.id)
+    get_title.short_description = "Title"
 
     @admin.action(description="Mark selected as Published")
     def make_published(self, request, queryset):

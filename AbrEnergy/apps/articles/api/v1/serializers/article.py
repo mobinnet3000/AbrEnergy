@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.articles.models import Article, Category, Tag, ArticleImage
+from apps.articles.models import Article, Category, Tag, ArticleImage, ArticleTranslation
 from apps.media_manager.api.v1.serializers.media import MediaFileListSerializer
 
 
@@ -41,6 +41,9 @@ class ArticleListSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.full_name", read_only=True, default="")
     tags = TagSerializer(many=True, read_only=True)
     cover_image_url = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+    short_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -50,6 +53,21 @@ class ArticleListSerializer(serializers.ModelSerializer):
             "status", "publish_date", "view_count", "is_featured",
             "created_at", "updated_at",
         ]
+
+    def get_title(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.title if t else (obj.get_translation("en").title if obj.get_translation("en") else str(obj.id))
+
+    def get_slug(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.slug if t else ""
+
+    def get_short_description(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.short_description if t else ""
 
     def get_cover_image_url(self, obj):
         if obj.cover_image:
@@ -66,6 +84,12 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     images = ArticleImageSerializer(many=True, read_only=True)
     cover_image_url = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    slug = serializers.SerializerMethodField()
+    short_description = serializers.SerializerMethodField()
+    content = serializers.SerializerMethodField()
+    meta_title = serializers.SerializerMethodField()
+    meta_description = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
@@ -74,7 +98,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
             "cover_image", "cover_image_url", "category",
             "author_name", "tags", "images",
             "status", "publish_date", "view_count", "is_featured",
-            "meta_title", "meta_description", "keywords",
+            "meta_title", "meta_description",
             "created_at", "updated_at",
         ]
 
@@ -86,31 +110,69 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
                 pass
         return ""
 
+    def get_title(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.title if t else (obj.get_translation("en").title if obj.get_translation("en") else str(obj.id))
+
+    def get_slug(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.slug if t else ""
+
+    def get_short_description(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.short_description if t else ""
+
+    def get_content(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.content if t else ""
+
+    def get_meta_title(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.meta_title if t else ""
+
+    def get_meta_description(self, obj):
+        lang = self.context.get("language", "fa")
+        t = obj.get_translation(lang)
+        return t.meta_description if t else ""
+
 
 class ArticleWriteSerializer(serializers.ModelSerializer):
     tags = serializers.ListField(child=serializers.CharField(), required=False, write_only=True)
+    translations = serializers.DictField(child=serializers.DictField(), required=False, write_only=True)
 
     class Meta:
         model = Article
         fields = [
-            "title", "short_description", "content", "cover_image",
-            "category", "tags", "status", "publish_date", "is_featured",
-            "meta_title", "meta_description", "keywords",
+            "translations", "cover_image", "category", "tags",
+            "status", "publish_date", "is_featured",
         ]
 
     def create(self, validated_data):
+        translations_data = validated_data.pop("translations", {})
         tag_names = validated_data.pop("tags", [])
         article = Article.objects.create(**validated_data)
+        for lang_code, fields in translations_data.items():
+            ArticleTranslation.objects.create(article=article, language=lang_code, **fields)
         for tag_name in tag_names:
             tag, _ = Tag.objects.get_or_create(title=tag_name)
             article.tags.add(tag)
         return article
 
     def update(self, instance, validated_data):
+        translations_data = validated_data.pop("translations", {})
         tag_names = validated_data.pop("tags", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
+        for lang_code, fields in translations_data.items():
+            ArticleTranslation.objects.update_or_create(
+                article=instance, language=lang_code, defaults=fields,
+            )
         if tag_names is not None:
             instance.tags.clear()
             for tag_name in tag_names:

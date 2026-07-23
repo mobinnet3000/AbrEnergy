@@ -1,7 +1,5 @@
 import uuid
 from django.db import models
-from django.utils.text import slugify
-from ckeditor.fields import RichTextField
 
 
 class Project(models.Model):
@@ -20,9 +18,6 @@ class Project(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=500)
-    slug = models.SlugField(unique=True, allow_unicode=True, max_length=500)
-    description = RichTextField()
     location = models.CharField(max_length=500, blank=True, default="")
     capacity = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="kW")
     project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, db_index=True)
@@ -35,10 +30,7 @@ class Project(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="planning", db_index=True)
     is_featured = models.BooleanField(default=False)
     completion_percentage = models.PositiveIntegerField(default=0)
-    meta_title = models.CharField(max_length=255, blank=True, default="")
-    meta_description = models.TextField(blank=True, default="")
     schema_json = models.JSONField(null=True, blank=True)
-    canonical_url = models.URLField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -49,12 +41,11 @@ class Project(models.Model):
         ]
 
     def __str__(self):
-        return self.title
+        t = self.get_translation("en") or self.translations.first()
+        return t.title if t else str(self.id)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title, allow_unicode=True)
-        super().save(*args, **kwargs)
+    def get_translation(self, language):
+        return self.translations.filter(language=language).first()
 
 
 class ProjectImage(models.Model):
@@ -73,4 +64,8 @@ class ProjectImage(models.Model):
         ordering = ["-is_cover", "order"]
 
     def __str__(self):
-        return f"Image for {self.project.title}"
+        t = self.project.get_translation("en") or self.project.translations.first()
+        return f"Image for {t.title if t else self.project.id}"
+
+
+from apps.projects.translation_models import ProjectTranslation

@@ -12,9 +12,7 @@ class ServiceCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ["title", "category", "status", "is_featured", "order", "created_at"]
+    list_display = ["id", "category", "status", "is_featured", "order", "created_at"]
     list_filter = ["status", "category", "is_featured"]
-    search_fields = ["title", "slug"]
-    prepopulated_fields = {"slug": ("title",)}
     list_editable = ["is_featured", "order"]
     date_hierarchy = "created_at"
