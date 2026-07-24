@@ -191,6 +191,71 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* ===== TIMELINE / JOURNEY ===== */}
+      <section className="py-24 md:py-32 border-t border-white/[0.03]">
+        <div className="container-page">
+          <ScrollReveal variant="fade">
+            <div className="text-center mb-16">
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Our Journey</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Company Milestones</h2>
+            </div>
+          </ScrollReveal>
+          <div className="relative max-w-3xl mx-auto">
+            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/30 via-emerald-500/10 to-transparent -translate-x-1/2" />
+            {[
+              { year: '2014', title: 'Founded', desc: 'AbrEnergy was established with a vision to make solar energy accessible across the region.' },
+              { year: '2017', title: 'First 1MW Installation', desc: 'Completed our first megawatt-scale commercial installation, setting a benchmark for quality.' },
+              { year: '2020', title: '50 Projects Milestone', desc: 'Reached 50 completed projects across residential, commercial, and industrial sectors.' },
+              { year: '2023', title: 'International Expansion', desc: 'Expanded operations internationally, delivering solar solutions beyond borders.' },
+              { year: '2025', title: '25MW Installed', desc: 'Surpassed 25MW of total installed capacity, powering thousands of homes and businesses.' },
+            ].map((m, i) => (
+              <ScrollReveal key={i} variant={i % 2 === 0 ? 'slide-left' : 'slide-right'} delay={i * 0.1}>
+                <div className={`relative flex items-start gap-6 mb-14 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                  <div className={`hidden md:block flex-1 ${i % 2 === 0 ? 'text-right' : 'text-left'}`}>
+                    <span className="text-3xl font-bold font-heading text-emerald-400/30">{m.year}</span>
+                  </div>
+                  <div className="relative flex-shrink-0 w-8 h-8 rounded-full border-2 border-emerald-500/30 bg-black flex items-center justify-center z-10">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <span className="text-xs text-emerald-400/60 font-mono md:hidden mb-1 block">{m.year}</span>
+                    <h3 className="font-heading font-semibold text-lg text-white mb-1">{m.title}</h3>
+                    <p className="text-sm text-white/35 leading-relaxed">{m.desc}</p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== IMPACT SECTION ===== */}
+      <section className="py-24 md:py-32 border-t border-white/[0.03]">
+        <div className="container-page">
+          <ScrollReveal variant="fade">
+            <div className="text-center mb-16">
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Our Impact</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Making a Difference</h2>
+            </div>
+          </ScrollReveal>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { icon: Leaf, title: 'Environmental', desc: 'Our solar installations offset thousands of tons of CO₂ annually, contributing to a cleaner, more sustainable future for generations to come.' },
+              { icon: Zap, title: 'Technology', desc: 'We continuously advance solar technology through research and innovation, driving down costs while improving efficiency and reliability.' },
+              { icon: Globe, title: 'Future Vision', desc: 'Our roadmap includes smart grid integration, energy storage solutions, and community solar programs to expand access to clean energy.' },
+            ].map((item, i) => (
+              <ScrollReveal key={i} variant="slide-up" delay={i * 0.1}>
+                <div className="p-8 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-lg h-full hover:border-emerald-500/10 transition-all duration-500">
+                  <item.icon className="h-8 w-8 text-emerald-400/60 mb-5" />
+                  <h3 className="font-heading font-semibold text-lg text-white mb-3">{item.title}</h3>
+                  <p className="text-sm text-white/35 leading-relaxed">{item.desc}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== CTA ===== */}
       <section className="py-24 md:py-32 border-t border-white/[0.03]">
         <div className="container-page text-center">
