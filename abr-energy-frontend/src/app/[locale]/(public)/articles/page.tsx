@@ -6,6 +6,14 @@ import { useArticles } from '@/hooks/use-api';
 import { CardLoading } from '@/components/shared';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
 
+function readingTime(html?: string): string {
+  if (!html) return '1 min';
+  const text = html.replace(/<[^>]*>/g, '').trim();
+  const words = text.split(/\s+/).length;
+  const mins = Math.max(1, Math.round(words / 200));
+  return `${mins} min read`;
+}
+
 function ArticleCard({ article, featured }: { article: Record<string, unknown>; featured?: boolean }) {
   return featured ? (
     <ScrollReveal variant="scale">
@@ -42,7 +50,7 @@ function ArticleCard({ article, featured }: { article: Record<string, unknown>; 
             <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">{(article as { category_title?: string }).category_title || 'Article'}</p>
             <h3 className="font-heading font-semibold text-base text-white mt-1.5 line-clamp-2 group-hover:text-emerald-400 transition-colors duration-300">{article.title as string}</h3>
             <p className="text-xs text-white/35 mt-1.5 line-clamp-2">{(article as { short_description?: string }).short_description || ''}</p>
-            <p className="text-xs text-white/20 mt-3">{new Date(article.created_at as string).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}</p>
+            <p className="text-xs text-white/20 mt-3">{new Date(article.created_at as string).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })} · {readingTime((article as { content?: string }).content)}</p>
           </div>
         </div>
       </Link>

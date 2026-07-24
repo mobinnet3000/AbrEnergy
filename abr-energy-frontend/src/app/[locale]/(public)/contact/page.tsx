@@ -149,6 +149,32 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <section className="pb-28 md:pb-36 border-t border-white/[0.03]">
+        <div className="container-page max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">FAQ</p>
+            <h2 className="font-heading text-3xl font-bold text-white">Frequently Asked Questions</h2>
+          </div>
+          <div className="space-y-4">
+            {[
+              { q: 'What types of solar installations do you offer?', a: 'We offer residential, commercial, and industrial solar installations.' },
+              { q: 'How long does a typical installation take?', a: 'Residential takes 2-5 days. Commercial projects range from 1-4 weeks.' },
+              { q: 'Do you provide maintenance services?', a: 'Yes, we offer comprehensive maintenance packages including monitoring and cleaning.' },
+              { q: 'What warranty do you offer?', a: 'We provide a 25-year performance warranty on panels and 5-10 years on inverters.' },
+            ].map((faq, i) => (
+              <details key={i} className="group p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm">
+                <summary className="text-sm font-medium text-white cursor-pointer list-none flex items-center justify-between">
+                  {faq.q}
+                  <span className="text-emerald-400/60 transition-transform duration-300">+</span>
+                </summary>
+                <p className="text-sm text-white/35 mt-3 leading-relaxed">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
