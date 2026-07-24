@@ -82,14 +82,14 @@ export function HeroSection() {
             transition={{ delay: 0.8, duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
             className="flex flex-wrap gap-5"
           >
-            <Link href="/calculator" className="group relative inline-flex items-center justify-center px-10 py-4.5 text-base font-semibold rounded-2xl overflow-hidden transition-all duration-500">
-              <span className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 group-hover:from-emerald-400 group-hover:via-emerald-500 group-hover:to-emerald-600 transition-all duration-500" />
+            <Link href="/calculator" className="group relative inline-flex items-center justify-center px-10 py-4 text-base font-semibold rounded-2xl overflow-hidden transition-all duration-500 active:scale-[0.97]">
+              <span className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 group-hover:from-emerald-400 group-hover:via-emerald-500 group-hover:to-emerald-600 transition-all duration-700" />
               <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[radial-gradient(ellipse_at_30%_50%,rgba(255,255,255,0.15),transparent_60%)]" />
               <span className="relative z-10 flex items-center gap-2.5 text-white">
                 Calculate Solar System <ArrowRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
               </span>
             </Link>
-            <Link href="/projects" className="group relative inline-flex items-center justify-center px-10 py-4.5 text-base font-semibold rounded-2xl overflow-hidden border border-white/15 text-white/80 hover:text-white hover:border-white/30 transition-all duration-500">
+            <Link href="/projects" className="group relative inline-flex items-center justify-center px-10 py-4 text-base font-semibold rounded-2xl overflow-hidden border border-white/15 text-white/80 hover:text-white hover:border-white/30 transition-all duration-500 active:scale-[0.97]">
               <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-white/[0.04]" />
               <span className="relative z-10">View Projects</span>
             </Link>
