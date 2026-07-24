@@ -89,12 +89,21 @@ function SolarCell({ position, rotation, mouse }: {
   return (
     <group ref={ref} position={position} rotation={rotation}>
       <mesh>
-        <boxGeometry args={[0.7, 0.025, 0.35]} />
-        <meshPhysicalMaterial color="#0F172A" metalness={0.95} roughness={0.05} transparent opacity={0.5} />
+        <boxGeometry args={[0.7, 0.02, 0.35]} />
+        <meshPhysicalMaterial color="#0A1128" metalness={0.3} roughness={0.8} transparent opacity={0.6} />
       </mesh>
-      <mesh position={[0, 0.015, 0]}>
-        <planeGeometry args={[0.6, 0.28]} />
-        <meshPhysicalMaterial color="#1E40AF" emissive="#3B82F6" emissiveIntensity={0.12} metalness={0.3} roughness={0.6} transparent opacity={0.4} side={THREE.DoubleSide} />
+      <mesh position={[0, 0.012, 0]}>
+        <planeGeometry args={[0.62, 0.3]} />
+        <meshPhysicalMaterial
+          color="#1E3A5F"
+          emissive="#3B82F6"
+          emissiveIntensity={0.15}
+          metalness={0.4}
+          roughness={0.5}
+          transparent
+          opacity={0.7}
+          side={THREE.DoubleSide}
+        />
       </mesh>
     </group>
   );
