@@ -1,7 +1,7 @@
 'use client';
 import { useRef, useMemo } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Sun, Eye, Heart, Sparkles } from 'lucide-react';
+import { ArrowRight, Sun, Eye, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 import { useSiteSettings } from '@/hooks/use-api';

@@ -11,3 +11,4 @@ export { FloatingParticles } from './FloatingParticles';
 export { MouseRipple } from './MouseRipple';
 export { GradientMesh } from './GradientMesh';
 export { ScrollProgress } from './ScrollProgress';
+export { ServicesSection } from './ServicesSection';

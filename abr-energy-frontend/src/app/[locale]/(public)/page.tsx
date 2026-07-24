@@ -1,59 +1,11 @@
 'use client';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
-import { ArrowRight, Sun, Zap, Shield, Calculator, Phone, Building2, Sparkles, Ruler, Maximize2, Droplets } from 'lucide-react';
+import { useRef } from 'react';
+import { ArrowRight, Calculator, Phone, Building2, Sparkles, Sun } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { CardContent } from '@/components/ui/card';
-import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
+import { useSiteSettings, useFeaturedProjects, useArticles } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh, TextReveal } from '@/components/home';
-
-/* ===== Service Card — 3D hover with glow ===== */
-function ServiceCard({ icon: Icon, title, desc, href, i }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string; i: number }) {
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, delay: i * 0.1, ease: [0.25, 0.4, 0.25, 1] }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setRotateY(((e.clientX - rect.left) / rect.width - 0.5) * 8);
-        setRotateX(((e.clientY - rect.top) / rect.height - 0.5) * -8);
-      }}
-      onMouseLeave={() => { setRotateX(0); setRotateY(0); }}
-      style={{ perspective: '800px' }}
-      className="group"
-    >
-      <motion.div
-        style={{ rotateX, rotateY }}
-        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-      >
-        <Link href={href}>
-          <div className="relative rounded-2xl border border-white/[0.06] bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-xl p-8 overflow-hidden hover:border-emerald-500/20 transition-colors duration-500 h-full">
-            {/* Hover glow */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-emerald-500/10 to-transparent rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            
-            {/* Icon */}
-            <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-emerald-500/10 transition-all duration-500">
-              <Icon className="h-7 w-7 text-emerald-400" />
-            </div>
-            
-            <h3 className="relative font-heading font-semibold text-xl text-white mb-3">{title}</h3>
-            <p className="relative text-white/50 leading-relaxed text-sm">{desc}</p>
-            
-            <span className="relative inline-flex items-center gap-2 text-sm font-medium text-emerald-400 mt-6 group-hover:gap-3 transition-all duration-300">
-              Learn more <ArrowRight className="h-4 w-4" />
-            </span>
-          </div>
-        </Link>
-      </motion.div>
-    </motion.div>
-  );
-}
+import { CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh, TextReveal, ServicesSection } from '@/components/home';
 
 /* ===== Project Card — Showcase style ===== */
 function ProjectCard({ project }: { project: Record<string, unknown> }) {
@@ -137,7 +89,6 @@ export default function HomePage() {
   const { data: settings } = useSiteSettings();
   const { data: featured, isLoading: projectsLoading, error: projectsError } = useFeaturedProjects();
   const { data: articlesData, isLoading: articlesLoading } = useArticles({ is_featured: 'true' });
-  const { data: servicesData, isLoading: servicesLoading } = useServices();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
@@ -146,7 +97,6 @@ export default function HomePage() {
 
   const articles = Array.isArray(articlesData?.results) ? articlesData.results : (Array.isArray(articlesData) ? articlesData : []);
   const projects = Array.isArray(featured?.results) ? featured.results : (Array.isArray(featured) ? featured : []);
-  const services = Array.isArray(servicesData?.results) ? servicesData.results : (Array.isArray(servicesData) ? servicesData : []);
 
   return (
     <div className="flex flex-col noise-overlay">
@@ -254,57 +204,9 @@ export default function HomePage() {
       <AboutSection />
 
       {/* ===== 4. SERVICES ===== */}
-      <section data-section="services" className="relative py-32 md:py-40 overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/5 to-black" />
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        
-        <div className="container-page relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
-            className="text-center mb-16"
-          >
-            <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">What We Do</p>
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Our Services</h2>
-            <p className="text-white/40 text-lg max-w-2xl mx-auto">Comprehensive solar energy solutions from design to commissioning</p>
-          </motion.div>
+      <ServicesSection />
 
-          {servicesLoading ? (
-            <CardLoading count={3} />
-          ) : services.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {services.slice(0, 6).map((s: Record<string, unknown>, i: number) => (
-                <ServiceCard key={s.id as string} icon={Sun} title={s.title as string} desc={s.short_description as string} href={`/services/${s.slug}`} i={i} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {[
-                { icon: Sun, t: 'Solar Design & EPC', d: 'Complete engineering, procurement, and construction services for solar power plants.' },
-                { icon: Zap, t: 'On Grid Systems', d: 'Grid-tied solar systems for residential, commercial, and industrial applications.' },
-                { icon: Shield, t: 'Off Grid Systems', d: 'Independent solar power systems with battery storage for remote locations.' },
-              ].map((s, i) => (
-                <ServiceCard key={s.t} icon={s.icon} title={s.t} desc={s.d} href="/services" i={i} />
-              ))}
-            </div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-14"
-          >
-            <Link href="/services" className="inline-flex items-center gap-2 text-emerald-400 font-medium hover:text-emerald-300 transition-colors text-lg group">
-              View All Services <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ===== 5. FEATURED PROJECTS ===== */}
+{/* ===== 5. FEATURED PROJECTS ===== */}
       <section data-section="projects" className="relative py-32 md:py-40 overflow-hidden bg-black">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-950/5 to-black" />
         
