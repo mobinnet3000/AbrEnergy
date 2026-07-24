@@ -61,7 +61,7 @@ export function Header() {
           'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
           hidden ? '-translate-y-full' : 'translate-y-0',
           scrolled
-            ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 shadow-lg shadow-black/5'
+            ? 'bg-white/70 dark:bg-gray-950/70 backdrop-blur-2xl border-b border-white/10 dark:border-white/5 shadow-lg shadow-black/5'
             : 'bg-transparent border-b border-transparent',
         )}
       >
