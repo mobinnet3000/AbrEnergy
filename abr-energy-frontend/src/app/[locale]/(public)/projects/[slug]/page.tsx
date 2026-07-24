@@ -3,18 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { ArrowLeft, Loader2, MapPin, Zap, Ruler } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, MapPin, Zap, Calendar, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { ScrollReveal } from '@/components/home/ScrollReveal';
 import type { ProjectDetail } from '@/types';
-
-const statusColors: Record<string, string> = {
-  completed: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
-  in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-  planned: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
-};
 
 export default function ProjectDetailPage() {
   const params = useParams();
@@ -26,74 +20,126 @@ export default function ProjectDetailPage() {
   });
 
   useEffect(() => { if (error) toast.error('Failed to load project'); }, [error]);
-  if (error) return <div className="py-20 text-center text-muted-foreground">Failed to load project</div>;
-  if (isLoading) return <div className="py-20 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> Loading...</div>;
-  if (!project) return <div className="py-20 text-center text-muted-foreground">Project not found</div>;
+
+  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load project</div>;
+  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
+  if (!project) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Project not found</div>;
 
   return (
-    <div className="py-20">
-      <div className="container mx-auto px-4 max-w-5xl">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-          <Link href="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <Link href="/projects" className="hover:text-foreground">Projects</Link>
-          <span>/</span>
-          <span className="text-foreground font-medium">{project.title}</span>
-        </nav>
-
-        <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> Back to Projects
-        </Link>
-
-        <h1 className="text-3xl md:text-4xl font-bold mb-6">{project.title}</h1>
-
-        <div className="flex flex-wrap gap-4 mb-8 text-sm">
-          {project.location && (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <MapPin className="h-4 w-4" /> {project.location}
-            </span>
-          )}
-          {project.capacity && (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <Zap className="h-4 w-4" /> {project.capacity} kW
-            </span>
-          )}
-          {project.project_type && (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <Ruler className="h-4 w-4" /> {project.project_type.replace('_', ' ')}
-            </span>
-          )}
-          {project.status && (
-            <Badge className={cn('capitalize', statusColors[project.status])}>
-              {project.status.replace('_', ' ')}
-            </Badge>
-          )}
+    <div className="bg-black text-white">
+      {/* Hero */}
+      <section className="relative pt-28 pb-10 md:pt-36 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-950/10 via-transparent to-black" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="container-page relative z-10">
+          <Link href="/projects" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
+            <ArrowLeft className="h-3 w-3" /> Back to Projects
+          </Link>
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-end">
+            <div>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
+                Case Study
+              </motion.p>
+              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="font-heading text-4xl md:text-6xl font-bold text-white mb-6 leading-[1.05]">
+                {project.title}
+              </motion.h1>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="flex flex-wrap gap-4 text-xs text-white/30">
+                <span className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {project.location}</span>
+                <span className="flex items-center gap-1.5"><Zap className="h-3 w-3" /> {project.capacity} kW</span>
+                <span className="flex items-center gap-1.5"><Calendar className="h-3 w-3" /> {new Date(project.created_at).toLocaleDateString('en-US', { year: 'numeric' })}</span>
+              </motion.div>
+            </div>
+            <div className="flex flex-wrap gap-3 pb-6">
+              <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/15 text-xs text-emerald-300">{project.project_type}</span>
+              <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white/50">{project.status}</span>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {project.cover_image && (
+      {/* Cover */}
+      {project.images?.length > 0 && project.images[0]?.image_url && (
+        <section className="container-page pb-10 md:pb-16">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className="rounded-2xl overflow-hidden border border-white/[0.04]">
+            <img src={project.images[0].image_url} alt={project.title} className="w-full aspect-[2.4/1] object-cover" loading="eager" />
+          </motion.div>
+        </section>
+      )}
 
-          <img src={project.cover_image} alt={project.title} className="w-full aspect-video object-cover rounded-xl mb-8" />
-        )}
+      {/* Overview */}
+      <section className="py-16 md:py-24 border-t border-white/[0.03]">
+        <div className="container-page">
+          <ScrollReveal variant="fade">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="font-heading text-3xl font-bold text-white mb-6">Overview</h2>
+              <div className="prose prose-invert prose-emerald max-w-none [&_p]:text-white/50 [&_p]:leading-relaxed" dangerouslySetInnerHTML={{ __html: project.description }} />
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
 
-        <div className="prose prose-green dark:prose-invert max-w-none mb-12" dangerouslySetInnerHTML={{ __html: project.description }} />
+      {/* Key Metrics */}
+      <section className="py-16 md:py-24 border-t border-white/[0.03]">
+        <div className="container-page">
+          <ScrollReveal variant="fade">
+            <div className="text-center mb-12">
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Technical Details</p>
+              <h2 className="font-heading text-3xl font-bold text-white">Project Metrics</h2>
+            </div>
+          </ScrollReveal>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {[
+              { label: 'Capacity', value: `${project.capacity} kW`, icon: Zap },
+              { label: 'Type', value: project.project_type, icon: Zap },
+              { label: 'Status', value: project.status, icon: Zap },
+              { label: 'Location', value: project.location, icon: MapPin },
+            ].map((m, i) => (
+              <ScrollReveal key={i} variant="slide-up" delay={i * 0.08}>
+                <div className="p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] text-center">
+                  <p className="text-xs text-white/30 mb-1">{m.label}</p>
+                  <p className="font-heading font-semibold text-sm text-white">{m.value}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        {project.images?.length > 0 && (
-          <div>
-            <h2 className="text-2xl font-semibold mb-6">Project Gallery</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {project.images.map((img) => (
-
-                <img
-                  key={img.id}
-                  src={img.image_url}
-                  alt={img.alt_text || project.title}
-                  className="w-full aspect-square object-cover rounded-lg"
-                />
+      {/* Gallery */}
+      {project.images && project.images.length > 1 && (
+        <section className="py-16 md:py-24 border-t border-white/[0.03]">
+          <div className="container-page">
+            <ScrollReveal variant="fade">
+              <div className="text-center mb-12">
+                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Gallery</p>
+                <h2 className="font-heading text-3xl font-bold text-white">Project Photos</h2>
+              </div>
+            </ScrollReveal>
+            <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+              {project.images.slice(1).map((img) => (
+                <ScrollReveal key={img.id} variant="scale">
+                  <div className="rounded-xl overflow-hidden border border-white/[0.04]">
+                    <img src={img.image_url} alt={img.alt_text || project.title} loading="lazy" className="w-full aspect-video object-cover" />
+                  </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
-        )}
-      </div>
+        </section>
+      )}
+
+      {/* CTA */}
+      <section className="py-24 md:py-32 border-t border-white/[0.03]">
+        <div className="container-page text-center">
+          <ScrollReveal variant="scale">
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Interested in Similar Projects?</h2>
+            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">Contact our team to discuss your solar energy project requirements.</p>
+            <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
+              Start Your Project <ArrowRight className="h-4 w-4" />
+            </Link>
+          </ScrollReveal>
+        </div>
+      </section>
     </div>
   );
 }
