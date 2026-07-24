@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] — 2026-07-25
+
+### Added
+
+- **Page transitions:** AnimatePresence fade+scale+slide on route change
+- **Article Table of Contents:** Auto-generated from `<h2>` headings
+- **Related articles:** Same-category recommendations on article detail
+- **Gallery category filters:** Client-side pill buttons with animated filtering
+- **Gallery lightbox:** Fullscreen image viewer with keyboard navigation
+- **Contact FAQ section:** 4 expandable questions with `<details>`/`<summary>` pattern
+- **Reading time indicator:** Estimated reading time on all article cards
+- **Cursor interaction system:** Section-aware glow, floating particles, mouse ripple, gradient mesh
+- **Interactive 3D hero scene:** Three.js solar sphere, energy rings, floating panels, 400 particles
+
+### Changed
+
+- **Homepage:** Reduced from 479 to 24 lines by extracting 8 section components
+- **About page:** Completely redesigned with SVG energy visualization, timeline, impact cards
+- **Services page:** Cinematic hero, glass cards with hover glow, product-style detail pages
+- **Articles page:** Featured article block, stagger animations, glass card grid
+- **Projects page:** Showcase cards with capacity badges, case-study detail layout
+- **Gallery page:** Masonry layout with lightbox, category filtering
+- **Calculator page:** Premium form design with glass panels, animated results, conversion CTA
+- **Contact page:** Hero, 4 contact info cards, premium form, trust section, FAQ
+- **Header:** Top-edge highlight on scroll, `active:scale-[0.97]` buttons, refined glass
+- **Footer:** PV grid SVG pattern, minimalist 5-column layout, pill language buttons
+- **Stats section:** DOM-based counter animation (zero rerenders), SVG corner geometry
+- **Design system:** Unified glassmorphism, emerald colors, cinematic black backgrounds
+
+### Fixed
+
+- React hooks called after early return in article detail page
+- Gallery fragment JSX syntax error
+- Contact page duplicate FAQ section
+- Calculator `<a>` → `<Link>` navigation component
+- All ESLint errors (0 remaining)
+
 ## [1.0.0] — 2026-07-24
 
 ### Added

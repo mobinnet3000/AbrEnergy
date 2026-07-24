@@ -24,6 +24,14 @@ export default function ArticleDetailPage() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });
 
+  // Related articles — must be before early returns (hooks rule)
+  const { data: allArticles } = useQuery({ queryKey: ['articles'], queryFn: () => axiosInstance.get('/articles/').then((r) => r.data), enabled: !!article?.category_title });
+  const related = useMemo(() => {
+    if (!allArticles) return [];
+    const items = Array.isArray((allArticles as { results?: unknown[] })?.results) ? (allArticles as { results: Record<string, unknown>[] }).results : (Array.isArray(allArticles) ? allArticles : []);
+    return items.filter((a: Record<string, unknown>) => a.category_title === article?.category_title && a.slug !== article?.slug).slice(0, 3);
+  }, [allArticles, article]);
+
   if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load article</div>;
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
   if (!article) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Article not found</div>;
@@ -36,13 +44,6 @@ export default function ArticleDetailPage() {
     headings.push({ id, text });
     return match.replace('<h2', `<h2 id="${id}"`);
   });
-
-  // Related articles (same category)
-  const { data: allArticles } = useQuery({ queryKey: ['articles'], queryFn: () => axiosInstance.get('/articles/').then((r) => r.data), enabled: !!article.category_title });
-  const related = useMemo(() => {
-    const items = Array.isArray((allArticles as { results?: unknown[] })?.results) ? (allArticles as { results: Record<string, unknown>[] }).results : (Array.isArray(allArticles) ? allArticles : []);
-    return items.filter((a: Record<string, unknown>) => a.category_title === article.category_title && a.slug !== article.slug).slice(0, 3);
-  }, [allArticles, article]);
 
   return (
     <div className="bg-black text-white">
