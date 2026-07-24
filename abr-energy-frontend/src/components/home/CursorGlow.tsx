@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { useMotionValue, useSpring } from 'framer-motion';
 
 const sectionColors: Record<string, [number, number, number]> = {
   hero: [16, 185, 129],      // Emerald
@@ -40,7 +40,6 @@ export function CursorGlow() {
     // Single RAF loop: read section once per frame, interpolate color
     const frame = () => {
       if (!glowRef.current) return;
-      const now = Date.now();
 
       // Smoothly interpolate RGB toward target
       const c = currentColor.current;

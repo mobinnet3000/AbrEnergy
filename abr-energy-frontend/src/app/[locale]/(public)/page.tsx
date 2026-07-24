@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { CardContent } from '@/components/ui/card';
 import { useSiteSettings, useFeaturedProjects, useArticles, useServices } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh } from '@/components/home';
+import { ScrollReveal, GlassCard, CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh, TextReveal } from '@/components/home';
 
 /* ===== Service Card — 3D hover with glow ===== */
 function ServiceCard({ icon: Icon, title, desc, href, i }: { icon: React.ComponentType<{ className?: string }>; title: string; desc: string; href: string; i: number }) {
@@ -184,12 +184,14 @@ export default function HomePage() {
               transition={{ delay: 0.4, duration: 0.9, ease: [0.25, 0.4, 0.25, 1] }}
               className="font-heading text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] tracking-tight mb-8"
             >
-              <span className="text-white">{settings?.hero_title?.split(' ')[0] || 'Powering'} </span>
+              <TextReveal text={settings?.hero_title?.split(' ').slice(0, 2).join(' ') || 'Powering the'} className="text-white" delay={0.4} />
               <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">
-                {settings?.hero_title?.split(' ').slice(1).join(' ') || 'the Future'}
+                <TextReveal text={settings?.hero_title?.split(' ').slice(2).join(' ') || 'Future'} delay={0.6} />
               </span>
               <br />
-              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white/50 font-light">with Solar Energy</span>
+              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white/50 font-light">
+                <TextReveal text="with Solar Energy" delay={0.8} />
+              </span>
             </motion.h1>
 
             <motion.p

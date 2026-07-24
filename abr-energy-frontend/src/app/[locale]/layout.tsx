@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { LocaleProvider } from "@/i18n";
 import type { Locale } from "@/i18n";
+import { ScrollProgress } from "@/components/home";
 
 export default async function LocaleLayout({
   children,
@@ -16,6 +17,7 @@ export default async function LocaleLayout({
   return (
     <Providers>
       <LocaleProvider locale={locale as Locale}>
+        <ScrollProgress />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

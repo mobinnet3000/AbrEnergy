@@ -1,4 +1,4 @@
-export { ScrollReveal } from './ScrollReveal';
+export { ScrollReveal, TextReveal } from './ScrollReveal';
 export { AnimatedCounter } from './AnimatedCounter';
 export { GlassCard } from './GlassCard';
 export { CursorGlow } from './CursorGlow';
@@ -10,3 +10,4 @@ export { AboutSection } from './AboutSection';
 export { FloatingParticles } from './FloatingParticles';
 export { MouseRipple } from './MouseRipple';
 export { GradientMesh } from './GradientMesh';
+export { ScrollProgress } from './ScrollProgress';
