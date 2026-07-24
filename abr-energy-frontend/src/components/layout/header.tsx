@@ -1,6 +1,6 @@
 'use client';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon, LogIn, User, Globe, Zap } from 'lucide-react';
@@ -10,32 +10,44 @@ import { useLocale } from '@/i18n';
 import { localeNames, locales } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { cn } from '@/lib/utils';
-
-const navLinks = [
-  { href: '/', labelKey: 'nav.home' },
-  { href: '/services', labelKey: 'nav.services' },
-  { href: '/projects', labelKey: 'nav.projects' },
-  { href: '/articles', labelKey: 'nav.articles' },
-  { href: '/calculator', labelKey: 'nav.calculator' },
-  { href: '/gallery', labelKey: 'nav.gallery' },
-  { href: '/contact', labelKey: 'nav.contact' },
-];
+import { navigationConfig } from '@/config/navigation';
+import { NavLinkDesktop, NavLinkMobile } from '@/components/shared/NavLink';
 
 export function Header() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, user } = useAuthStore();
   const { locale, setLocale, t, isRTL } = useLocale();
 
+  // Scroll tracking — hide on scroll down, show on scroll up
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const sy = window.scrollY;
+      setScrolled(sy > 40);
+      setHidden(sy > 120 && sy > lastScrollY.current);
+      lastScrollY.current = sy;
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Body scroll lock for mobile menu
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/' || pathname === `/${locale}`;
@@ -47,8 +59,9 @@ export function Header() {
       <header
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+          hidden ? '-translate-y-full' : 'translate-y-0',
           scrolled
-            ? 'bg-white/70 dark:bg-gray-950/70 backdrop-blur-xl border-b border-white/10 dark:border-white/5 shadow-lg shadow-black/5'
+            ? 'bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-white/10 dark:border-white/5 shadow-lg shadow-black/5'
             : 'bg-transparent border-b border-transparent',
         )}
       >
@@ -56,7 +69,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="relative group flex items-center gap-2.5">
             <div className="relative">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 transition-shadow duration-300">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/30 group-hover:scale-105 transition-all duration-500">
                 <Zap className="h-5 w-5 text-white" />
               </div>
               <motion.div
@@ -71,35 +84,17 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  'relative px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-300',
-                  isActive(l.href)
-                    ? scrolled
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-white'
-                    : scrolled
-                      ? 'text-muted-foreground hover:text-foreground'
-                      : 'text-white/60 hover:text-white hover:bg-white/5',
-                )}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+            {navigationConfig.map((item) => (
+              <NavLinkDesktop
+                key={item.href}
+                href={item.href}
+                isActive={isActive(item.href)}
+                scrolled={scrolled}
               >
-                {t(l.labelKey)}
-                {isActive(l.href) && (
-                  <motion.span
-                    layoutId="activeNav"
-                    className={cn(
-                      'absolute inset-0 rounded-lg -z-10',
-                      scrolled ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-white/10',
-                    )}
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </Link>
+                {t(item.labelKey)}
+              </NavLinkDesktop>
             ))}
           </nav>
 
@@ -117,6 +112,7 @@ export function Header() {
                     : 'text-white/60 hover:text-white hover:bg-white/5',
                 )}
                 aria-label={t('common.language')}
+                aria-expanded={langOpen}
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline text-xs font-medium uppercase">{locale}</span>
@@ -203,7 +199,8 @@ export function Header() {
                   ? 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   : 'text-white/60 hover:text-white hover:bg-white/5',
               )}
-              aria-label="Toggle menu"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -219,8 +216,8 @@ export function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
-            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-md md:hidden"
+            onClick={closeMobile}
           >
             <motion.nav
               initial={{ x: isRTL ? 100 : -100, opacity: 0 }}
@@ -229,44 +226,45 @@ export function Header() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                'absolute top-0 bottom-0 w-72 bg-background/95 backdrop-blur-2xl border-r border-white/10 p-6 pt-20',
+                'absolute top-0 bottom-0 w-72 bg-background/95 backdrop-blur-2xl border-r border-white/10 p-6 pt-24 overflow-y-auto',
                 isRTL ? 'right-0 border-l' : 'left-0 border-r',
               )}
+              aria-label="Mobile navigation"
             >
               <div className="space-y-1">
-                {navLinks.map((l, i) => (
+                {navigationConfig.map((item, i) => (
                   <motion.div
-                    key={l.href}
+                    key={item.href}
                     initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                    <Link
-                      href={l.href}
-                      className={cn(
-                        'block px-4 py-3 rounded-xl text-sm font-medium transition-all',
-                        isActive(l.href)
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-                      )}
-                      onClick={() => setMobileOpen(false)}
+                    <NavLinkMobile
+                      href={item.href}
+                      isActive={isActive(item.href)}
+                      onClick={closeMobile}
                     >
-                      {t(l.labelKey)}
-                    </Link>
+                      {t(item.labelKey)}
+                    </NavLinkMobile>
                   </motion.div>
                 ))}
               </div>
+
               <div className="border-t border-border/50 mt-6 pt-6 space-y-3">
-                <p className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('common.language')}</p>
+                <p className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {t('common.language')}
+                </p>
                 {locales.map((l) => (
                   <button
                     key={l}
                     type="button"
                     className={cn(
                       'w-full text-start px-4 py-2.5 rounded-xl text-sm transition-all flex items-center gap-3',
-                      locale === l ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                      locale === l
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted',
                     )}
-                    onClick={() => { setLocale(l as Locale); setMobileOpen(false); }}
+                    onClick={() => { setLocale(l as Locale); closeMobile(); }}
                   >
                     <span className="text-base">{l === 'fa' ? '🇮🇷' : l === 'ar' ? '🇸🇦' : '🇬🇧'}</span>
                     <span>{localeNames[l as Locale]}</span>
