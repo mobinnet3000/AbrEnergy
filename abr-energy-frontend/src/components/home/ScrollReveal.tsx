@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { motion, useInView, type TargetAndTransition } from 'framer-motion';
 import { useLocale } from '@/i18n';
 
-type RevealVariant = 'fade' | 'slide-up' | 'slide-left' | 'slide-right' | 'scale' | 'blur' | 'clip';
+type RevealVariant = 'fade' | 'slide-up' | 'slide-left' | 'slide-right' | 'scale' | 'blur' | 'clip' | 'cinematic';
 
 interface ScrollRevealProps {
   children: React.ReactNode;
@@ -21,15 +21,15 @@ const variants: Record<RevealVariant, { initial: TargetAndTransition; animate: T
     animate: { opacity: 1 },
   },
   'slide-up': {
-    initial: { opacity: 0, y: 60, scale: 0.98 },
+    initial: { opacity: 0, y: 40, scale: 0.98 },
     animate: { opacity: 1, y: 0, scale: 1 },
   },
   'slide-left': {
-    initial: { opacity: 0, x: 60, scale: 0.98 },
+    initial: { opacity: 0, x: 40, scale: 0.98 },
     animate: { opacity: 1, x: 0, scale: 1 },
   },
   'slide-right': {
-    initial: { opacity: 0, x: -60, scale: 0.98 },
+    initial: { opacity: 0, x: -40, scale: 0.98 },
     animate: { opacity: 1, x: 0, scale: 1 },
   },
   'scale': {
@@ -37,12 +37,16 @@ const variants: Record<RevealVariant, { initial: TargetAndTransition; animate: T
     animate: { opacity: 1, scale: 1, y: 0 },
   },
   'blur': {
-    initial: { opacity: 0, filter: 'blur(8px)', y: 20 },
+    initial: { opacity: 0, filter: 'blur(6px)', y: 20 },
     animate: { opacity: 1, filter: 'blur(0px)', y: 0 },
   },
   'clip': {
     initial: { opacity: 0, clipPath: 'inset(0 0 100% 0)', y: 20 },
     animate: { opacity: 1, clipPath: 'inset(0 0 0% 0)', y: 0 },
+  },
+  'cinematic': {
+    initial: { opacity: 0, y: 50, scale: 0.95, filter: 'blur(4px)' },
+    animate: { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' },
   },
 };
 

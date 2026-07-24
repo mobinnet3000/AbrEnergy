@@ -3,14 +3,14 @@ import { useEffect, useRef } from 'react';
 import { useMotionValue, useSpring } from 'framer-motion';
 
 const sectionColors: Record<string, [number, number, number]> = {
-  hero: [16, 185, 129],      // Emerald
-  stats: [59, 130, 246],     // Blue
-  services: [217, 119, 6],   // Amber
-  projects: [6, 182, 212],   // Cyan
-  calculator: [249, 115, 22],// Orange
-  articles: [168, 85, 247],  // Purple
-  contact: [244, 63, 94],    // Rose
-  footer: [255, 255, 255],   // White
+  hero: [16, 185, 129],
+  stats: [59, 130, 246],
+  services: [217, 119, 6],
+  projects: [6, 182, 212],
+  calculator: [249, 115, 22],
+  articles: [168, 85, 247],
+  contact: [244, 63, 94],
+  footer: [255, 255, 255],
 };
 
 function getSection(x: number, y: number): string {
@@ -25,8 +25,8 @@ export function CursorGlow() {
   const lightRef = useRef<HTMLDivElement>(null);
   const cursorX = useMotionValue(-1000);
   const cursorY = useMotionValue(-1000);
-  const springX = useSpring(cursorX, { stiffness: 120, damping: 22, mass: 0.4 });
-  const springY = useSpring(cursorY, { stiffness: 120, damping: 22, mass: 0.4 });
+  const springX = useSpring(cursorX, { stiffness: 80, damping: 18, mass: 0.6 });
+  const springY = useSpring(cursorY, { stiffness: 80, damping: 18, mass: 0.6 });
   const currentColor = useRef<[number, number, number]>([16, 185, 129]);
   const targetColor = useRef<[number, number, number]>([16, 185, 129]);
   const lastSection = useRef('hero');
@@ -37,30 +37,30 @@ export function CursorGlow() {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) return;
 
-    // Single RAF loop: read section once per frame, interpolate color
     const frame = () => {
       if (!glowRef.current) return;
-
-      // Smoothly interpolate RGB toward target
       const c = currentColor.current;
       const t = targetColor.current;
-      const speed = 0.04;
+      const speed = 0.06;
       c[0] += (t[0] - c[0]) * speed;
       c[1] += (t[1] - c[1]) * speed;
       c[2] += (t[2] - c[2]) * speed;
 
+      const r = Math.round(c[0]);
+      const g = Math.round(c[1]);
+      const b = Math.round(c[2]);
+
       glowRef.current.style.background = `
-        radial-gradient(600px circle at ${springX.get()}px ${springY.get()}px,
-          rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},0.20) 0%,
-          rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},0.10) 25%,
-          rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},0.05) 55%,
-          transparent 80%)
+        radial-gradient(650px circle at ${springX.get()}px ${springY.get()}px,
+          rgba(${r},${g},${b},0.15) 0%,
+          rgba(${r},${g},${b},0.08) 30%,
+          rgba(${r},${g},${b},0.03) 60%,
+          transparent 85%)
       `;
       rafId = requestAnimationFrame(frame);
     };
     let rafId = requestAnimationFrame(frame);
 
-    // Mouse handler: update position + section
     const move = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -85,7 +85,7 @@ export function CursorGlow() {
         ref={glowRef}
         className="pointer-events-none fixed inset-0 z-50 will-change-transform"
         style={{
-          background: `radial-gradient(600px circle at 50% 50%, rgba(16,185,129,0.20) 0%, rgba(16,185,129,0.10) 25%, rgba(16,185,129,0.05) 55%, transparent 80%)`,
+          background: 'radial-gradient(650px circle at 50% 50%, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.08) 30%, rgba(16,185,129,0.03) 60%, transparent 85%)',
         }}
       />
       <div
@@ -93,7 +93,7 @@ export function CursorGlow() {
         className="pointer-events-none fixed inset-0 z-40 will-change-transform"
         style={{
           mixBlendMode: 'screen',
-          background: `radial-gradient(800px circle at ${springX}px ${springY}px, rgba(255,255,255,0.06), transparent 60%)`,
+          background: `radial-gradient(900px circle at ${springX}px ${springY}px, rgba(255,255,255,0.04), transparent 60%)`,
         }}
       />
     </>
