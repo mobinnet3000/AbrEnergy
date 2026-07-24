@@ -5,85 +5,7 @@ import { ArrowRight, Calculator, Phone, Building2, Sparkles, Sun } from 'lucide-
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useSiteSettings, useFeaturedProjects, useArticles } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
-import { CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh, TextReveal, ServicesSection } from '@/components/home';
-
-/* ===== Project Card — Showcase style ===== */
-function ProjectCard({ project }: { project: Record<string, unknown> }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.7, ease: [0.25, 0.4, 0.25, 1] }}
-      className="group"
-    >
-      <Link href={`/projects/${project.slug}`}>
-        <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] bg-black/40 backdrop-blur-sm">
-          {/* Image */}
-          <div className="aspect-[4/3] relative overflow-hidden">
-            {(project as { cover_image?: string }).cover_image ? (
-              <img src={(project as { cover_image: string }).cover_image} alt={project.title as string} loading="lazy" className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" />
-            ) : (
-              <div className="flex items-center justify-center h-full"><Building2 className="h-16 w-16 text-white/10" /></div>
-            )}
-            {/* Glass overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            {/* Top badge */}
-            <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-xs font-medium text-white/80">
-              {(project as { capacity: number }).capacity} kW
-            </div>
-            <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/20 text-xs font-medium text-emerald-300">
-              {project.project_type as string}
-            </div>
-          </div>
-          
-          {/* Info */}
-          <div className="p-6">
-            <h3 className="font-heading font-semibold text-lg text-white group-hover:text-emerald-400 transition-colors duration-300">{project.title as string}</h3>
-            <p className="text-sm text-white/40 mt-1">{project.location as string}</p>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
-
-/* ===== Article Card ===== */
-function ArticleCard({ article }: { article: Record<string, unknown> }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
-      className="group"
-    >
-      <Link href={`/articles/${article.slug}`}>
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:border-white/[0.12] transition-all duration-500 h-full">
-          <div className="aspect-[16/9] relative overflow-hidden">
-            {(article as { cover_image_url?: string }).cover_image_url ? (
-              <img src={(article as { cover_image_url: string }).cover_image_url} alt={article.title as string} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-            ) : (
-              <div className="flex items-center justify-center h-full text-white/10"><Sun className="h-12 w-12" /></div>
-            )}
-          </div>
-          <div className="p-6">
-            <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-2">
-              {(article as { category_title?: string }).category_title || 'Article'}
-            </p>
-            <h3 className="font-heading font-semibold text-lg text-white leading-snug group-hover:text-emerald-400 transition-colors duration-300">
-              {article.title as string}
-            </h3>
-            <p className="text-sm text-white/40 mt-2 line-clamp-2">
-              {(article as { short_description?: string }).short_description || ''}
-            </p>
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
+import { CursorGlow, Hero3D, StatsSection, AboutSection, FloatingParticles, MouseRipple, GradientMesh, TextReveal, ServicesSection, ProjectsSection, ArticlesSection } from '@/components/home';
 
 export default function HomePage() {
   const { data: settings } = useSiteSettings();
@@ -206,42 +128,10 @@ export default function HomePage() {
       {/* ===== 4. SERVICES ===== */}
       <ServicesSection />
 
-{/* ===== 5. FEATURED PROJECTS ===== */}
-      <section data-section="projects" className="relative py-32 md:py-40 overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-950/5 to-black" />
-        
-        <div className="container-page relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
-            className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
-          >
-            <div>
-              <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">Our Work</p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Featured Projects</h2>
-            </div>
-            <Link href="/projects" className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors">
-              View All <ArrowRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
+      {/* ===== 5. FEATURED PROJECTS ===== */}
+      <ProjectsSection />
 
-          {projectsLoading ? (
-            <CardLoading count={3} />
-          ) : projectsError ? (
-            <ErrorState title="Failed to load projects" message="Could not load featured projects." />
-          ) : projects.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {projects.slice(0, 3).map((p: Record<string, unknown>) => (
-                <ProjectCard key={p.id as string} project={p} />
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      {/* ===== 6. CALCULATOR CTA ===== */}
+ {/* ===== 6. CALCULATOR CTA ===== */}
       <section data-section="calculator" className="relative py-32 md:py-40 overflow-hidden bg-black">
         {/* Animated energy background */}
         <div className="absolute inset-0">
@@ -302,42 +192,11 @@ export default function HomePage() {
         </div>
       </section>
 
+     
       {/* ===== 7. ARTICLES ===== */}
-      {articles.length > 0 && (
-        <section data-section="articles" className="relative py-32 md:py-40 overflow-hidden bg-black">
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-teal-950/5 to-black" />
-          
-          <div className="container-page relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
-              className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
-            >
-              <div>
-                <p className="text-sm font-semibold text-emerald-400 uppercase tracking-[0.2em] mb-4">Insights</p>
-                <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Latest Articles</h2>
-              </div>
-              <Link href="/articles" className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors">
-                View All <ArrowRight className="h-4 w-4" />
-              </Link>
-            </motion.div>
+      <ArticlesSection />
 
-            {articlesLoading ? (
-              <CardLoading count={3} />
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                {articles.slice(0, 3).map((a: Record<string, unknown>) => (
-                  <ArticleCard key={a.id as string} article={a} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ===== 8. CONTACT CTA ===== */}
+ {/* ===== 8. CONTACT CTA ===== */}
       <section data-section="contact" className="relative py-32 md:py-40 overflow-hidden bg-black">
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />

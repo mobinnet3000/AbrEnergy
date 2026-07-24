@@ -12,3 +12,5 @@ export { MouseRipple } from './MouseRipple';
 export { GradientMesh } from './GradientMesh';
 export { ScrollProgress } from './ScrollProgress';
 export { ServicesSection } from './ServicesSection';
+export { ProjectsSection } from './ProjectsSection';
+export { ArticlesSection } from './ArticlesSection';
