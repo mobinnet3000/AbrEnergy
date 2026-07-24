@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/footer";
 import { LocaleProvider } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { ScrollProgress } from "@/components/home";
+import { PageTransition } from "@/components/shared/page-transition";
 
 export default async function LocaleLayout({
   children,
@@ -19,7 +20,9 @@ export default async function LocaleLayout({
       <LocaleProvider locale={locale as Locale}>
         <ScrollProgress />
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <Footer />
       </LocaleProvider>
     </Providers>

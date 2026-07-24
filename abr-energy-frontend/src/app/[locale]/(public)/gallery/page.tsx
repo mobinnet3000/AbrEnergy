@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Sun, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -13,8 +13,14 @@ export default function GalleryPage() {
     queryFn: () => axiosInstance.get('/gallery/').then((r) => r.data),
   });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const images: GalleryImage[] = Array.isArray(data) ? data : (data as { results: GalleryImage[] })?.results ?? [];
+  const categories = useMemo(() => {
+    const cats = [...new Set(images.map((img) => img.category_title).filter(Boolean))];
+    return ['All', ...cats];
+  }, [images]);
+  const filtered = activeCategory === 'All' ? images : images.filter((img) => img.category_title === activeCategory);
   const openLightbox = useCallback((i: number) => setLightboxIdx(i), []);
   const closeLightbox = useCallback(() => setLightboxIdx(null), []);
 
@@ -50,8 +56,29 @@ export default function GalleryPage() {
           ) : images.length === 0 ? (
             <div className="text-center py-20 text-white/30">No images in gallery</div>
           ) : (
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-              {images.map((img, i) => (
+            <>
+              {/* Category Filters */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-300 ${
+                      activeCategory === cat
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-white/[0.03] text-white/40 border border-white/[0.06] hover:text-white/60 hover:bg-white/[0.06]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              {filtered.length === 0 && (
+                <div className="text-center py-12 text-white/30">No images in this category</div>
+              )}
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                {filtered.map((img, i) => (
                 <motion.div
                   key={img.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -69,6 +96,7 @@ export default function GalleryPage() {
                 </motion.div>
               ))}
             </div>
+            </>
           )}
         </div>
       </section>

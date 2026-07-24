@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Clock, Eye, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -27,6 +27,22 @@ export default function ArticleDetailPage() {
   if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load article</div>;
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
   if (!article) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Article not found</div>;
+
+  // Extract headings for Table of Contents
+  const headings: { id: string; text: string }[] = [];
+  const contentWithIds = article.content.replace(/<h2[^>]*>.*?<\/h2>/gi, (match, offset) => {
+    const id = `h-${offset}`;
+    const text = match.replace(/<[^>]*>/g, '');
+    headings.push({ id, text });
+    return match.replace('<h2', `<h2 id="${id}"`);
+  });
+
+  // Related articles (same category)
+  const { data: allArticles } = useQuery({ queryKey: ['articles'], queryFn: () => axiosInstance.get('/articles/').then((r) => r.data), enabled: !!article.category_title });
+  const related = useMemo(() => {
+    const items = Array.isArray((allArticles as { results?: unknown[] })?.results) ? (allArticles as { results: Record<string, unknown>[] }).results : (Array.isArray(allArticles) ? allArticles : []);
+    return items.filter((a: Record<string, unknown>) => a.category_title === article.category_title && a.slug !== article.slug).slice(0, 3);
+  }, [allArticles, article]);
 
   return (
     <div className="bg-black text-white">
@@ -69,8 +85,20 @@ export default function ArticleDetailPage() {
       {/* Content */}
       <section className="pb-20 md:pb-32">
         <div className="container-page max-w-3xl mx-auto">
+          {headings.length > 0 && (
+            <div className="mb-10 p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm">
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-3">Contents</p>
+              <nav className="space-y-1.5">
+                {headings.map((h) => (
+                  <a key={h.id} href={`#${h.id}`} className="block text-sm text-white/40 hover:text-emerald-400 transition-colors duration-300">
+                    {h.text}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          )}
           <div className="prose prose-invert prose-emerald max-w-none [&_h1]:text-white [&_h2]:text-white [&_h3]:text-white [&_h2]:font-heading [&_h3]:font-heading [&_p]:text-white/60 [&_p]:leading-relaxed [&_li]:text-white/60 [&_strong]:text-white [&_a]:text-emerald-400 [&_a:hover]:text-emerald-300 [&_blockquote]:border-emerald-500/30 [&_blockquote]:text-white/50 [&_code]:bg-white/5 [&_code]:text-emerald-300 [&_pre]:bg-white/5 [&_pre]:border [&_pre]:border-white/[0.06] [&_img]:rounded-xl">
-            <div dangerouslySetInnerHTML={{ __html: article.content }} />
+            <div dangerouslySetInnerHTML={{ __html: contentWithIds }} />
           </div>
 
           {article.tags?.length > 0 && (
@@ -93,6 +121,21 @@ export default function ArticleDetailPage() {
               </Link>
             </div>
           </ScrollReveal>
+
+          {/* Related Articles */}
+          {related.length > 0 && (
+            <div className="mt-16">
+              <h3 className="font-heading font-semibold text-lg text-white mb-6">Related Articles</h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                {related.map((r: Record<string, unknown>) => (
+                  <Link key={r.id as string} href={`/articles/${r.slug}`} className="group block p-4 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm hover:border-white/[0.12] transition-all duration-500">
+                    <p className="text-xs text-emerald-400/60 uppercase tracking-widest">{(r as { category_title?: string }).category_title || 'Article'}</p>
+                    <p className="text-sm text-white mt-1.5 line-clamp-2 group-hover:text-emerald-400 transition-colors">{r.title as string}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
