@@ -21,7 +21,7 @@ export default function ArticleDetailPage() {
     enabled: !!slug,
   });
 
-  useEffect(() => { if (error) toast.error('Failed to load article'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_articles')); }, [error]);
 
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30 });
@@ -34,9 +34,9 @@ export default function ArticleDetailPage() {
     return items.filter((a: Record<string, unknown>) => a.category_title === article?.category_title && a.slug !== article?.slug).slice(0, 3);
   }, [allArticles, article]);
 
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load article</div>;
+  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.failed_load_articles')}</div>;
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
-  if (!article) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Article not found</div>;
+  if (!article) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.article_not_found')}</div>;
 
   // Extract headings for Table of Contents
   const headings: { id: string; text: string }[] = [];
@@ -62,7 +62,7 @@ export default function ArticleDetailPage() {
           </Link>
           <div className="max-w-3xl">
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
-              {article.category_title || 'Article'}
+              {article.category_title || t('articles.label')}
             </motion.p>
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-[1.05]">
               {article.title}
@@ -70,7 +70,7 @@ export default function ArticleDetailPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="flex flex-wrap gap-4 text-xs text-white/30">
               <span className="flex items-center gap-1.5"><User className="h-3 w-3" /> {article.author_name}</span>
               <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {new Date(article.publish_date || article.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-              <span className="flex items-center gap-1.5"><Eye className="h-3 w-3" /> {article.view_count} views</span>
+              <span className="flex items-center gap-1.5"><Eye className="h-3 w-3" /> {article.view_count} {t('articles.views')}</span>
             </motion.div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function ArticleDetailPage() {
               <p className="font-heading font-semibold text-lg text-white mb-2">{t('articles.cta_title')}</p>
               <p className="text-sm text-white/35 mb-6">{t('articles.cta_desc')}</p>
               <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-                Contact Us <ArrowRight className="h-4 w-4" />
+                {t('contact.title')} <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           </ScrollReveal>
@@ -132,7 +132,7 @@ export default function ArticleDetailPage() {
               <div className="grid md:grid-cols-3 gap-4">
                 {related.map((r: Record<string, unknown>) => (
                   <Link key={r.id as string} href={`/articles/${r.slug}`} className="group block p-4 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm hover:border-white/[0.12] transition-all duration-500">
-                    <p className="text-xs text-emerald-400/60 uppercase tracking-widest">{(r as { category_title?: string }).category_title || 'Article'}</p>
+                    <p className="text-xs text-emerald-400/60 uppercase tracking-widest">{(r as { category_title?: string }).category_title || t('articles.label')}</p>
                     <p className="text-sm text-white mt-1.5 line-clamp-2 group-hover:text-emerald-400 transition-colors">{r.title as string}</p>
                   </Link>
                 ))}

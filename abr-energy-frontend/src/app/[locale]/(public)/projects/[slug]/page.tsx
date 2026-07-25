@@ -21,11 +21,11 @@ export default function ProjectDetailPage() {
     enabled: !!slug,
   });
 
-  useEffect(() => { if (error) toast.error('Failed to load project'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error]);
 
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load project</div>;
+  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.failed_load_projects')}</div>;
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
-  if (!project) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Project not found</div>;
+  if (!project) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.project_not_found')}</div>;
 
   return (
     <div className="bg-black text-white">

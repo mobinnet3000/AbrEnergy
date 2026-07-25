@@ -118,7 +118,7 @@ export default function AboutPage() {
             <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">{t('about.subtitle')}</p>
             <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-bold leading-[0.95] mb-6">
               Engineering the{' '}
-              <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">Energy Transition</span>
+              <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">{t('home.about_title_highlight')}</span>
             </h1>
             <p className="text-lg text-white/35 max-w-2xl leading-relaxed mb-10">
               {settings?.about_us?.split('.')[0] || 'From design to commissioning — we deliver turnkey solar power plants for residential, commercial, and utility-scale projects.'}
@@ -267,7 +267,7 @@ export default function AboutPage() {
             <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('about.cta_title')}</h2>
             <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('about.cta_desc')}</p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-              Contact Us <ArrowRight className="h-4 w-4" />
+              {t('contact.title')} <ArrowRight className="h-4 w-4" />
             </Link>
           </ScrollReveal>
         </div>

@@ -12,6 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared';
 import Link from 'next/link';
+import { useLocale } from '@/i18n';
 
 const locales = [
   { value: 'fa', label: 'فارسی' },
@@ -34,6 +35,7 @@ const statuses = [
 ];
 
 export default function AdminProjectNewPage() {
+  const { t } = useLocale();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -61,19 +63,19 @@ export default function AdminProjectNewPage() {
   return (
     <div>
       <Link href="/admin/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-        <ArrowLeft className="h-4 w-4" /> Back to Projects
+        <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_projects')}
       </Link>
-      <PageHeader title="New Project">
+      <PageHeader title={t('admin.new_project')}>
         <Button onClick={handleSubmit} disabled={saving}>
           {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-          Create Project
+          {t('admin.create_project')}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle>Content</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.content')}</CardTitle></CardHeader>
             <CardContent>
               <Tabs defaultValue="fa">
                 <TabsList className="mb-4">
@@ -98,10 +100,10 @@ export default function AdminProjectNewPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.details')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Project Type</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.project_type')}</label>
                 <Select value={form.project_type} onValueChange={(v) => update('project_type', v)}>
                   <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -114,11 +116,11 @@ export default function AdminProjectNewPage() {
                 <Input type="number" value={form.capacity} onChange={(e) => update('capacity', e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Location</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.location')}</label>
                 <Input value={form.location} onChange={(e) => update('location', e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.status')}</label>
                 <Select value={form.status} onValueChange={(v) => update('status', v)}>
                   <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -127,11 +129,11 @@ export default function AdminProjectNewPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Start Date</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.start_date')}</label>
                 <Input type="date" value={form.start_date} onChange={(e) => update('start_date', e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">End Date</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.end_date')}</label>
                 <Input type="date" value={form.end_date} onChange={(e) => update('end_date', e.target.value)} />
               </div>
             </CardContent>

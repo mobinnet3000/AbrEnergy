@@ -11,20 +11,22 @@ import {
 import { Button } from '@/components/ui/button';
 import { useUnreadCount } from '@/hooks/use-api';
 import { PageLoading } from '@/components/shared';
+import { useLocale } from '@/i18n';
 
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/articles', label: 'Articles', icon: FileText },
-  { href: '/admin/services', label: 'Services', icon: Wrench },
-  { href: '/admin/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/admin/contacts', label: 'Contacts', icon: MessageSquare },
-  { href: '/admin/gallery', label: 'Gallery', icon: Image },
-  { href: '/admin/activity-log', label: 'Activity Log', icon: Activity },
-  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+  { href: '/admin', labelKey: 'admin.dashboard', icon: LayoutDashboard },
+  { href: '/admin/users', labelKey: 'admin.users', icon: Users },
+  { href: '/admin/articles', labelKey: 'admin.articles', icon: FileText },
+  { href: '/admin/services', labelKey: 'admin.services', icon: Wrench },
+  { href: '/admin/projects', labelKey: 'admin.projects', icon: FolderKanban },
+  { href: '/admin/contacts', labelKey: 'admin.contacts', icon: MessageSquare },
+  { href: '/admin/gallery', labelKey: 'admin.gallery', icon: Image },
+  { href: '/admin/activity-log', labelKey: 'admin.activity_log', icon: Activity },
+  { href: '/dashboard/notifications', labelKey: 'admin.notifications', icon: Bell },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useLocale();
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -47,7 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const sidebar = (
     <div className="flex flex-col h-full">
       <div className="mb-6">
-        <h2 className="font-heading font-bold text-lg">Admin</h2>
+        <h2 className="font-heading font-bold text-lg">{t('admin.title')}</h2>
         <p className="text-sm text-muted-foreground truncate">{user.full_name}</p>
       </div>
       <nav className="flex-1 space-y-1">
@@ -61,8 +63,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           >
             <item.icon className="h-4 w-4 shrink-0" />
-            <span>{item.label}</span>
-            {item.label === 'Notifications' && unreadData?.count > 0 && (
+            <span>{t(item.labelKey)}</span>
+            {item.labelKey === 'admin.notifications' && unreadData?.count > 0 && (
               <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
                 {unreadData.count}
               </span>
@@ -71,9 +73,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ))}
       </nav>
       <div className="space-y-2 pt-4 border-t">
-        <Link href="/dashboard"><Button variant="outline" size="sm" className="w-full">User Dashboard</Button></Link>
+        <Link href="/dashboard"><Button variant="outline" size="sm" className="w-full">{t('admin.user_dashboard')}</Button></Link>
         <Button type="button" variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive" onClick={() => { logout(); window.location.href = '/'; }}>
-          <LogOut className="h-4 w-4 mr-2" /> Logout
+          <LogOut className="h-4 w-4 mr-2" /> {t('common.logout')}
         </Button>
       </div>
     </div>
@@ -102,7 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <button type="button" onClick={() => setMobileOpen(true)} className="p-1 rounded-md hover:bg-muted transition-colors" aria-label="Open menu">
             <Menu className="h-5 w-5" />
           </button>
-          <h2 className="font-heading font-semibold">Admin</h2>
+          <h2 className="font-heading font-semibold">{t('admin.title')}</h2>
         </div>
         <div className="p-4 md:p-8">{children}</div>
       </main>

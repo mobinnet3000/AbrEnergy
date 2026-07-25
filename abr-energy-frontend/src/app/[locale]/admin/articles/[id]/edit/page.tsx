@@ -17,6 +17,7 @@ import { PageHeader } from '@/components/shared';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
 import { MediaUpload } from '@/components/shared/media-upload';
 import Link from 'next/link';
+import { useLocale } from '@/i18n';
 
 const locales = [
   { value: 'fa', label: 'فارسی' },
@@ -37,6 +38,7 @@ interface FormData {
 }
 
 export default function AdminArticleEditPage() {
+  const { t } = useLocale();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -76,7 +78,7 @@ export default function AdminArticleEditPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => { if (error) toast.error('Failed to load article'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_articles')); }, [error]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
 
@@ -107,24 +109,24 @@ export default function AdminArticleEditPage() {
     }
   };
 
-  if (isLoading) return <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> Loading...</div>;
-  if (error) return <div className="py-10 text-center text-destructive">Failed to load article</div>;
-  if (!data) return <div className="py-10 text-center text-muted-foreground">Article not found</div>;
+  if (isLoading) return <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> {t('common.loading')}</div>;
+  if (error) return <div className="py-10 text-center text-destructive">{t('admin.failed_load_articles')}</div>;
+  if (!data) return <div className="py-10 text-center text-muted-foreground">{t('admin.article_not_found')}</div>;
 
   return (
     <div>
       <Link href="/admin/articles" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-        <ArrowLeft className="h-4 w-4" /> Back to Articles
+        <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_articles')}
       </Link>
-      <PageHeader title="Edit Article">
+      <PageHeader title={t('admin.edit_article')}>
         <div className="flex gap-2">
           <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
             {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Trash2 className="h-4 w-4 mr-1" />}
-            Delete
+            {t('common.delete')}
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-            Save Changes
+            {t('admin.save_changes')}
           </Button>
         </div>
       </PageHeader>
@@ -132,7 +134,7 @@ export default function AdminArticleEditPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle>Content</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.content')}</CardTitle></CardHeader>
             <CardContent>
               <Tabs defaultValue="fa">
                 <TabsList className="mb-4">
@@ -166,21 +168,21 @@ export default function AdminArticleEditPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Settings</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.settings')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.status')}</label>
                 <Select value={form.status} onValueChange={(v) => v && update('status', v)}>
                   <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="published">Published</SelectItem>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="draft">{t('admin.draft')}</SelectItem>
+                    <SelectItem value="published">{t('admin.published')}</SelectItem>
+                    <SelectItem value="scheduled">{t('admin.scheduled')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Category</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.category')}</label>
                 <CategorySelect value={form.category} onChange={(v) => v && update('category', v)} />
               </div>
               <div>
@@ -188,19 +190,19 @@ export default function AdminArticleEditPage() {
                 <Input value={form.tags} onChange={(e) => update('tags', e.target.value)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Publish Date</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.publish_date')}</label>
                 <Input type="date" value={form.publish_date} onChange={(e) => update('publish_date', e.target.value)} />
               </div>
               <div>
                 <MediaUpload
                   onUpload={(url) => update('cover_image_url', url)}
                   currentImage={form.cover_image_url}
-                  label="Cover Image"
+                  label={t('admin.cover_image')}
                 />
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox checked={form.is_featured} onCheckedChange={(v) => update('is_featured', v)} />
-                Featured
+                {t('admin.featured')}
               </label>
             </CardContent>
           </Card>

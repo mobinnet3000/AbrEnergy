@@ -5,6 +5,7 @@ import axiosInstance from '@/api/axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return bytes + ' B';
@@ -13,6 +14,7 @@ function formatSize(bytes: number) {
 }
 
 export default function AdminMediaPage() {
+  const { t } = useLocale();
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-media'],
     queryFn: async () => {
@@ -20,19 +22,19 @@ export default function AdminMediaPage() {
       return res.data;
     },
   });
-  useEffect(() => { if (error) toast.error('Failed to load media'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load')); }, [error]);
   const items = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Media</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('admin.media')}</h1>
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
+        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />{t('common.loading')}</div>
       ) : items.length === 0 ? (
-        <p className="text-center py-10 text-muted-foreground">No media found</p>
+        <p className="text-center py-10 text-muted-foreground">{t('admin.no_media')}</p>
       ) : (
         <Card>
-          <CardHeader><CardTitle>All Media ({items.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.all_media')} ({items.length})</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {items.map((item: Record<string, unknown>) => (
@@ -41,7 +43,7 @@ export default function AdminMediaPage() {
                     {(item as { file?: string }).file ? (
                       <img src={(item as { file: string }).file} alt={item.name as string} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-muted-foreground text-xs">No preview</span>
+                      <span className="text-muted-foreground text-xs">{t('admin.no_preview')}</span>
                     )}
                   </div>
                   <p className="font-medium text-sm truncate">{item.name as string}</p>

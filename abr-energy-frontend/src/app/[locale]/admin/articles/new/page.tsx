@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 const LANGUAGES = [
   { code: 'fa', label: 'فارسی' },
@@ -21,6 +22,7 @@ const LANGUAGES = [
 const emptyTrans = { title: '', slug: '', short_description: '', content: '' };
 
 export default function NewArticlePage() {
+  const { t } = useLocale();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [translations, setTranslations] = useState({
@@ -77,7 +79,7 @@ export default function NewArticlePage() {
   const renderLangTab = (code: string, label: string) => (
     <TabsContent key={code} value={code} className="space-y-4">
       <div>
-        <label className="text-sm font-medium mb-1 block">Title</label>
+        <label className="text-sm font-medium mb-1 block">{t('admin.title_label')}</label>
         <input
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           value={(translations as Record<string, Record<string, string>>)[code].title}
@@ -86,7 +88,7 @@ export default function NewArticlePage() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-1 block">Slug</label>
+        <label className="text-sm font-medium mb-1 block">{t('admin.slug')}</label>
         <input
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           value={(translations as Record<string, Record<string, string>>)[code].slug}
@@ -95,7 +97,7 @@ export default function NewArticlePage() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-1 block">Short Description</label>
+        <label className="text-sm font-medium mb-1 block">{t('admin.short_description')}</label>
         <textarea
           className="flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           value={(translations as Record<string, Record<string, string>>)[code].short_description}
@@ -104,7 +106,7 @@ export default function NewArticlePage() {
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-1 block">Content</label>
+        <label className="text-sm font-medium mb-1 block">{t('admin.content')}</label>
         <RichTextEditor
           content={(translations as Record<string, Record<string, string>>)[code].content}
           onChange={(html) => handleTransChange(code, 'content', html)}
@@ -118,15 +120,15 @@ export default function NewArticlePage() {
   return (
     <div>
       <Link href="/admin/articles" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
-        <ArrowLeft className="h-4 w-4 ms-0 me-2" /> Back to Articles
+        <ArrowLeft className="h-4 w-4 ms-0 me-2" /> {t('admin.back_to_articles')}
       </Link>
-      <h1 className="text-3xl font-bold mb-8">Create Article</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('admin.create_article')}</h1>
 
       <form onSubmit={onSubmit} className="space-y-6">
         {/* Translations */}
         <Card>
           <CardHeader>
-            <CardTitle>Translations</CardTitle>
+            <CardTitle>{t('admin.translations')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="fa">
@@ -147,40 +149,40 @@ export default function NewArticlePage() {
 
         {/* Settings */}
         <Card>
-          <CardHeader><CardTitle>Settings</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.settings')}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.status')}</label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="scheduled">Scheduled</option>
+                  <option value="draft">{t('admin.draft')}</option>
+                  <option value="published">{t('admin.published')}</option>
+                  <option value="scheduled">{t('admin.scheduled')}</option>
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Category ID</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.category_id')}</label>
                 <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category UUID" />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Tags (comma)</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.tags')} (comma)</label>
                 <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="solar, energy" />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Publish Date</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.publish_date')}</label>
                 <input type="date" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} />
               </div>
               <div>
                 <MediaUpload
                   onUpload={(url) => setCoverImage(url)}
                   currentImage={coverImage}
-                  label="Cover Image"
+                  label={t('admin.cover_image')}
                 />
               </div>
               <div className="flex items-end pb-2">
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="h-4 w-4" />
-                  Featured article
+                  {t('admin.featured_article')}
                 </label>
               </div>
             </div>
@@ -190,10 +192,10 @@ export default function NewArticlePage() {
         <div className="flex gap-4">
           <Button type="submit" disabled={submitting}>
             {submitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : null}
-            Create Article
+            {t('admin.create_article')}
           </Button>
           <Link href="/admin/articles" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
-            Cancel
+            {t('common.cancel')}
           </Link>
         </div>
       </form>

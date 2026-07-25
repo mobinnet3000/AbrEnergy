@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 export default function AdminNotificationsPage() {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-notifications'],
@@ -18,7 +20,7 @@ export default function AdminNotificationsPage() {
       return res.data;
     },
   });
-  useEffect(() => { if (error) toast.error('Failed to load notifications'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load')); }, [error]);
 
   const markAllMutation = useMutation({
     mutationFn: async () => {
@@ -38,16 +40,16 @@ export default function AdminNotificationsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Notifications</h1>
+        <h1 className="text-3xl font-bold">{t('admin.notifications')}</h1>
         <Button type="button" variant="outline" size="sm" onClick={() => markAllMutation.mutate()} disabled={markAllMutation.isPending}>
           {markAllMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-          Mark All Read
+          {t('admin.mark_all_read')}
         </Button>
       </div>
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
+        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />{t('common.loading')}</div>
       ) : items.length === 0 ? (
-        <p className="text-center py-10 text-muted-foreground">No notifications found</p>
+        <p className="text-center py-10 text-muted-foreground">{t('admin.no_notifications')}</p>
       ) : (
         <div className="space-y-3">
           {items.map((item: Record<string, unknown>) => (

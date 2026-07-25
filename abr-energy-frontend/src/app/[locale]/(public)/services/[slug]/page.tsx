@@ -34,11 +34,11 @@ export default function ServiceDetailPage() {
     enabled: !!slug,
   });
 
-  useEffect(() => { if (error) toast.error('Failed to load service'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_services')); }, [error]);
 
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Failed to load service</div>;
+  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.failed_load_services')}</div>;
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
-  if (!service) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">Service not found</div>;
+  if (!service) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.service_not_found')}</div>;
 
   return (
     <div className="bg-black text-white">
@@ -52,7 +52,7 @@ export default function ServiceDetailPage() {
           </Link>
           <div className="max-w-3xl">
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
-              {service.category_title || 'Service'}
+              {service.category_title || t('services.title')}
             </motion.p>
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="font-heading text-4xl md:text-6xl font-bold text-white mb-6">
               {service.title}
@@ -62,7 +62,7 @@ export default function ServiceDetailPage() {
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
               <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-                Get a Quote <ArrowRight className="h-4 w-4" />
+                {t('services.get_quote')} <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
           </div>
@@ -160,7 +160,7 @@ export default function ServiceDetailPage() {
             <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('services.cta_title')}</h2>
             <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('services.cta_desc')}</p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-              Contact Us <ArrowRight className="h-4 w-4" />
+              {t('contact.title')} <ArrowRight className="h-4 w-4" />
             </Link>
           </ScrollReveal>
         </div>

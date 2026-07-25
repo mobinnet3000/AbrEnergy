@@ -77,8 +77,7 @@ export function Header() {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <div className="font-heading font-bold text-xl tracking-tight">
-              <span className={scrolled ? 'text-foreground' : 'text-white'}>Abr</span>
-              <span className={cn('transition-colors duration-500', scrolled ? 'text-muted-foreground' : 'text-white/50')}>Energy</span>
+              <span className={cn('transition-colors duration-500', scrolled ? 'text-foreground' : 'text-white')}>{t('common.site_name')}</span>
             </div>
           </Link>
 

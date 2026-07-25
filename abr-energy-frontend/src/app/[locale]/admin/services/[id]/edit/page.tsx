@@ -14,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
 import Link from 'next/link';
+import { useLocale } from '@/i18n';
 
 const locales = [
   { value: 'fa', label: 'فارسی' },
@@ -27,6 +28,7 @@ const statuses = [
 ];
 
 export default function AdminServiceEditPage() {
+  const { t } = useLocale();
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -65,7 +67,7 @@ export default function AdminServiceEditPage() {
   }, [data, edits]);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (error) toast.error('Failed to load service'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_services')); }, [error]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
 
@@ -86,26 +88,26 @@ export default function AdminServiceEditPage() {
     }
   };
 
-  if (isLoading) return <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> Loading...</div>;
-  if (error) return <div className="py-10 text-center text-destructive">Failed to load service</div>;
-  if (!data) return <div className="py-10 text-center text-muted-foreground">Service not found</div>;
+  if (isLoading) return <div className="py-10 text-center text-muted-foreground flex items-center justify-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /> {t('common.loading')}</div>;
+  if (error) return <div className="py-10 text-center text-destructive">{t('admin.failed_load_services')}</div>;
+  if (!data) return <div className="py-10 text-center text-muted-foreground">{t('admin.service_not_found')}</div>;
 
   return (
     <div>
       <Link href="/admin/services" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-        <ArrowLeft className="h-4 w-4" /> Back to Services
+        <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_services')}
       </Link>
-      <PageHeader title="Edit Service">
+      <PageHeader title={t('admin.edit_service')}>
         <Button onClick={handleSave} disabled={saving}>
           {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
-          Save Changes
+          {t('admin.save_changes')}
         </Button>
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader><CardTitle>Content</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.content')}</CardTitle></CardHeader>
             <CardContent>
               <Tabs defaultValue="fa">
                 <TabsList className="mb-4">
@@ -134,22 +136,22 @@ export default function AdminServiceEditPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Settings</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('admin.settings')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Icon</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.icon')}</label>
                 <Input value={form.icon} onChange={(e) => update('icon', e.target.value)} placeholder="e.g. solar-panel" />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Category</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.category')}</label>
                 <ServiceCategorySelect value={form.category} onChange={(v) => update('category', v)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Order</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.order')}</label>
                 <Input type="number" value={form.order} onChange={(e) => update('order', parseInt(e.target.value) || 0)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.status')}</label>
                 <Select value={form.status} onValueChange={(v) => v && update('status', v)}>
                   <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -163,7 +165,7 @@ export default function AdminServiceEditPage() {
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox checked={form.is_featured} onCheckedChange={(v) => update('is_featured', v)} />
-                Featured
+                {t('admin.featured')}
               </label>
             </CardContent>
           </Card>

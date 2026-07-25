@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { PageHeader, TableLoading } from '@/components/shared';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 const locales = [
   { code: 'fa', label: 'FA', color: 'text-green-600' },
@@ -17,6 +18,7 @@ const locales = [
 ];
 
 export default function AdminProjectsPage() {
+  const { t } = useLocale();
   const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-projects'],
@@ -26,7 +28,7 @@ export default function AdminProjectsPage() {
     },
   });
 
-  useEffect(() => { if (error) toast.error('Failed to load projects'); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error]);
 
   const projects = Array.isArray(data?.results) ? data.results : [];
 
@@ -43,40 +45,40 @@ export default function AdminProjectsPage() {
 
   return (
     <div>
-      <PageHeader title="Projects" description="Manage CMS projects and multilingual content">
+      <PageHeader title={t('admin.projects')} description="Manage CMS projects and multilingual content">
         <Link href="/admin/projects/new">
-          <Button><Plus className="h-4 w-4 mr-1" /> Create Project</Button>
+          <Button><Plus className="h-4 w-4 mr-1" /> {t('admin.create_project')}</Button>
         </Link>
       </PageHeader>
 
       {isLoading ? (
         <TableLoading rows={5} />
       ) : error ? (
-        <div className="text-center py-12 text-destructive">Failed to load projects</div>
+        <div className="text-center py-12 text-destructive">{t('admin.failed_load_projects')}</div>
       ) : projects.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <p>No projects yet.</p>
+            <p>{t('admin.no_projects')}</p>
             <Link href="/admin/projects/new">
-              <Button variant="outline" className="mt-4">Create your first project</Button>
+              <Button variant="outline" className="mt-4">{t('admin.create_first_project')}</Button>
             </Link>
           </CardContent>
         </Card>
       ) : (
         <Card>
-          <CardHeader><CardTitle>All Projects ({projects.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.all_projects')} ({projects.length})</CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/30 text-left">
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Title</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Type</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Location</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Capacity</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Status</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Languages</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.title_label')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.project_type')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.location')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.capacity')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.status')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.languages')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>

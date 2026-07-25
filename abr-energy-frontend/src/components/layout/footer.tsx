@@ -68,7 +68,7 @@ export function Footer() {
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/10">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-heading font-bold text-lg text-white/90">AbrEnergy</span>
+                <span className="font-heading font-bold text-lg text-white/90">{t('common.site_name')}</span>
               </Link>
               <p className="text-sm text-white/25 leading-relaxed mb-6 max-w-xs">
                 {t('common.site_slogan')}

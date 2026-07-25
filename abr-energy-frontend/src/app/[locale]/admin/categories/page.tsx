@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 export default function AdminCategoriesPage() {
+  const { t } = useLocale();
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-categories'],
     queryFn: async () => {
@@ -20,18 +22,18 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Categories</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('admin.categories')}</h1>
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />Loading...</div>
+        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mr-2" />{t('common.loading')}</div>
       ) : items.length === 0 ? (
-        <p className="text-center py-10 text-muted-foreground">No categories found</p>
+        <p className="text-center py-10 text-muted-foreground">{t('admin.no_categories')}</p>
       ) : (
         <Card>
-          <CardHeader><CardTitle>All Categories ({items.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.all_categories')} ({items.length})</CardTitle></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead><tr className="border-b text-left"><th className="py-3 px-2">Title</th><th className="py-3 px-2">Slug</th><th className="py-3 px-2">Parent</th><th className="py-3 px-2">Status</th></tr></thead>
+                <thead><tr className="border-b text-left"><th className="py-3 px-2">{t('admin.title_label')}</th><th className="py-3 px-2">{t('admin.slug')}</th><th className="py-3 px-2">Parent</th><th className="py-3 px-2">{t('admin.status')}</th></tr></thead>
                 <tbody>
                   {items.map((item: Record<string, unknown>) => (
                     <tr key={item.id as string} className="border-b">
@@ -40,7 +42,7 @@ export default function AdminCategoriesPage() {
                       <td className="py-3 px-2 text-muted-foreground">{(item as { parent?: string | null }).parent || '-'}</td>
                       <td className="py-3 px-2">
                         <Badge variant={(item as { is_active: boolean }).is_active ? 'default' : 'secondary'}>
-                          {(item as { is_active: boolean }).is_active ? 'Active' : 'Inactive'}
+                          {t(item.is_active ? 'admin.published' : 'admin.draft')}
                         </Badge>
                       </td>
                     </tr>

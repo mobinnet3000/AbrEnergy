@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useArticles } from '@/hooks/use-api';
 import { PageHeader, TableLoading } from '@/components/shared';
 import { Plus, Pencil, ExternalLink } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 const locales = [
   { code: 'fa', label: 'FA', color: 'text-green-600' },
@@ -14,51 +15,52 @@ const locales = [
 ];
 
 export default function AdminArticlesPage() {
+  const { t } = useLocale();
   const { data, isLoading, error } = useArticles();
   const articles = Array.isArray(data?.results) ? data.results : [];
 
   return (
     <div>
-      <PageHeader title="Articles" description="Manage CMS articles and multilingual content">
+      <PageHeader title={t('admin.articles')} description="Manage CMS articles and multilingual content">
         <Link
           href="/admin/articles/new"
           className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2"
         >
-          <Plus className="h-4 w-4 mr-1" /> Create Article
+          <Plus className="h-4 w-4 mr-1" /> {t('admin.create_article')}
         </Link>
       </PageHeader>
 
       {isLoading ? (
         <TableLoading rows={5} />
       ) : error ? (
-        <div className="text-center py-12 text-destructive">Failed to load articles</div>
+        <div className="text-center py-12 text-destructive">{t('admin.failed_load_articles')}</div>
       ) : articles.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            <p>No articles yet.</p>
+            <p>{t('admin.no_articles')}</p>
             <Link
               href="/admin/articles/new"
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 mt-4"
             >
-              Create your first article
+              {t('admin.create_first_article')}
             </Link>
           </CardContent>
         </Card>
       ) : (
         <Card>
-          <CardHeader><CardTitle>All Articles ({articles.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.all_articles')} ({articles.length})</CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/30 text-left">
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Title</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Status</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Languages</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Category</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Views</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Created</th>
-                    <th className="py-3 px-4 font-medium text-muted-foreground">Actions</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.title_label')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.status')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.languages')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.category')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.views')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.created')}</th>
+                    <th className="py-3 px-4 font-medium text-muted-foreground">{t('admin.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,15 +1,17 @@
 'use client';
 import { useActivityLog } from '@/hooks/use-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLocale } from '@/i18n';
 
 export default function AdminActivityLogPage() {
+  const { t } = useLocale();
   const { data, isLoading } = useActivityLog();
   const logs = Array.isArray(data?.results) ? data.results : [];
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Activity Log</h1>
-      {isLoading ? <div className="text-center py-10 text-muted-foreground">Loading...</div> : (
+      <h1 className="text-3xl font-bold mb-8">{t('admin.activity_log')}</h1>
+      {isLoading ? <div className="text-center py-10 text-muted-foreground">{t('common.loading')}</div> : (
         <Card>
           <CardHeader><CardTitle>Recent Activities ({logs.length})</CardTitle></CardHeader>
           <CardContent>
