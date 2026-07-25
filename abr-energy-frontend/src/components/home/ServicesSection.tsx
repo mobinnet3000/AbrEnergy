@@ -13,6 +13,7 @@ function ServiceCard({ icon: Icon, title, desc, href, i }: {
 }) {
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const { t } = useLocale();
 
   return (
     <motion.div
@@ -51,7 +52,7 @@ function ServiceCard({ icon: Icon, title, desc, href, i }: {
             <p className="relative text-sm text-white/40 leading-relaxed">{desc}</p>
             
             <span className="relative inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400/70 mt-5 group-hover:text-emerald-400 group-hover:gap-2.5 transition-all duration-300">
-              Explore <ArrowRight className="h-3.5 w-3.5" />
+              {t('services.explore')} <ArrowRight className="h-3.5 w-3.5" />
             </span>
           </div>
         </Link>
@@ -87,8 +88,8 @@ export function ServicesSection() {
           className="text-center mb-16"
         >
           <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('services.what_we_do')}</p>
-          <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Our Services</h2>
-          <p className="text-white/35 text-lg max-w-2xl mx-auto">Comprehensive solar energy solutions from design to commissioning</p>
+          <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('home.services_title')}</h2>
+          <p className="text-white/35 text-lg max-w-2xl mx-auto">{t('home.services_subtitle')}</p>
         </motion.div>
 
         {servicesLoading ? (

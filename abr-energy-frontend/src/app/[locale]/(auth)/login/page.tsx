@@ -13,6 +13,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { useAuthStore } from '@/stores/auth-store';
+import { useLocale } from '@/i18n';
 
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 type LoginForm = z.infer<typeof loginSchema>;
@@ -20,6 +21,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const { t } = useLocale();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<LoginForm>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } });
@@ -30,11 +32,11 @@ export default function LoginPage() {
       const res = await axiosInstance.post('/auth/login/', data);
       const { access, refresh, user } = res.data;
       setAuth(user, { access, refresh });
-      toast.success('Welcome back!');
+      toast.success(t('auth.login_success') || 'Welcome back!');
       if (user.role === 'super_admin' || user.role === 'website_admin') router.push('/admin');
       else router.push('/dashboard');
     } catch {
-      toast.error('Invalid email or password');
+      toast.error(t('auth.login_error'));
     } finally {
       setLoading(false);
     }
@@ -45,23 +47,23 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Sun className="h-12 w-12 mx-auto mb-2 text-green-600" />
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your AbrEnergy account</CardDescription>
+          <CardTitle className="text-2xl">{t('auth.login_title')}</CardTitle>
+          <CardDescription>{t('auth.login_subtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="your@email.com" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('auth.email_label')}</FormLabel><FormControl><Input type="email" placeholder="your@email.com" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>{t('auth.password_label')}</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <Button type="submit" className="w-full" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : 'Sign In'}</Button>
+              <Button type="submit" className="w-full" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : t('auth.login_cta')}</Button>
             </form>
           </Form>
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don&apos;t have an account? <Link href="/register" className="text-green-600 hover:underline">Register</Link>
+            {t('auth.no_account')} <Link href="/register" className="text-green-600 hover:underline">{t('common.register')}</Link>
           </p>
         </CardContent>
       </Card>

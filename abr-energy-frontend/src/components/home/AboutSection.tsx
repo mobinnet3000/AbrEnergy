@@ -158,11 +158,11 @@ export function AboutSection() {
             >
               <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-5">{subtitle}</p>
               <h2 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[0.95] mb-6">
-                Engineering the{' '}
-                <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">Energy Transition</span>
+                {t('home.about_title_prefix')}{' '}
+                <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">{t('home.about_title_highlight')}</span>
               </h2>
               <p className="text-base md:text-lg text-white/35 max-w-xl leading-relaxed mb-12">
-                {settings?.about_us || 'AbrEnergy is a leading solar energy company specializing in the design, engineering, and construction of solar power plants. We provide end-to-end solutions for residential, commercial, and utility-scale projects.'}
+                {settings?.about_us || t('home.about_text')}
               </p>
             </motion.div>
 

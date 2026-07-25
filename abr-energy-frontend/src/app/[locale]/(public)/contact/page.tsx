@@ -25,25 +25,25 @@ const contactSchema = z.object({
 });
 type ContactForm = z.infer<typeof contactSchema>;
 
-const contactOptions = [
-  { icon: Phone, title: 'Phone', value: '+98 21 1234 5678', desc: 'Sat–Thu, 8:00–17:00' },
-  { icon: Mail, title: 'Email', value: 'info@abrenv.com', desc: 'We reply within 24 hours' },
-  { icon: MapPin, title: 'Address', value: 'Tehran, Iran', desc: 'Visit our office' },
-  { icon: Clock, title: 'Working Hours', value: 'Sat–Thu 8:00–17:00', desc: 'IRST (UTC+3:30)' },
-];
-
 export default function ContactPage() {
   const { t } = useLocale();
   const [loading, setLoading] = useState(false);
+
+  const contactOptions = [
+    { icon: Phone, title: t('contact.phone_label'), value: '+98 21 1234 5678', desc: 'Sat–Thu, 8:00–17:00' },
+    { icon: Mail, title: t('contact.email_label'), value: 'info@abrenv.com', desc: t('contact.reply_time') },
+    { icon: MapPin, title: t('contact.address_label'), value: 'Tehran, Iran', desc: 'Visit our office' },
+    { icon: Clock, title: t('contact.working_hours'), value: 'Sat–Thu 8:00–17:00', desc: 'IRST (UTC+3:30)' },
+  ];
   const form = useForm<ContactForm>({ resolver: zodResolver(contactSchema), defaultValues: { request_type: 'contact' } });
 
   const onSubmit = async (data: ContactForm) => {
     setLoading(true);
     try {
       await axiosInstance.post('/contact/', data);
-      toast.success('Message sent! We will contact you soon.');
+      toast.success(t('contact.success'));
       form.reset();
-    } catch { toast.error('Failed to send message'); }
+    } catch { toast.error(t('contact.error')); }
     finally { setLoading(false); }
   };
 
@@ -55,9 +55,9 @@ export default function ContactPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-emerald-500/5 rounded-full blur-[150px]" />
         <div className="container-page relative z-10">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">{t('contact.get_in_touch')}</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">Contact Us</motion.h1>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">{t('contact.title')}</motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-white/35 text-base max-w-lg">
-            Get in touch for inquiries, consultations, or project requests
+            {t('contact.subtitle')}
           </motion.p>
         </div>
       </section>
@@ -92,25 +92,25 @@ export default function ContactPage() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="full_name" render={({ field }) => (
-                          <FormItem><FormLabel className="text-xs text-white/50">Full Name</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="text-xs text-white/50">{t('contact.full_name')}</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="email" render={({ field }) => (
-                          <FormItem><FormLabel className="text-xs text-white/50">Email</FormLabel><FormControl><Input type="email" className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="text-xs text-white/50">{t('contact.email')}</FormLabel><FormControl><Input type="email" className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="phone" render={({ field }) => (
-                          <FormItem><FormLabel className="text-xs text-white/50">Phone</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="text-xs text-white/50">{t('contact.phone')}</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="request_type" render={({ field }) => (
-                          <FormItem><FormLabel className="text-xs text-white/50">Request Type</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="bg-white/[0.03] border-white/[0.08] text-white"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="contact">General Inquiry</SelectItem><SelectItem value="consultation">Consultation</SelectItem><SelectItem value="design_request">Design Request</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                          <FormItem><FormLabel className="text-xs text-white/50">{t('contact.request_type')}</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="bg-white/[0.03] border-white/[0.08] text-white"><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="contact">{t('contact.general')}</SelectItem><SelectItem value="consultation">{t('contact.consultation')}</SelectItem><SelectItem value="design_request">{t('contact.design_request')}</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )} />
                       </div>
                       <FormField control={form.control} name="subject" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs text-white/50">Subject</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs text-white/50">{t('contact.subject')}</FormLabel><FormControl><Input className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <FormField control={form.control} name="message" render={({ field }) => (
-                        <FormItem><FormLabel className="text-xs text-white/50">Message</FormLabel><FormControl><Textarea rows={5} className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs text-white/50">{t('contact.message')}</FormLabel><FormControl><Textarea rows={5} className="bg-white/[0.03] border-white/[0.08] text-white" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                       <Button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-400 text-white active:scale-[0.97] transition-all h-11" disabled={loading}>
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> {t('contact.send')}</>}
@@ -135,10 +135,10 @@ export default function ContactPage() {
           </ScrollReveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
             {[
-              { icon: Shield, value: '25 MW+', label: 'Installed Capacity' },
-              { icon: Sparkles, value: '150+', label: 'Completed Projects' },
-              { icon: Clock, value: '10+', label: 'Years Experience' },
-              { icon: MapPin, value: '98%', label: 'Client Satisfaction' },
+              { icon: Shield, value: '25 MW+', label: t('home.stats_capacity') },
+              { icon: Sparkles, value: '150+', label: t('home.stats_projects') },
+              { icon: Clock, value: '10+', label: t('home.stats_experience') },
+              { icon: MapPin, value: '98%', label: t('home.stats_satisfaction') },
             ].map((s, i) => (
               <ScrollReveal key={i} variant="slide-up" delay={i * 0.08}>
                 <div className="p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] text-center">

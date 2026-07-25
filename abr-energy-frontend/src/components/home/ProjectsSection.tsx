@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Building2, Sun } from 'lucide-react';
 import { useFeaturedProjects } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
+import { useLocale } from '@/i18n';
 
 function ProjectCard({ project }: { project: Record<string, unknown> }) {
   return (
@@ -41,6 +42,7 @@ function ProjectCard({ project }: { project: Record<string, unknown> }) {
 }
 
 export function ProjectsSection() {
+  const { t } = useLocale();
   const { data: featured, isLoading, error } = useFeaturedProjects();
   const projects = Array.isArray(featured?.results) ? featured.results : (Array.isArray(featured) ? featured : []);
 
@@ -57,18 +59,18 @@ export function ProjectsSection() {
           className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
         >
           <div>
-            <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">Our Work</p>
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Featured Projects</h2>
+            <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('home.projects_subtitle_prefix')}</p>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">{t('home.projects_title')}</h2>
           </div>
           <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors duration-300">
-            View All <ArrowRight className="h-4 w-4" />
+            {t('common.view_all')} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
         {isLoading ? (
           <CardLoading count={3} />
         ) : error ? (
-          <ErrorState title="Failed to load projects" message="Could not load featured projects." />
+          <ErrorState title={t('common.error')} message={t('common.no_data')} />
         ) : projects.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {projects.slice(0, 3).map((p: Record<string, unknown>) => (

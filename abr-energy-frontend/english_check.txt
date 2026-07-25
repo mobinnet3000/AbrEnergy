@@ -1,0 +1,231 @@
+src\components/home/HeroSection.tsx:94: View Projects
+src\components/home/AboutSection.tsx:162: Energy Transition
+src\components/home/ServicesSection.tsx:90: Our Services
+src\components/home/ServicesSection.tsx:91: Comprehensive solar energy solutions from design to commissioning
+src\components/home/ProjectsSection.tsx:60: Our Work
+src\components/home/ProjectsSection.tsx:61: Featured Projects
+src\components/layout/footer.tsx:71: AbrEnergy
+src\components/layout/header.tsx:81: Energy
+src\app\[locale]\(auth)\forgot-password\page.tsx:42: Forgot Password
+src\app\[locale]\(auth)\forgot-password\page.tsx:43: Enter your email to receive a reset link
+src\app\[locale]\(auth)\forgot-password\page.tsx:49: Back to Login
+src\app\[locale]\(auth)\forgot-password\page.tsx:55: Email
+src\app\[locale]\(auth)\forgot-password\page.tsx:65: Login
+src\app\[locale]\(auth)\login\page.tsx:48: Welcome Back
+src\app\[locale]\(auth)\login\page.tsx:49: Sign in to your AbrEnergy account
+src\app\[locale]\(auth)\login\page.tsx:55: Email
+src\app\[locale]\(auth)\login\page.tsx:58: Password
+src\app\[locale]\(auth)\login\page.tsx:64: Register
+src\app\[locale]\(auth)\register\page.tsx:51: Create Account
+src\app\[locale]\(auth)\register\page.tsx:52: Join AbrEnergy today
+src\app\[locale]\(auth)\register\page.tsx:58: Full Name
+src\app\[locale]\(auth)\register\page.tsx:61: Email
+src\app\[locale]\(auth)\register\page.tsx:64: Password
+src\app\[locale]\(auth)\register\page.tsx:67: Confirm Password
+src\app\[locale]\(auth)\register\page.tsx:72: Sign In
+src\app\[locale]\(public)\about\page.tsx:121: Energy Transition
+src\app\[locale]\(public)\articles\[slug]\page.tsx:37: Failed to load article
+src\app\[locale]\(public)\articles\[slug]\page.tsx:39: Article not found
+src\app\[locale]\(public)\calculator\page.tsx:66: Calculator
+src\app\[locale]\(public)\calculator\page.tsx:86: City
+src\app\[locale]\(public)\calculator\page.tsx:92: Battery Type
+src\app\[locale]\(public)\calculator\page.tsx:92: Lithium
+src\app\[locale]\(public)\calculator\page.tsx:92: Lead Acid
+src\app\[locale]\(public)\calculator\page.tsx:92: Tubular
+src\app\[locale]\(public)\calculator\page.tsx:95: System Type
+src\app\[locale]\(public)\calculator\page.tsx:95: Off Grid
+src\app\[locale]\(public)\calculator\page.tsx:95: On Grid
+src\app\[locale]\(public)\calculator\page.tsx:95: Hybrid
+src\app\[locale]\(public)\contact\page.tsx:58: Contact Us
+src\app\[locale]\(public)\contact\page.tsx:95: Full Name
+src\app\[locale]\(public)\contact\page.tsx:98: Email
+src\app\[locale]\(public)\contact\page.tsx:103: Phone
+src\app\[locale]\(public)\contact\page.tsx:106: Request Type
+src\app\[locale]\(public)\contact\page.tsx:106: General Inquiry
+src\app\[locale]\(public)\contact\page.tsx:106: Consultation
+src\app\[locale]\(public)\contact\page.tsx:106: Design Request
+src\app\[locale]\(public)\contact\page.tsx:110: Subject
+src\app\[locale]\(public)\contact\page.tsx:113: Message
+src\app\[locale]\(public)\gallery\page.tsx:49: Browse our project installations and solar energy solutions
+src\app\[locale]\(public)\projects\[slug]\page.tsx:26: Failed to load project
+src\app\[locale]\(public)\projects\[slug]\page.tsx:28: Project not found
+src\app\[locale]\(public)\services\[slug]\page.tsx:39: Failed to load service
+src\app\[locale]\(public)\services\[slug]\page.tsx:41: Service not found
+src\app\[locale]\admin\layout.tsx:50: Admin
+src\app\[locale]\admin\layout.tsx:74: User Dashboard
+src\app\[locale]\admin\layout.tsx:105: Admin
+src\app\[locale]\admin\page.tsx:9: No data
+src\app\[locale]\admin\page.tsx:24: Admin Dashboard
+src\app\[locale]\admin\activity-log\page.tsx:11: Activity Log
+src\app\[locale]\admin\articles\page.tsx:34: Failed to load articles
+src\app\[locale]\admin\articles\page.tsx:55: Title
+src\app\[locale]\admin\articles\page.tsx:56: Status
+src\app\[locale]\admin\articles\page.tsx:57: Languages
+src\app\[locale]\admin\articles\page.tsx:58: Category
+src\app\[locale]\admin\articles\page.tsx:59: Views
+src\app\[locale]\admin\articles\page.tsx:60: Created
+src\app\[locale]\admin\articles\page.tsx:61: Actions
+src\app\[locale]\admin\articles\new\page.tsx:80: Title
+src\app\[locale]\admin\articles\new\page.tsx:89: Slug
+src\app\[locale]\admin\articles\new\page.tsx:98: Short Description
+src\app\[locale]\admin\articles\new\page.tsx:107: Content
+src\app\[locale]\admin\articles\new\page.tsx:123: Create Article
+src\app\[locale]\admin\articles\new\page.tsx:129: Translations
+src\app\[locale]\admin\articles\new\page.tsx:150: Settings
+src\app\[locale]\admin\articles\new\page.tsx:154: Status
+src\app\[locale]\admin\articles\new\page.tsx:156: Draft
+src\app\[locale]\admin\articles\new\page.tsx:157: Published
+src\app\[locale]\admin\articles\new\page.tsx:158: Scheduled
+src\app\[locale]\admin\articles\new\page.tsx:162: Category ID
+src\app\[locale]\admin\articles\new\page.tsx:170: Publish Date
+src\app\[locale]\admin\articles\[id]\page.tsx:26: Failed to load article
+src\app\[locale]\admin\articles\[id]\page.tsx:28: Article not found
+src\app\[locale]\admin\articles\[id]\page.tsx:37: Article Detail
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:111: Failed to load article
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:112: Article not found
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:135: Content
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:169: Settings
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:172: Status
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:176: Draft
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:177: Published
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:178: Scheduled
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:183: Category
+src\app\[locale]\admin\articles\[id]\edit\page.tsx:191: Publish Date
+src\app\[locale]\admin\categories\page.tsx:23: Categories
+src\app\[locale]\admin\categories\page.tsx:27: No categories found
+src\app\[locale]\admin\categories\page.tsx:34: Title
+src\app\[locale]\admin\categories\page.tsx:34: Slug
+src\app\[locale]\admin\categories\page.tsx:34: Parent
+src\app\[locale]\admin\categories\page.tsx:34: Status
+src\app\[locale]\admin\contacts\page.tsx:12: Contact Requests
+src\app\[locale]\admin\contacts\page.tsx:19: Name
+src\app\[locale]\admin\contacts\page.tsx:19: Email
+src\app\[locale]\admin\contacts\page.tsx:19: Type
+src\app\[locale]\admin\contacts\page.tsx:19: Status
+src\app\[locale]\admin\contacts\page.tsx:19: Date
+src\app\[locale]\admin\gallery\page.tsx:11: Gallery
+src\app\[locale]\admin\gallery\page.tsx:22: No Image
+src\app\[locale]\admin\inquiries\page.tsx:23: Project Inquiries
+src\app\[locale]\admin\inquiries\page.tsx:27: No inquiries found
+src\app\[locale]\admin\inquiries\page.tsx:34: Name
+src\app\[locale]\admin\inquiries\page.tsx:34: Phone
+src\app\[locale]\admin\inquiries\page.tsx:34: City
+src\app\[locale]\admin\inquiries\page.tsx:34: Project Type
+src\app\[locale]\admin\inquiries\page.tsx:34: Status
+src\app\[locale]\admin\inquiries\page.tsx:34: Date
+src\app\[locale]\admin\media\page.tsx:28: Media
+src\app\[locale]\admin\media\page.tsx:32: No media found
+src\app\[locale]\admin\media\page.tsx:44: No preview
+src\app\[locale]\admin\notifications\page.tsx:41: Notifications
+src\app\[locale]\admin\notifications\page.tsx:50: No notifications found
+src\app\[locale]\admin\projects\page.tsx:55: Failed to load projects
+src\app\[locale]\admin\projects\page.tsx:61: Create your first project
+src\app\[locale]\admin\projects\page.tsx:73: Title
+src\app\[locale]\admin\projects\page.tsx:74: Type
+src\app\[locale]\admin\projects\page.tsx:75: Location
+src\app\[locale]\admin\projects\page.tsx:76: Capacity
+src\app\[locale]\admin\projects\page.tsx:77: Status
+src\app\[locale]\admin\projects\page.tsx:78: Languages
+src\app\[locale]\admin\projects\page.tsx:79: Actions
+src\app\[locale]\admin\projects\new\page.tsx:76: Content
+src\app\[locale]\admin\projects\new\page.tsx:101: Details
+src\app\[locale]\admin\projects\new\page.tsx:104: Project Type
+src\app\[locale]\admin\projects\new\page.tsx:117: Location
+src\app\[locale]\admin\projects\new\page.tsx:121: Status
+src\app\[locale]\admin\projects\new\page.tsx:130: Start Date
+src\app\[locale]\admin\projects\new\page.tsx:134: End Date
+src\app\[locale]\admin\projects\[id]\page.tsx:26: Failed to load project
+src\app\[locale]\admin\projects\[id]\page.tsx:28: Project not found
+src\app\[locale]\admin\projects\[id]\page.tsx:37: Project Detail
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:94: Failed to load project
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:95: Project not found
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:112: Content
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:137: Details
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:140: Project Type
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:153: Location
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:157: Status
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:166: Start Date
+src\app\[locale]\admin\projects\[id]\edit\page.tsx:170: End Date
+src\app\[locale]\admin\services\page.tsx:12: Services
+src\app\[locale]\admin\services\page.tsx:19: Title
+src\app\[locale]\admin\services\page.tsx:19: Category
+src\app\[locale]\admin\services\page.tsx:19: Status
+src\app\[locale]\admin\services\page.tsx:19: Featured
+src\app\[locale]\admin\services\page.tsx:19: Created
+src\app\[locale]\admin\services\new\page.tsx:73: Content
+src\app\[locale]\admin\services\new\page.tsx:102: Settings
+src\app\[locale]\admin\services\new\page.tsx:105: Icon
+src\app\[locale]\admin\services\new\page.tsx:109: Category
+src\app\[locale]\admin\services\new\page.tsx:113: Order
+src\app\[locale]\admin\services\new\page.tsx:117: Status
+src\app\[locale]\admin\services\[id]\page.tsx:26: Failed to load service
+src\app\[locale]\admin\services\[id]\page.tsx:28: Service not found
+src\app\[locale]\admin\services\[id]\page.tsx:37: Service Detail
+src\app\[locale]\admin\services\[id]\page.tsx:51: Features
+src\app\[locale]\admin\services\[id]\edit\page.tsx:90: Failed to load service
+src\app\[locale]\admin\services\[id]\edit\page.tsx:91: Service not found
+src\app\[locale]\admin\services\[id]\edit\page.tsx:108: Content
+src\app\[locale]\admin\services\[id]\edit\page.tsx:137: Settings
+src\app\[locale]\admin\services\[id]\edit\page.tsx:140: Icon
+src\app\[locale]\admin\services\[id]\edit\page.tsx:144: Category
+src\app\[locale]\admin\services\[id]\edit\page.tsx:148: Order
+src\app\[locale]\admin\services\[id]\edit\page.tsx:152: Status
+src\app\[locale]\admin\settings\page.tsx:22: Site Settings
+src\app\[locale]\admin\settings\page.tsx:26: No settings found
+src\app\[locale]\admin\settings\page.tsx:30: Company Info
+src\app\[locale]\admin\settings\page.tsx:33: Company Name
+src\app\[locale]\admin\settings\page.tsx:35: Email
+src\app\[locale]\admin\settings\page.tsx:36: Phone
+src\app\[locale]\admin\settings\page.tsx:38: Address
+src\app\[locale]\admin\settings\page.tsx:39: Site URL
+src\app\[locale]\admin\settings\page.tsx:44: Social Media
+src\app\[locale]\admin\settings\page.tsx:47: Instagram
+src\app\[locale]\admin\settings\page.tsx:48: Telegram
+src\app\[locale]\admin\settings\page.tsx:49: LinkedIn
+src\app\[locale]\admin\settings\page.tsx:50: WhatsApp
+src\app\[locale]\admin\settings\page.tsx:51: YouTube
+src\app\[locale]\admin\settings\page.tsx:59: Default Meta Title
+src\app\[locale]\admin\settings\page.tsx:60: Default Meta Description
+src\app\[locale]\admin\settings\page.tsx:61: Hero Title
+src\app\[locale]\admin\settings\page.tsx:62: Hero Subtitle
+src\app\[locale]\admin\settings\page.tsx:63: About Us
+src\app\[locale]\admin\settings\page.tsx:64: Footer Text
+src\app\[locale]\admin\tags\page.tsx:22: Tags
+src\app\[locale]\admin\tags\page.tsx:26: No tags found
+src\app\[locale]\admin\tags\page.tsx:33: Title
+src\app\[locale]\admin\tags\page.tsx:33: Slug
+src\app\[locale]\admin\users\page.tsx:12: Users
+src\app\[locale]\admin\users\page.tsx:19: Name
+src\app\[locale]\admin\users\page.tsx:19: Email
+src\app\[locale]\admin\users\page.tsx:19: Role
+src\app\[locale]\admin\users\page.tsx:19: Status
+src\app\[locale]\admin\users\page.tsx:19: Joined
+src\app\[locale]\dashboard\layout.tsx:33: Dashboard
+src\app\[locale]\dashboard\layout.tsx:55: Back to Site
+src\app\[locale]\dashboard\page.tsx:16: Dashboard
+src\app\[locale]\dashboard\page.tsx:19: Profile
+src\app\[locale]\dashboard\page.tsx:23: Edit Profile
+src\app\[locale]\dashboard\page.tsx:27: Notifications
+src\app\[locale]\dashboard\page.tsx:29: Stay updated
+src\app\[locale]\dashboard\page.tsx:30: View All
+src\app\[locale]\dashboard\page.tsx:34: Calculations
+src\app\[locale]\dashboard\page.tsx:37: Saved calculations
+src\app\[locale]\dashboard\page.tsx:44: Calculation History
+src\app\[locale]\dashboard\calculations\page.tsx:41: Not Authenticated
+src\app\[locale]\dashboard\calculations\page.tsx:44: Go to Login
+src\app\[locale]\dashboard\calculations\page.tsx:66: No data
+src\app\[locale]\dashboard\calculations\page.tsx:73: Calculation History
+src\app\[locale]\dashboard\calculations\page.tsx:87: City
+src\app\[locale]\dashboard\calculations\page.tsx:88: System Type
+src\app\[locale]\dashboard\calculations\page.tsx:89: Daily Consumption
+src\app\[locale]\dashboard\calculations\page.tsx:90: Estimated Cost
+src\app\[locale]\dashboard\calculations\page.tsx:92: Date
+src\app\[locale]\dashboard\notifications\page.tsx:15: Notifications
+src\app\[locale]\dashboard\notifications\page.tsx:17: Mark All Read
+src\app\[locale]\dashboard\notifications\page.tsx:23: No notifications
+src\app\[locale]\dashboard\notifications\page.tsx:35: Read
+src\app\[locale]\dashboard\profile\page.tsx:31: Profile
+src\app\[locale]\dashboard\profile\page.tsx:33: Edit Profile
+src\app\[locale]\dashboard\profile\page.tsx:37: Full Name
+src\app\[locale]\dashboard\profile\page.tsx:38: Phone
+src\app\[locale]\dashboard\profile\page.tsx:40: Save Changes
