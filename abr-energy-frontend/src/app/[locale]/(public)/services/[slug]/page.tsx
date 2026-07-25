@@ -8,22 +8,24 @@ import { ArrowLeft, ArrowRight, Check, Sun, Zap, Shield, Clock, BarChart3, Leaf,
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 import type { Service } from '@/types';
 
 const processSteps = [
-  { icon: Sun, title: 'Consultation', desc: 'We assess your energy needs and site conditions to design the optimal solar solution.' },
-  { icon: Zap, title: 'Design', desc: 'Our engineering team creates a detailed system design using advanced simulation tools.' },
-  { icon: Shield, title: 'Implementation', desc: 'Professional installation by certified technicians following strict safety standards.' },
-  { icon: Clock, title: 'Optimization', desc: 'Post-installation monitoring and optimization to ensure peak system performance.' },
+  { icon: Sun, title: 'services.step_consultation', desc: 'services.step_consultation_desc' },
+  { icon: Zap, title: 'services.step_design', desc: 'services.step_design_desc' },
+  { icon: Shield, title: 'services.step_implementation', desc: 'services.step_implementation_desc' },
+  { icon: Clock, title: 'services.step_optimization', desc: 'services.step_optimization_desc' },
 ];
 
 const techAdvantages = [
-  { icon: BarChart3, title: 'Efficiency', desc: 'High-efficiency panels with advanced cell technology maximize energy capture.' },
-  { icon: Shield, title: 'Reliability', desc: 'Built with premium components and backed by comprehensive warranties.' },
-  { icon: Leaf, title: 'Sustainability', desc: 'Designed for long-term environmental sustainability and reduced carbon footprint.' },
+  { icon: BarChart3, title: 'services.advantage_efficiency', desc: 'services.advantage_efficiency_desc' },
+  { icon: Shield, title: 'services.advantage_reliability', desc: 'services.advantage_reliability_desc' },
+  { icon: Leaf, title: 'services.advantage_sustainability', desc: 'services.advantage_sustainability_desc' },
 ];
 
 export default function ServiceDetailPage() {
+  const { t } = useLocale();
   const params = useParams();
   const slug = params.slug as string;
   const { data: service, isLoading, error } = useQuery<Service>({
@@ -46,7 +48,7 @@ export default function ServiceDetailPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
         <div className="container-page relative z-10">
           <Link href="/services" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
-            <ArrowLeft className="h-3 w-3" /> Back to Services
+            <ArrowLeft className="h-3 w-3" /> {t('services.back')}
           </Link>
           <div className="max-w-3xl">
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
@@ -72,7 +74,7 @@ export default function ServiceDetailPage() {
         <div className="container-page">
           <div className="max-w-3xl mx-auto">
             <ScrollReveal variant="slide-up">
-              <h2 className="font-heading text-3xl font-bold text-white mb-6">Overview</h2>
+              <h2 className="font-heading text-3xl font-bold text-white mb-6">{t('services.overview')}</h2>
               <div className="text-white/35 leading-relaxed text-base" dangerouslySetInnerHTML={{ __html: service.description }} />
             </ScrollReveal>
           </div>
@@ -85,8 +87,8 @@ export default function ServiceDetailPage() {
           <div className="container-page">
             <ScrollReveal variant="fade">
               <div className="text-center mb-14">
-                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">What You Get</p>
-                <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">Key Features</h2>
+                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.what_you_get')}</p>
+                <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.features')}</h2>
               </div>
             </ScrollReveal>
             <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
@@ -108,8 +110,8 @@ export default function ServiceDetailPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-14">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">How We Work</p>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">Our Process</h2>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.how_we_work')}</p>
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.process')}</h2>
             </div>
           </ScrollReveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-4xl mx-auto">
@@ -119,8 +121,8 @@ export default function ServiceDetailPage() {
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/10 flex items-center justify-center mx-auto mb-4">
                     <step.icon className="h-5 w-5 text-emerald-400" />
                   </div>
-                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{step.title}</h3>
-                  <p className="text-xs text-white/35 leading-relaxed">{step.desc}</p>
+                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{t(step.title)}</h3>
+                  <p className="text-xs text-white/35 leading-relaxed">{t(step.desc)}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -133,8 +135,8 @@ export default function ServiceDetailPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-14">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Why Choose Us</p>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">Technical Advantages</h2>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.why_choose_us')}</p>
+              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.technical_advantages')}</h2>
             </div>
           </ScrollReveal>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -142,8 +144,8 @@ export default function ServiceDetailPage() {
               <ScrollReveal key={i} variant="slide-up" delay={i * 0.1}>
                 <div className="p-6 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-lg text-center h-full hover:border-emerald-500/10 transition-all duration-500">
                   <item.icon className="h-8 w-8 text-emerald-400/60 mx-auto mb-4" />
-                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{item.title}</h3>
-                  <p className="text-xs text-white/35 leading-relaxed">{item.desc}</p>
+                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{t(item.title)}</h3>
+                  <p className="text-xs text-white/35 leading-relaxed">{t(item.desc)}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -155,8 +157,8 @@ export default function ServiceDetailPage() {
       <section className="py-24 md:py-32 border-t border-white/[0.03]">
         <div className="container-page text-center">
           <ScrollReveal variant="scale">
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Interested in This Service?</h2>
-            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">Contact our team to discuss how we can help you with your solar energy needs.</p>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('services.cta_title')}</h2>
+            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('services.cta_desc')}</p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
               Contact Us <ArrowRight className="h-4 w-4" />
             </Link>

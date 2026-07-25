@@ -8,9 +8,11 @@ import { ArrowLeft, ArrowRight, Clock, Eye, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 import type { Article } from '@/types';
 
 export default function ArticleDetailPage() {
+  const { t } = useLocale();
   const params = useParams();
   const slug = params.slug as string;
   const { data: article, isLoading, error } = useQuery<Article>({
@@ -56,7 +58,7 @@ export default function ArticleDetailPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px]" />
         <div className="container-page relative z-10">
           <Link href="/articles" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
-            <ArrowLeft className="h-3 w-3" /> Back to Articles
+            <ArrowLeft className="h-3 w-3" /> {t('articles.back')}
           </Link>
           <div className="max-w-3xl">
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
@@ -88,7 +90,7 @@ export default function ArticleDetailPage() {
         <div className="container-page max-w-3xl mx-auto">
           {headings.length > 0 && (
             <div className="mb-10 p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-3">Contents</p>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-3">{t('articles.table_of_contents')}</p>
               <nav className="space-y-1.5">
                 {headings.map((h) => (
                   <a key={h.id} href={`#${h.id}`} className="block text-sm text-white/40 hover:text-emerald-400 transition-colors duration-300">
@@ -115,8 +117,8 @@ export default function ArticleDetailPage() {
           {/* CTA */}
           <ScrollReveal variant="scale">
             <div className="mt-16 p-8 md:p-10 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm text-center">
-              <p className="font-heading font-semibold text-lg text-white mb-2">Interested in Solar Energy?</p>
-              <p className="text-sm text-white/35 mb-6">Contact our team to learn how we can help you with your renewable energy project.</p>
+              <p className="font-heading font-semibold text-lg text-white mb-2">{t('articles.cta_title')}</p>
+              <p className="text-sm text-white/35 mb-6">{t('articles.cta_desc')}</p>
               <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
                 Contact Us <ArrowRight className="h-4 w-4" />
               </Link>
@@ -126,7 +128,7 @@ export default function ArticleDetailPage() {
           {/* Related Articles */}
           {related.length > 0 && (
             <div className="mt-16">
-              <h3 className="font-heading font-semibold text-lg text-white mb-6">Related Articles</h3>
+              <h3 className="font-heading font-semibold text-lg text-white mb-6">{t('articles.related')}</h3>
               <div className="grid md:grid-cols-3 gap-4">
                 {related.map((r: Record<string, unknown>) => (
                   <Link key={r.id as string} href={`/articles/${r.slug}`} className="group block p-4 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm hover:border-white/[0.12] transition-all duration-500">

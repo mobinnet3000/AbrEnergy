@@ -5,9 +5,11 @@ import { X, ChevronLeft, ChevronRight, Sun, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 import type { GalleryImage } from '@/types';
 
 export default function GalleryPage() {
+  const { t } = useLocale();
   const { data, isLoading } = useQuery<GalleryImage[] | { results: GalleryImage[] }>({
     queryKey: ['gallery'],
     queryFn: () => axiosInstance.get('/gallery/').then((r) => r.data),
@@ -42,8 +44,8 @@ export default function GalleryPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/10 via-transparent to-black" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px]" />
         <div className="container-page relative z-10">
-          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">Visual Showcase</motion.p>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">Gallery</motion.h1>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">{t('gallery.visual_showcase')}</motion.p>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">{t('nav.gallery')}</motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-white/35 text-base max-w-lg">Browse our project installations and solar energy solutions</motion.p>
         </div>
       </section>
@@ -54,7 +56,7 @@ export default function GalleryPage() {
           {isLoading ? (
             <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>
           ) : images.length === 0 ? (
-            <div className="text-center py-20 text-white/30">No images in gallery</div>
+            <div className="text-center py-20 text-white/30">{t('gallery.not_found')}</div>
           ) : (
             <>
               {/* Category Filters */}
@@ -75,7 +77,7 @@ export default function GalleryPage() {
                 ))}
               </div>
               {filtered.length === 0 && (
-                <div className="text-center py-12 text-white/30">No images in this category</div>
+                <div className="text-center py-12 text-white/30">{t('gallery.no_images_category')}</div>
               )}
               <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
                 {filtered.map((img, i) => (

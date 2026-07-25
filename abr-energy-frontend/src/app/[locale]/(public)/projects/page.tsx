@@ -5,6 +5,7 @@ import { ArrowRight, Building2 } from 'lucide-react';
 import { useProjects } from '@/hooks/use-api';
 import { CardLoading } from '@/components/shared';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 
 function ProjectCard({ project }: { project: Record<string, unknown> }) {
   return (
@@ -36,6 +37,7 @@ function ProjectCard({ project }: { project: Record<string, unknown> }) {
 }
 
 export default function ProjectsPage() {
+  const { t } = useLocale();
   const { data: projects, isLoading } = useProjects();
   const items = Array.isArray(projects?.results) ? projects.results : (Array.isArray(projects) ? projects : []);
 
@@ -47,13 +49,13 @@ export default function ProjectsPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-blue-500/5 rounded-full blur-[120px]" />
         <div className="container-page relative z-10">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">
-            Our Portfolio
+            {t('projects.portfolio_label')}
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">
-            Projects
+            {t('projects.title')}
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-white/35 text-base max-w-lg">
-            Our portfolio of solar installations across residential, commercial, and industrial sectors
+            {t('projects.subtitle')}
           </motion.p>
         </div>
       </section>
@@ -64,7 +66,7 @@ export default function ProjectsPage() {
           {isLoading ? (
             <CardLoading count={6} />
           ) : items.length === 0 ? (
-            <div className="text-center py-20 text-white/30">No projects yet</div>
+            <div className="text-center py-20 text-white/30">{t('projects.not_found')}</div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
               {items.map((p: Record<string, unknown>) => (

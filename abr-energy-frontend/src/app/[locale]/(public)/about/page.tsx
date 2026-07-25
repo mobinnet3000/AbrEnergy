@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 import type { SiteSettings } from '@/types';
 
 /* ---- Animated Number Counter ---- */
@@ -46,13 +47,14 @@ function ValueCard({ icon: Icon, title, desc, delay }: { icon: React.ComponentTy
 
 /* ---- Story Section ---- */
 function StoryBlock({ title, desc, index }: { title: string; desc: string; index: number }) {
+  const { t } = useLocale();
   const isReversed = index % 2 === 1;
   return (
     <ScrollReveal variant={isReversed ? 'slide-right' : 'slide-left'}>
       <div className={`grid md:grid-cols-2 gap-12 md:gap-20 items-center ${isReversed ? 'md:flex-row-reverse' : ''}`}>
         <div className={isReversed ? 'md:order-2' : ''}>
           <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.2em] mb-4">
-            {['Our Story', 'Our Mission', 'Our Technology'][index]}
+            {[t('about.story_label'), t('about.story_title_2'), t('about.story_title_3')][index]}
           </p>
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-6">{title}</h2>
           <p className="text-white/35 leading-relaxed">{desc}</p>
@@ -92,6 +94,7 @@ function HeroGlowSVG() {
 }
 
 export default function AboutPage() {
+  const { t } = useLocale();
   const { data: settings, isLoading } = useQuery<SiteSettings>({
     queryKey: ['site-settings'],
     queryFn: () => axiosInstance.get('/site-config/').then((r) => r.data),
@@ -110,9 +113,9 @@ export default function AboutPage() {
         <div className="container-page relative z-10 py-28">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }} className="max-w-3xl">
             <Link href="/" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
-              <ArrowRight className="h-3 w-3 rotate-180" /> Back to Home
+              <ArrowRight className="h-3 w-3 rotate-180" /> {t('common.back_home')}
             </Link>
-            <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">About AbrEnergy</p>
+            <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">{t('about.subtitle')}</p>
             <h1 className="font-heading text-5xl sm:text-6xl md:text-7xl font-bold leading-[0.95] mb-6">
               Engineering the{' '}
               <span className="bg-gradient-to-r from-emerald-300 via-green-400 to-teal-300 bg-clip-text text-transparent">Energy Transition</span>
@@ -121,7 +124,7 @@ export default function AboutPage() {
               {settings?.about_us?.split('.')[0] || 'From design to commissioning — we deliver turnkey solar power plants for residential, commercial, and utility-scale projects.'}
             </p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-              Get in Touch <ArrowRight className="h-4 w-4" />
+              {t('about.get_in_touch')} <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
         </div>
@@ -155,17 +158,17 @@ export default function AboutPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-16">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">What We Stand For</p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Our Values</h2>
-              <p className="text-white/35 text-sm max-w-xl mx-auto mt-4">Driving the renewable energy transition through engineering excellence</p>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('about.values_label')}</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">{t('about.values_title')}</h2>
+              <p className="text-white/35 text-sm max-w-xl mx-auto mt-4">{t('about.values_desc')}</p>
             </div>
           </ScrollReveal>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <ValueCard icon={Sun} title="Clean Energy" desc="Committed to making clean, renewable energy accessible to communities worldwide." delay={0.1} />
-            <ValueCard icon={Zap} title="Innovation" desc="Continuously advancing solar technology through research and engineering excellence." delay={0.15} />
-            <ValueCard icon={Leaf} title="Sustainability" desc="Every project is designed with long-term environmental sustainability in mind." delay={0.2} />
-            <ValueCard icon={Shield} title="Reliability" desc="Built to last. Our installations meet the highest international standards of quality." delay={0.25} />
+            <ValueCard icon={Sun} title={t('about.value_clean_energy')} desc={t('about.value_clean_energy_desc')} delay={0.1} />
+            <ValueCard icon={Zap} title={t('about.value_innovation')} desc={t('about.value_innovation_desc')} delay={0.15} />
+            <ValueCard icon={Leaf} title={t('about.value_sustainability')} desc={t('about.value_sustainability_desc')} delay={0.2} />
+            <ValueCard icon={Shield} title={t('about.value_reliability')} desc={t('about.value_reliability_desc')} delay={0.25} />
           </div>
         </div>
       </section>
@@ -175,18 +178,18 @@ export default function AboutPage() {
         <div className="container-page space-y-28">
           <StoryBlock
             index={0}
-            title="Who We Are"
-            desc="AbrEnergy is a leading solar energy company specializing in the design, engineering, and construction of solar power plants. We provide end-to-end solutions for residential, commercial, and utility-scale projects. Our team of experienced engineers and project managers ensures every installation meets international standards."
+            title={t('about.story_title_1')}
+            desc={t('about.story_desc_1')}
           />
           <StoryBlock
             index={1}
-            title="Our Mission"
-            desc="To accelerate the global transition to renewable energy by delivering premium solar solutions that are reliable, cost-effective, and environmentally sustainable. We believe clean energy should be accessible to everyone."
+            title={t('about.story_title_2')}
+            desc={t('about.story_desc_2')}
           />
           <StoryBlock
             index={2}
-            title="Technology Advantage"
-            desc="We leverage cutting-edge solar technology, advanced monitoring systems, and precision engineering to maximize energy output and system longevity. Our designs are optimized for local climate conditions to ensure peak performance."
+            title={t('about.story_title_3')}
+            desc={t('about.story_desc_3')}
           />
         </div>
       </section>
@@ -196,18 +199,18 @@ export default function AboutPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-16">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Our Journey</p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Company Milestones</h2>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('about.journey_label')}</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">{t('about.journey_title')}</h2>
             </div>
           </ScrollReveal>
           <div className="relative max-w-3xl mx-auto">
             <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-emerald-500/30 via-emerald-500/10 to-transparent -translate-x-1/2" />
             {[
-              { year: '2014', title: 'Founded', desc: 'AbrEnergy was established with a vision to make solar energy accessible across the region.' },
-              { year: '2017', title: 'First 1MW Installation', desc: 'Completed our first megawatt-scale commercial installation, setting a benchmark for quality.' },
-              { year: '2020', title: '50 Projects Milestone', desc: 'Reached 50 completed projects across residential, commercial, and industrial sectors.' },
-              { year: '2023', title: 'International Expansion', desc: 'Expanded operations internationally, delivering solar solutions beyond borders.' },
-              { year: '2025', title: '25MW Installed', desc: 'Surpassed 25MW of total installed capacity, powering thousands of homes and businesses.' },
+              { year: '2014', title: t('about.milestone_1_title'), desc: t('about.milestone_1_desc') },
+              { year: '2017', title: t('about.milestone_2_title'), desc: t('about.milestone_2_desc') },
+              { year: '2020', title: t('about.milestone_3_title'), desc: t('about.milestone_3_desc') },
+              { year: '2023', title: t('about.milestone_4_title'), desc: t('about.milestone_4_desc') },
+              { year: '2025', title: t('about.milestone_5_title'), desc: t('about.milestone_5_desc') },
             ].map((m, i) => (
               <ScrollReveal key={i} variant={i % 2 === 0 ? 'slide-left' : 'slide-right'} delay={i * 0.1}>
                 <div className={`relative flex items-start gap-6 mb-14 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
@@ -234,15 +237,15 @@ export default function AboutPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-16">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Our Impact</p>
-              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Making a Difference</h2>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('about.impact_label')}</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">{t('about.impact_title')}</h2>
             </div>
           </ScrollReveal>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: Leaf, title: 'Environmental', desc: 'Our solar installations offset thousands of tons of CO₂ annually, contributing to a cleaner, more sustainable future for generations to come.' },
-              { icon: Zap, title: 'Technology', desc: 'We continuously advance solar technology through research and innovation, driving down costs while improving efficiency and reliability.' },
-              { icon: Globe, title: 'Future Vision', desc: 'Our roadmap includes smart grid integration, energy storage solutions, and community solar programs to expand access to clean energy.' },
+              { icon: Leaf, title: t('about.impact_environmental'), desc: t('about.impact_environmental_desc') },
+              { icon: Zap, title: t('about.impact_technology'), desc: t('about.impact_technology_desc') },
+              { icon: Globe, title: t('about.impact_future'), desc: t('about.impact_future_desc') },
             ].map((item, i) => (
               <ScrollReveal key={i} variant="slide-up" delay={i * 0.1}>
                 <div className="p-8 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-lg h-full hover:border-emerald-500/10 transition-all duration-500">
@@ -261,8 +264,8 @@ export default function AboutPage() {
         <div className="container-page text-center">
           <ScrollReveal variant="scale">
             <Sparkles className="h-10 w-10 mx-auto mb-6 text-emerald-400/40" />
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Ready to Work With Us?</h2>
-            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">Let&apos;s discuss how we can help you achieve your renewable energy goals.</p>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('about.cta_title')}</h2>
+            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('about.cta_desc')}</p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
               Contact Us <ArrowRight className="h-4 w-4" />
             </Link>

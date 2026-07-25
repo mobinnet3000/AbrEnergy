@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Sun, Zap, Shield } from 'lucide-react';
 import { useServices } from '@/hooks/use-api';
 import { CardLoading } from '@/components/shared';
+import { useLocale } from '@/i18n';
 
 function ServiceCard({ icon: Icon, title, desc, href, i }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -60,6 +61,7 @@ function ServiceCard({ icon: Icon, title, desc, href, i }: {
 }
 
 export function ServicesSection() {
+  const { t } = useLocale();
   const { data: servicesData, isLoading: servicesLoading } = useServices();
   const services = Array.isArray(servicesData?.results) ? servicesData.results : (Array.isArray(servicesData) ? servicesData : []);
 
@@ -84,7 +86,7 @@ export function ServicesSection() {
           transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
           className="text-center mb-16"
         >
-          <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">What We Do</p>
+          <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('services.what_we_do')}</p>
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Our Services</h2>
           <p className="text-white/35 text-lg max-w-2xl mx-auto">Comprehensive solar energy solutions from design to commissioning</p>
         </motion.div>
@@ -113,7 +115,7 @@ export function ServicesSection() {
           className="text-center mt-14"
         >
           <Link href="/services" className="inline-flex items-center gap-2 text-sm text-emerald-400/70 hover:text-emerald-400 transition-colors duration-300 group">
-            View All Services <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            {t('home.services_cta')} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
       </div>

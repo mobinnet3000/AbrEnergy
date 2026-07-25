@@ -8,9 +8,11 @@ import { ArrowLeft, ArrowRight, MapPin, Zap, Calendar, Loader2 } from 'lucide-re
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 import type { ProjectDetail } from '@/types';
 
 export default function ProjectDetailPage() {
+  const { t } = useLocale();
   const params = useParams();
   const slug = params.slug as string;
   const { data: project, isLoading, error } = useQuery<ProjectDetail>({
@@ -33,12 +35,12 @@ export default function ProjectDetailPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px]" />
         <div className="container-page relative z-10">
           <Link href="/projects" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
-            <ArrowLeft className="h-3 w-3" /> Back to Projects
+            <ArrowLeft className="h-3 w-3" /> {t('projects.back')}
           </Link>
           <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-end">
             <div>
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
-                Case Study
+                {t('projects.case_study')}
               </motion.p>
               <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="font-heading text-4xl md:text-6xl font-bold text-white mb-6 leading-[1.05]">
                 {project.title}
@@ -71,7 +73,7 @@ export default function ProjectDetailPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="max-w-3xl mx-auto">
-              <h2 className="font-heading text-3xl font-bold text-white mb-6">Overview</h2>
+              <h2 className="font-heading text-3xl font-bold text-white mb-6">{t('projects.overview')}</h2>
               <div className="prose prose-invert prose-emerald max-w-none [&_p]:text-white/50 [&_p]:leading-relaxed" dangerouslySetInnerHTML={{ __html: project.description }} />
             </div>
           </ScrollReveal>
@@ -83,8 +85,8 @@ export default function ProjectDetailPage() {
         <div className="container-page">
           <ScrollReveal variant="fade">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Technical Details</p>
-              <h2 className="font-heading text-3xl font-bold text-white">Project Metrics</h2>
+              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('projects.technical_details')}</p>
+              <h2 className="font-heading text-3xl font-bold text-white">{t('projects.metrics')}</h2>
             </div>
           </ScrollReveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
@@ -111,8 +113,8 @@ export default function ProjectDetailPage() {
           <div className="container-page">
             <ScrollReveal variant="fade">
               <div className="text-center mb-12">
-                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Gallery</p>
-                <h2 className="font-heading text-3xl font-bold text-white">Project Photos</h2>
+                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('projects.gallery_label')}</p>
+                <h2 className="font-heading text-3xl font-bold text-white">{t('projects.photos')}</h2>
               </div>
             </ScrollReveal>
             <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
@@ -132,10 +134,10 @@ export default function ProjectDetailPage() {
       <section className="py-24 md:py-32 border-t border-white/[0.03]">
         <div className="container-page text-center">
           <ScrollReveal variant="scale">
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">Interested in Similar Projects?</h2>
-            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">Contact our team to discuss your solar energy project requirements.</p>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('projects.cta_title')}</h2>
+            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('projects.cta_desc')}</p>
             <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-              Start Your Project <ArrowRight className="h-4 w-4" />
+              {t('projects.cta_button')} <ArrowRight className="h-4 w-4" />
             </Link>
           </ScrollReveal>
         </div>

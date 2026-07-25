@@ -76,6 +76,7 @@ function StatCard({ stat, index }: { stat: typeof stats[number]; index: number }
 }
 
 export function StatsSection() {
+  const { t } = useLocale();
   return (
     <section className="relative py-28 md:py-36 overflow-hidden bg-black">
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.015]" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -97,12 +98,11 @@ export function StatsSection() {
 
       <div className="container-page relative z-10">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }} className="text-center mb-16 md:mb-20">
-          <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">Our Impact</p>
+          <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('home.stats_label')}</p>
           <h2 className="text-4xl md:text-5xl font-bold font-heading text-white">
-            Numbers That{' '}
-            <span className="bg-gradient-to-r from-emerald-300/90 via-green-400/90 to-teal-300/90 bg-clip-text text-transparent">Matter</span>
+            {t('home.stats_title')}
           </h2>
-          <p className="text-sm text-white/30 max-w-xl mx-auto mt-4">Driving the renewable energy transition through measurable impact</p>
+          <p className="text-sm text-white/30 max-w-xl mx-auto mt-4">{t('home.stats_desc')}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

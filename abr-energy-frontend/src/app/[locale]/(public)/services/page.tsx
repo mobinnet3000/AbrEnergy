@@ -5,6 +5,7 @@ import { ArrowRight, Sun, Zap, Shield, Sparkles } from 'lucide-react';
 import { useServices } from '@/hooks/use-api';
 import { CardLoading } from '@/components/shared';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { useLocale } from '@/i18n';
 
 const serviceIcons = [Sun, Zap, Shield];
 
@@ -30,6 +31,7 @@ function ServiceCard({ title, desc, slug, i }: { title: string; desc: string; sl
 }
 
 export default function ServicesPage() {
+  const { t } = useLocale();
   const { data: services, isLoading } = useServices();
   const items = Array.isArray(services?.results) ? services.results : (Array.isArray(services) ? services : []);
 
@@ -41,13 +43,13 @@ export default function ServicesPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/5 rounded-full blur-[120px]" />
         <div className="container-page relative z-10 text-center">
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-5">
-            What We Do
+            {t('services.what_we_do')}
           </motion.p>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-heading text-5xl md:text-7xl font-bold text-white mb-4">
-            Our Services
+            {t('home.services_title')}
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-white/35 text-base max-w-lg mx-auto">
-            Comprehensive solar energy solutions from design to commissioning
+            {t('home.services_subtitle')}
           </motion.p>
         </div>
       </section>
@@ -58,7 +60,7 @@ export default function ServicesPage() {
           {isLoading ? (
             <CardLoading count={6} />
           ) : items.length === 0 ? (
-            <div className="text-center py-20 text-white/30">No services available</div>
+            <div className="text-center py-20 text-white/30">{t('services.not_found')}</div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
               {items.map((s: Record<string, unknown>, i: number) => (

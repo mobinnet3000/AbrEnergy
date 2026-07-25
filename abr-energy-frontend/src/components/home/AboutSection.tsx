@@ -90,7 +90,7 @@ function TimelineItem({ icon: Icon, title, desc, delay, isRTL }: {
 
 export function AboutSection() {
   const { data: settings } = useSiteSettings();
-  const { locale, isRTL } = useLocale();
+  const { locale, isRTL, t } = useLocale();
   const sectionRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] });
   const bgY = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
@@ -113,7 +113,7 @@ export function AboutSection() {
     ];
   }, [locale]);
 
-  const subtitle = locale === 'fa' ? 'داستان ابر انرژی' : locale === 'ar' ? 'قصة أبر إنيرجي' : 'The AbrEnergy Story';
+  const subtitle = t('home.about_subtitle');
 
   return (
     <section ref={sectionRef} className="relative min-h-screen py-28 md:py-36 overflow-hidden bg-black">
@@ -183,7 +183,7 @@ export function AboutSection() {
                 href="/about"
                 className="group inline-flex items-center gap-3 px-6 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] hover:border-emerald-500/20 transition-all duration-500"
               >
-                <span className="text-sm font-medium text-emerald-400">{locale === 'fa' ? 'درباره ابر انرژی بیشتر بدانید' : locale === 'ar' ? 'اعرف المزيد عن أبر إنيرجي' : 'Learn more about AbrEnergy'}</span>
+                <span className="text-sm font-medium text-emerald-400">{t('home.about_cta')}</span>
                 <ArrowRight className={`h-4 w-4 text-emerald-400 group-hover:translate-x-1 transition-transform duration-300 ${isRTL ? 'rotate-180' : ''}`} />
               </Link>
             </motion.div>

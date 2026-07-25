@@ -2,8 +2,10 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calculator } from 'lucide-react';
+import { useLocale } from '@/i18n';
 
 export function CalculatorSection() {
+  const { t } = useLocale();
   return (
     <section data-section="calculator" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0">
@@ -32,9 +34,9 @@ export function CalculatorSection() {
             </div>
           </motion.div>
           
-          <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">Design Your Solar System</h2>
+          <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{t('home.calculator_title')}</h2>
           <p className="text-white/40 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
-            Estimate system size, battery capacity, inverter power, and return on investment for your project in seconds.
+            {t('home.calculator_text')}
           </p>
           <Link
             href="/calculator"
@@ -42,7 +44,7 @@ export function CalculatorSection() {
           >
             <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500" />
             <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
-            <span className="relative z-10 flex items-center gap-2 text-white"><Calculator className="h-5 w-5" /> Start Calculator</span>
+            <span className="relative z-10 flex items-center gap-2 text-white"><Calculator className="h-5 w-5" /> {t('home.calculator_cta')}</span>
           </Link>
         </motion.div>
       </div>

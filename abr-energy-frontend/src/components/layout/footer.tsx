@@ -78,7 +78,7 @@ export function Footer() {
 
           {/* Quick links */}
           <ScrollReveal variant="fade" delay={0.1} className="lg:col-span-2">
-            <FooterColumn title="Company">
+            <FooterColumn title={t('footer.company')}>
               {['about', 'services', 'projects', 'contact'].map((p) => (
                 <FooterLink key={p} href={`/${p}`} label={t(`nav.${p}`)} />
               ))}
@@ -86,7 +86,7 @@ export function Footer() {
           </ScrollReveal>
 
           <ScrollReveal variant="fade" delay={0.15} className="lg:col-span-2">
-            <FooterColumn title="Services">
+            <FooterColumn title={t('services.title')}>
               {['services', 'calculator', 'gallery'].map((p) => (
                 <FooterLink key={p} href={`/${p}`} label={t(`nav.${p}`)} />
               ))}
@@ -134,8 +134,8 @@ export function Footer() {
         >
           <p className="text-xs text-white/15">&copy; {year} AbrEnergy.</p>
           <div className="flex items-center gap-5 text-xs text-white/15">
-            <a href="#" className="hover:text-white/30 transition-colors duration-300">Privacy</a>
-            <a href="#" className="hover:text-white/30 transition-colors duration-300">Terms</a>
+            <a href="#" className="hover:text-white/30 transition-colors duration-300">{t('footer.privacy')}</a>
+            <a href="#" className="hover:text-white/30 transition-colors duration-300">{t('footer.terms')}</a>
           </div>
         </motion.div>
       </div>
