@@ -6,24 +6,35 @@ import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, FileText, Wrench, FolderKanban, MessageSquare,
-  Image, Activity, Bell, LogOut, Menu,
+  Image, Activity, Bell, LogOut, Menu, Package, FolderTree, Tags, Settings,
+  Home,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUnreadCount } from '@/hooks/use-api';
 import { PageLoading } from '@/components/shared';
 import { useLocale } from '@/i18n';
+import { adminNavSections } from '@/config/navigation';
+import { canAccessAdminShell, canViewAdminItem } from '@/lib/admin-permissions';
 
-const navItems = [
-  { href: '/admin', labelKey: 'admin.dashboard', icon: LayoutDashboard },
-  { href: '/admin/users', labelKey: 'admin.users', icon: Users },
-  { href: '/admin/articles', labelKey: 'admin.articles', icon: FileText },
-  { href: '/admin/services', labelKey: 'admin.services', icon: Wrench },
-  { href: '/admin/projects', labelKey: 'admin.projects', icon: FolderKanban },
-  { href: '/admin/contacts', labelKey: 'admin.contacts', icon: MessageSquare },
-  { href: '/admin/gallery', labelKey: 'admin.gallery', icon: Image },
-  { href: '/admin/activity-log', labelKey: 'admin.activity_log', icon: Activity },
-  { href: '/dashboard/notifications', labelKey: 'admin.notifications', icon: Bell },
-];
+const sectionIcons: Record<string, typeof LayoutDashboard> = {
+  '/admin': LayoutDashboard,
+  '/admin/users': Users,
+  '/admin/articles': FileText,
+  '/admin/services': Wrench,
+  '/admin/projects': FolderKanban,
+  '/admin/contacts': MessageSquare,
+  '/admin/inquiries': MessageSquare,
+  '/admin/gallery': Image,
+  '/admin/media': Image,
+  '/admin/categories': FolderTree,
+  '/admin/tags': Tags,
+  '/admin/products/categories': FolderTree,
+  '/admin/products': Package,
+  '/admin/content/homepage': Home,
+  '/admin/activity-log': Activity,
+  '/admin/settings': Settings,
+  '/dashboard/notifications': Bell,
+};
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
@@ -37,14 +48,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!isAuthenticated) router.replace('/login');
-    else if (user && user.role !== 'super_admin' && user.role !== 'website_admin') router.replace('/dashboard');
+    else if (user && !canAccessAdminShell(user.role)) router.replace('/dashboard');
   }, [isAuthenticated, user, router]);
 
   // Close mobile menu on route change
   const closeMobile = () => setMobileOpen(false);
 
   if (!user) return <PageLoading />;
-  if (user.role !== 'super_admin' && user.role !== 'website_admin') return null;
+  if (!canAccessAdminShell(user.role)) return null;
 
   const sidebar = (
     <div className="flex flex-col h-full">
@@ -52,25 +63,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <h2 className="font-heading font-bold text-lg">{t('admin.title')}</h2>
         <p className="text-sm text-muted-foreground truncate">{user.full_name}</p>
       </div>
-      <nav className="flex-1 space-y-1">
-        {navItems.map((item) => (
-          <Link key={item.href} href={item.href} onClick={closeMobile}
-            className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-              pathname === item.href
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <item.icon className="h-4 w-4 shrink-0" />
-            <span>{t(item.labelKey)}</span>
-            {item.labelKey === 'admin.notifications' && unreadData?.count > 0 && (
-              <span className="ml-auto bg-destructive text-destructive-foreground text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
-                {unreadData.count}
-              </span>
-            )}
-          </Link>
-        ))}
+      <nav className="flex-1 space-y-4 overflow-y-auto">
+        {adminNavSections.map((section, si) => {
+          const items = section.items.filter((it) => canViewAdminItem(it.roles, user.role));
+          if (items.length === 0) return null;
+          return (
+            <div key={si}>
+              {section.titleKey && (
+                <p className="px-3 mb-1 text-xs font-medium text-muted-foreground">{t(section.titleKey)}</p>
+              )}
+              <div className="space-y-1">
+                {items.map((item) => {
+                  const Icon = sectionIcons[item.href] ?? FileText;
+                  const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+                  const inner = (
+                    <>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{t(item.labelKey)}</span>
+                      {item.labelKey === 'admin.notifications' && unreadData?.count > 0 && (
+                        <span className="bg-destructive text-destructive-foreground text-xs rounded-full px-2 py-0.5 min-w-[20px] text-center">
+                          {unreadData.count}
+                        </span>
+                      )}
+                    </>
+                  );
+                  const cls = cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full',
+                    active
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    item.disabled && 'opacity-50 cursor-not-allowed',
+                  );
+                  return item.disabled ? (
+                    <span key={item.href + item.labelKey} className={cls} title={t('admin.coming_soon')}>
+                      {inner}
+                    </span>
+                  ) : (
+                    <Link key={item.href} href={item.href} onClick={closeMobile} className={cls} aria-current={active ? 'page' : undefined}>
+                      {inner}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </nav>
       <div className="space-y-2 pt-4 border-t">
         <Link href="/dashboard"><Button variant="outline" size="sm" className="w-full">{t('admin.user_dashboard')}</Button></Link>

@@ -137,6 +137,98 @@ export const notificationsApi = {
   },
 };
 
+export const productsApi = {
+  listCategories: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/product-categories/', { params });
+    return res.data;
+  },
+  getCategory: async (slug: string) => {
+    const res = await axiosInstance.get(`/product-categories/${slug}/`);
+    return res.data;
+  },
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/products/', { params });
+    return res.data;
+  },
+  getBySlug: async (slug: string) => {
+    const res = await axiosInstance.get(`/products/${slug}/`);
+    return res.data;
+  },
+  getFeatured: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/products/featured/', { params });
+    return res.data;
+  },
+};
+
+export const adminProductCategoriesApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/product-categories/', { params });
+    return res.data;
+  },
+  get: async (id: string) => {
+    const res = await axiosInstance.get(`/admin/product-categories/${id}/`);
+    return res.data;
+  },
+  create: async (data: Record<string, unknown>) => {
+    const res = await axiosInstance.post('/admin/product-categories/', data);
+    return res.data;
+  },
+  update: async (id: string, data: Record<string, unknown>) => {
+    const res = await axiosInstance.patch(`/admin/product-categories/${id}/`, data);
+    return res.data;
+  },
+  remove: async (id: string) => {
+    await axiosInstance.delete(`/admin/product-categories/${id}/`);
+  },
+};
+
+export const adminProductsApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/products/', { params });
+    return res.data;
+  },
+  get: async (id: string) => {
+    const res = await axiosInstance.get(`/admin/products/${id}/`);
+    return res.data;
+  },
+  create: async (data: Record<string, unknown>) => {
+    const res = await axiosInstance.post('/admin/products/', data);
+    return res.data;
+  },
+  update: async (id: string, data: Record<string, unknown>) => {
+    const res = await axiosInstance.patch(`/admin/products/${id}/`, data);
+    return res.data;
+  },
+  remove: async (id: string) => {
+    await axiosInstance.delete(`/admin/products/${id}/`);
+  },
+};
+
+export const adminAttributeDefinitionsApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/product-categories/attributes/', { params });
+    return res.data;
+  },
+};
+
+export const homepageApi = {
+  get: async () => {
+    const res = await axiosInstance.get('/homepage/');
+    return res.data;
+  },
+};
+
+export const adminHomepageApi = {
+  get: async () => {
+    const res = await axiosInstance.get('/admin/homepage/');
+    return res.data;
+  },
+  update: async (data: Record<string, unknown>) => {
+    const res = await axiosInstance.patch('/admin/homepage/', data);
+    return res.data;
+  },
+};
+
 export const adminApi = {
   getDashboard: async () => {
     const res = await axiosInstance.get('/admin/dashboard/stats/');

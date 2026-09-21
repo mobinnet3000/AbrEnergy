@@ -13,6 +13,9 @@ urlpatterns = [
     path("service-categories/", include("apps.services.api.v1.category_urls")),
     # Projects
     path("projects/", include("apps.projects.api.v1.urls")),
+    # Products catalog
+    path("products/", include("apps.products.api.v1.urls.products")),
+    path("product-categories/", include("apps.products.api.v1.urls.categories")),
     # Calculator
     path("calculator/", include("apps.calculator.api.v1.urls")),
     # Contact (public)
@@ -26,6 +29,8 @@ urlpatterns = [
     path("notifications/", include("apps.notifications.api.v1.urls")),
     # Site Config
     path("site-config/", include("apps.core.api.v1.urls.site_urls")),
+    # Homepage CMS (Phase 7)
+    path("homepage/", include("apps.homepage.api.v1.urls.public_urls")),
     # Admin only
     path("admin/dashboard/", include("apps.core.api.v1.urls.dashboard_urls")),
     path("admin/activity-log/", include("apps.core.api.v1.urls.activity_urls")),
@@ -37,7 +42,10 @@ urlpatterns = [
     path("admin/services/", include("apps.services.api.v1.urls.admin_urls")),
     path("admin/service-categories/", include("apps.services.api.v1.urls.admin_category_urls")),
     path("admin/projects/", include("apps.projects.api.v1.urls.admin_urls")),
+    path("admin/products/", include("apps.products.api.v1.urls.admin_urls")),
+    path("admin/product-categories/", include("apps.products.api.v1.urls.admin_category_urls")),
     path("admin/calculator/history/", include("apps.calculator.api.v1.urls.admin_urls")),
     path("admin/site-config/", include("apps.core.api.v1.urls.admin_site_urls")),
+    path("admin/homepage/", include("apps.homepage.api.v1.urls.admin_urls")),
     path("admin/", include("apps.users.api.v1.urls.admin_urls")),
 ]

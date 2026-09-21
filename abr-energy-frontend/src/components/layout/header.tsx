@@ -7,7 +7,7 @@ import { Menu, X, Sun, Moon, LogIn, User, Globe, Zap } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLocale } from '@/i18n';
-import { localeNames, locales } from '@/i18n';
+import { localeNames, activeLocales } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { cn } from '@/lib/utils';
 import { navigationConfig } from '@/config/navigation';
@@ -123,7 +123,7 @@ export function Header() {
                     className="absolute right-0 top-full mt-2 w-36 rounded-xl border border-white/10 bg-black/80 backdrop-blur-2xl p-1.5 shadow-2xl z-50"
                     onMouseLeave={closeLang}
                   >
-                    {locales.map((l) => (
+                    {activeLocales.map((l) => (
                       <button
                         key={l}
                         type="button"
@@ -248,7 +248,7 @@ export function Header() {
                 <p className="px-4 text-xs font-medium text-white/30 uppercase tracking-wider">
                   {t('common.language')}
                 </p>
-                {locales.map((l) => (
+                {activeLocales.map((l) => (
                   <button
                     key={l}
                     type="button"

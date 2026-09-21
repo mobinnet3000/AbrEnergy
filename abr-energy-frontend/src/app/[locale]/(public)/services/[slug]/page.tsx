@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Check, Sun, Zap, Shield, Clock, BarChart3, Leaf,
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useLocale } from '@/i18n';
 import type { Service } from '@/types';
 
@@ -75,7 +76,7 @@ export default function ServiceDetailPage() {
           <div className="max-w-3xl mx-auto">
             <ScrollReveal variant="slide-up">
               <h2 className="font-heading text-3xl font-bold text-white mb-6">{t('services.overview')}</h2>
-              <div className="text-white/35 leading-relaxed text-base" dangerouslySetInnerHTML={{ __html: service.description }} />
+              <div className="text-white/35 leading-relaxed text-base" dangerouslySetInnerHTML={{ __html: sanitizeHtml(service.description) }} />
             </ScrollReveal>
           </div>
         </div>

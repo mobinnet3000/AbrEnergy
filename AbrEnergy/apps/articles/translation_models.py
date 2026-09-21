@@ -26,6 +26,9 @@ class ArticleTranslation(models.Model):
         return f"{self.article.id} - {self.language}: {self.title[:50]}"
 
     def save(self, *args, **kwargs):
+        from apps.core.sanitizer import clean_html
+        if self.content:
+            self.content = clean_html(self.content)
         if not self.slug:
             self.slug = slugify(self.title, allow_unicode=True)
         super().save(*args, **kwargs)

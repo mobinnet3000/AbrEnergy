@@ -5,6 +5,8 @@ import { ArrowRight, Building2, Sun } from 'lucide-react';
 import { useFeaturedProjects } from '@/hooks/use-api';
 import { CardLoading, ErrorState } from '@/components/shared';
 import { useLocale } from '@/i18n';
+import { homepageCopy } from '@/lib/homepage';
+import type { HomepageSection } from '@/types';
 
 function ProjectCard({ project }: { project: Record<string, unknown> }) {
   return (
@@ -41,13 +43,29 @@ function ProjectCard({ project }: { project: Record<string, unknown> }) {
   );
 }
 
-export function ProjectsSection() {
+export function ProjectsSection({ cms }: {
+  cms?: { items?: Record<string, unknown>[] | null; section?: HomepageSection | null } | null;
+}) {
   const { t } = useLocale();
   const { data: featured, isLoading, error } = useFeaturedProjects();
-  const projects = Array.isArray(featured?.results) ? featured.results : (Array.isArray(featured) ? featured : []);
+  const hookProjects = Array.isArray(featured?.results) ? featured.results : (Array.isArray(featured) ? featured : []);
+
+  if (cms?.section && cms.section.enabled === false) return null;
+
+  const hasCmsItems = cms?.items !== undefined && cms?.items !== null;
+  const projects = hasCmsItems ? (cms.items as Record<string, unknown>[]) : hookProjects;
+  const loading = hasCmsItems ? false : isLoading;
+  const loadError = hasCmsItems ? null : error;
+  const title = homepageCopy(cms?.section?.title, t('home.projects_title'));
+  const subtitle = homepageCopy(cms?.section?.subtitle, t('home.projects_subtitle'));
+
+  // Hide the proof section when the backend has no featured projects —
+  // never fabricate project imagery, capacities, or locations.
+
+  if (!loading && !loadError && projects.length === 0) return null;
 
   return (
-    <section data-section="projects" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="projects" aria-labelledby="homepage-projects-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-950/5 to-black" />
       
       <div className="container-page relative z-10">
@@ -60,16 +78,17 @@ export function ProjectsSection() {
         >
           <div>
             <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('home.projects_subtitle_prefix')}</p>
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">{t('home.projects_title')}</h2>
+            <h2 id="homepage-projects-heading" className="font-heading text-4xl md:text-5xl font-bold text-white">{title}</h2>
+            <p className="text-white/40 text-lg max-w-2xl mt-3">{subtitle}</p>
           </div>
           <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors duration-300">
             {t('common.view_all')} <ArrowRight className="h-4 w-4" />
           </Link>
         </motion.div>
 
-        {isLoading ? (
+        {loading ? (
           <CardLoading count={3} />
-        ) : error ? (
+        ) : loadError ? (
           <ErrorState title={t('common.error')} message={t('common.no_data')} />
         ) : projects.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

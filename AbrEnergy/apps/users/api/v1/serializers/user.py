@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id", "email", "phone_number", "full_name", "role",
             "avatar", "bio", "is_active", "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "role", "is_active", "created_at", "updated_at"]
 
 
 class UserListSerializer(serializers.ModelSerializer):

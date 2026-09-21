@@ -32,16 +32,12 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ]
 
     def get_cover_image(self, obj):
-        cover = obj.images.filter(is_cover=True).first()
-        if cover and cover.media_file:
+        images = list(obj.images.all())
+        cover = next((i for i in images if i.is_cover and i.media_file_id), None)
+        first = cover or next((i for i in images if i.media_file_id), None)
+        if first is not None:
             try:
-                return cover.media_file.file.url
-            except Exception:
-                pass
-        first_img = obj.images.filter().first()
-        if first_img and first_img.media_file:
-            try:
-                return first_img.media_file.file.url
+                return first.media_file.file.url
             except Exception:
                 pass
         return ""

@@ -41,4 +41,4 @@ class ProjectInquiryAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark selected as Completed")
     def mark_completed(self, request, queryset):
-        queryset.update(status="completed")
+        queryset.update(status="accepted")

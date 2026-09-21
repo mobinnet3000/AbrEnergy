@@ -1,0 +1,11 @@
+export { ProductStatusBadge, ProductVisibilityBadge, PriceStateBadge } from './product-status-badge';
+export { CategorySelector } from './category-selector';
+export { DocumentUpload } from './document-upload';
+export { ProductMediaManager } from './product-media-manager';
+export { ProductDocumentsManager } from './product-documents-manager';
+export { ProductPriceEditor } from './product-price-editor';
+export { ProductAttributesEditor } from './product-attributes-editor';
+export { ProductSpecificationsEditor } from './product-specifications-editor';
+export { ProductRelationsEditor } from './product-relations-editor';
+export { ProductSeoFields } from './product-seo-fields';
+export { ProductPublishPanel } from './product-publish-panel';

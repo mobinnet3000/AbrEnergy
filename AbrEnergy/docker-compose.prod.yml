@@ -38,14 +38,14 @@ services:
 
   django:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     volumes:
       - media_volume:/app/media
       - static_volume:/app/staticfiles
       - db_backups:/app/backups
     env_file:
-      - ../.env
+      - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
@@ -62,13 +62,13 @@ services:
 
   celery_worker:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     volumes:
       - media_volume:/app/media
       - db_backups:/app/backups
     env_file:
-      - ../.env
+      - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
@@ -84,10 +84,10 @@ services:
 
   celery_beat:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile
     env_file:
-      - ../.env
+      - .env
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
@@ -95,7 +95,7 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A config beat -l info
 
 volumes:
   postgres_data:

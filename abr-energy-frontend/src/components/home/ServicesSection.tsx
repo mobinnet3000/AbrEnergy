@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sun, Zap, Shield } from 'lucide-react';
+import { ArrowRight, Sun } from 'lucide-react';
 import { useServices } from '@/hooks/use-api';
-import { CardLoading } from '@/components/shared';
+import { CardLoading, ErrorState } from '@/components/shared';
 import { useLocale } from '@/i18n';
+import { homepageCopy } from '@/lib/homepage';
+import type { HomepageSection } from '@/types';
 
 function ServiceCard({ icon: Icon, title, desc, href, i }: {
   icon: React.ComponentType<{ className?: string }>;
@@ -61,21 +63,28 @@ function ServiceCard({ icon: Icon, title, desc, href, i }: {
   );
 }
 
-export function ServicesSection() {
+export function ServicesSection({ cms }: {
+  cms?: { items?: Record<string, unknown>[] | null; section?: HomepageSection | null } | null;
+}) {
   const { t } = useLocale();
-  const { data: servicesData, isLoading: servicesLoading } = useServices();
-  const services = Array.isArray(servicesData?.results) ? servicesData.results : (Array.isArray(servicesData) ? servicesData : []);
+  const { data: servicesData, isLoading: servicesLoading, error: servicesError, refetch } = useServices();
+  const hookServices = Array.isArray(servicesData?.results) ? servicesData.results : (Array.isArray(servicesData) ? servicesData : []);
 
-  const fallback = [
-    { icon: Sun, t: 'Solar Design & EPC', d: 'Complete engineering, procurement, and construction services for solar power plants.' },
-    { icon: Zap, t: 'On Grid Systems', d: 'Grid-tied solar systems for residential, commercial, and industrial applications.' },
-    { icon: Shield, t: 'Off Grid Systems', d: 'Independent solar power systems with battery storage for remote locations.' },
-  ];
+  if (cms?.section && cms.section.enabled === false) return null;
 
-  const items = services.length > 0 ? services : fallback;
+  const hasCmsItems = cms?.items !== undefined && cms?.items !== null;
+  const services = hasCmsItems ? (cms.items as Record<string, unknown>[]) : hookServices;
+  const loading = hasCmsItems ? false : servicesLoading;
+  const error = hasCmsItems ? null : servicesError;
+  const title = homepageCopy(cms?.section?.title, t('home.services_title'));
+  const subtitle = homepageCopy(cms?.section?.subtitle, t('home.services_subtitle'));
+
+  // No invented fallback services: the section renders only real backend
+  // content and hides itself when none is available.
+  if (!loading && !error && services.length === 0) return null;
 
   return (
-    <section data-section="services" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="services" aria-labelledby="homepage-services-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/5 to-black" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/4 rounded-full blur-[150px]" />
       
@@ -88,21 +97,27 @@ export function ServicesSection() {
           className="text-center mb-16"
         >
           <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('services.what_we_do')}</p>
-          <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('home.services_title')}</h2>
-          <p className="text-white/35 text-lg max-w-2xl mx-auto">{t('home.services_subtitle')}</p>
+          <h2 id="homepage-services-heading" className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{title}</h2>
+          <p className="text-white/35 text-lg max-w-2xl mx-auto">{subtitle}</p>
         </motion.div>
 
-        {servicesLoading ? (
+        {loading ? (
           <CardLoading count={3} />
+        ) : error ? (
+          <ErrorState
+            title={t('common.error')}
+            message={t('common.no_data')}
+            action={{ label: t('products.retry'), onClick: () => refetch() }}
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {items.slice(0, 6).map((s: Record<string, unknown> | { icon: React.ComponentType<{ className?: string }>; t: string; d: string }, i: number) => (
+            {services.slice(0, 6).map((s: Record<string, unknown>, i: number) => (
               <ServiceCard
-                key={i}
-                icon={(s as Record<string, unknown>).icon as React.ComponentType<{ className?: string }> || Sun}
-                title={(s as Record<string, unknown>).title as string || (s as { t: string }).t}
-                desc={(s as Record<string, unknown>).short_description as string || (s as { d: string }).d}
-                href={`/services/${(s as Record<string, unknown>).slug || ''}`}
+                key={(s.id as string) ?? i}
+                icon={Sun}
+                title={s.title as string}
+                desc={(s.short_description as string) || ''}
+                href={`/services/${(s.slug as string) || ''}`}
                 i={i}
               />
             ))}

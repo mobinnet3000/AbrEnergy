@@ -1,4 +1,6 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from apps.core.mixins import TranslatedSlugDetailMixin
 from apps.projects.models import Project
 from apps.projects.api.v1.serializers.project import (
     ProjectListSerializer,
@@ -25,7 +27,9 @@ class ProjectListView(generics.ListCreateAPIView):
         return [permissions.IsAuthenticated(), IsAdminUser()]
 
     def get_queryset(self):
-        qs = Project.objects.prefetch_related("images__media_file").all()
+        qs = Project.objects.prefetch_related(
+            "translations", "images__media_file"
+        ).select_related("service_category").all()
         project_type = self.request.query_params.get("project_type")
         status = self.request.query_params.get("status")
         if project_type:
@@ -34,11 +38,16 @@ class ProjectListView(generics.ListCreateAPIView):
             qs = qs.filter(status=status)
         return qs
 
-    search_fields = ["title", "location"]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["translations__title", "location"]
     filterset_fields = ["project_type", "status", "is_featured"]
 
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        return qs.distinct()
 
-class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+class ProjectDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return ProjectWriteSerializer
@@ -54,7 +63,9 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsAdminUser()]
 
-    queryset = Project.objects.prefetch_related("images__media_file").all()
+    queryset = Project.objects.prefetch_related(
+        "translations", "images__media_file"
+    ).select_related("service_category").all()
     lookup_field = "slug"
 
 
@@ -68,7 +79,9 @@ class ProjectFeaturedView(generics.ListAPIView):
         return context
 
     def get_queryset(self):
-        return Project.objects.filter(is_featured=True).prefetch_related("images__media_file")
+        return Project.objects.filter(is_featured=True).prefetch_related(
+            "translations", "images__media_file"
+        ).select_related("service_category")
 
 
 class ProjectByTypeView(generics.ListAPIView):
@@ -83,4 +96,4 @@ class ProjectByTypeView(generics.ListAPIView):
     def get_queryset(self):
         return Project.objects.filter(
             project_type=self.kwargs["type"]
-        ).prefetch_related("images__media_file")
+        ).prefetch_related("translations", "images__media_file").select_related("service_category")

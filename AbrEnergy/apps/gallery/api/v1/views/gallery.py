@@ -12,15 +12,25 @@ class GalleryPublicView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = GalleryImageSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_queryset(self):
-        qs = GalleryImage.objects.filter(is_active=True).select_related("category", "media_file")
+        qs = GalleryImage.objects.filter(is_active=True).select_related("category", "media_file").prefetch_related("category__translations")
         category_slug = self.kwargs.get("category_slug")
         if category_slug:
-            qs = qs.filter(category__slug=category_slug)
+            qs = qs.filter(category__translations__slug=category_slug).distinct()
         return qs
 
 
 class GalleryAdminListView(generics.ListCreateAPIView):
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.request.query_params.get("lang", self.request.META.get("HTTP_ACCEPT_LANGUAGE", "fa"))
+        return context
+
     def get_serializer_class(self):
         if self.request.method == "POST":
             return GalleryImageWriteSerializer
@@ -31,7 +41,7 @@ class GalleryAdminListView(generics.ListCreateAPIView):
             return [IsAdminUser()]
         return [permissions.IsAuthenticated(), IsAdminUser()]
 
-    queryset = GalleryImage.objects.select_related("category", "media_file").all()
+    queryset = GalleryImage.objects.select_related("category", "media_file").prefetch_related("category__translations").all()
 
 
 class GalleryAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -47,7 +57,7 @@ class GalleryCategoryListView(generics.ListCreateAPIView):
             return [permissions.AllowAny()]
         return [IsAdminUser()]
 
-    queryset = GalleryCategory.objects.all()
+    queryset = GalleryCategory.objects.prefetch_related("translations").all()
     serializer_class = GalleryCategorySerializer
 
 
@@ -57,6 +67,6 @@ class GalleryCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.AllowAny()]
         return [IsAdminUser()]
 
-    queryset = GalleryCategory.objects.all()
+    queryset = GalleryCategory.objects.prefetch_related("translations").all()
     serializer_class = GalleryCategorySerializer
     lookup_field = "pk"

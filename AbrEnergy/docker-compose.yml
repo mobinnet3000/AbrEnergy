@@ -29,16 +29,16 @@ services:
 
   django:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile.dev
     volumes:
-      - ..:/app
+      - .:/app
       - media_volume:/app/media
       - static_volume:/app/staticfiles
     ports:
       - "8000:8000"
     env_file:
-      - ../.env
+      - .env
     environment:
       - DB_HOST=db
       - DB_PORT=5432
@@ -56,13 +56,13 @@ services:
 
   celery_worker:
     build:
-      context: ..
+      context: .
       dockerfile: docker/Dockerfile.dev
     volumes:
-      - ..:/app
+      - .:/app
       - media_volume:/app/media
     env_file:
-      - ../.env
+      - .env
     environment:
       - DB_HOST=db
       - DB_PORT=5432

@@ -4,6 +4,8 @@ import { useMotionValue, useSpring } from 'framer-motion';
 
 const sectionColors: Record<string, [number, number, number]> = {
   hero: [16, 185, 129],
+  featured: [16, 185, 129],
+  categories: [59, 130, 246],
   stats: [59, 130, 246],
   services: [217, 119, 6],
   projects: [6, 182, 212],

@@ -10,5 +10,6 @@ celery>=5.4,<5.5
 redis>=5.0,<5.1
 psycopg2-binary>=2.9,<2.10
 python-decouple>=3.8,<3.9
+bleach>=6.0,<7.0
 gunicorn>=22.0,<22.1
 django-ckeditor>=6.7,<6.8

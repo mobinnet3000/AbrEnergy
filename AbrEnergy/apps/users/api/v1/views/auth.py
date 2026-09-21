@@ -49,8 +49,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-            user = User.objects.get(email=request.data["email"])
-            response.data["user"] = UserSerializer(user).data
+            email = request.data.get("email")
+            if email:
+                try:
+                    user = User.objects.get(email=email)
+                except User.DoesNotExist:
+                    return response
+                response.data["user"] = UserSerializer(user).data
         return response
 
 

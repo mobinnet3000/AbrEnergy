@@ -1,6 +1,7 @@
 from rest_framework import generics, filters, permissions
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.core.mixins import TranslatedSlugDetailMixin
 from apps.articles.models import Article, Category, Tag
 from apps.articles.api.v1.serializers.article import (
     ArticleListSerializer,
@@ -32,7 +33,7 @@ class ArticleListView(generics.ListCreateAPIView):
         return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
-        qs = Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags")
+        qs = Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags", "translations")
         if self.request.method == "GET" and not self.request.user.is_authenticated:
             qs = qs.filter(status="published")
         elif self.request.user.is_authenticated and self.request.query_params.get("status"):
@@ -41,11 +42,16 @@ class ArticleListView(generics.ListCreateAPIView):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "status", "is_featured", "author"]
-    search_fields = ["title", "short_description", "content"]
-    ordering_fields = ["publish_date", "created_at", "view_count", "title"]
+    search_fields = ["translations__title", "translations__short_description", "translations__content"]
+    ordering_fields = ["publish_date", "created_at", "view_count"]
+    ordering = ["-publish_date", "-created_at"]
+
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        return qs.distinct()
 
 
-class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ArticleDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return ArticleWriteSerializer
@@ -62,7 +68,7 @@ class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
         return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
-        return Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags", "images")
+        return Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags", "images", "translations")
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -149,7 +155,7 @@ class CategoryArticlesView(generics.ListAPIView):
         slug = self.kwargs["slug"]
         return Article.objects.filter(
             category__slug=slug, status="published"
-        ).select_related("author", "category")
+        ).select_related("author", "category").prefetch_related("tags", "translations")
 
 
 class TagArticlesView(generics.ListAPIView):
@@ -165,4 +171,4 @@ class TagArticlesView(generics.ListAPIView):
         slug = self.kwargs["slug"]
         return Article.objects.filter(
             tags__slug=slug, status="published"
-        ).select_related("author", "category")
+        ).select_related("author", "category").prefetch_related("tags", "translations")

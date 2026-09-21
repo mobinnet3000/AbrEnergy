@@ -65,6 +65,12 @@ class Service(models.Model):
         return t.title if t else str(self.id)
 
     def get_translation(self, language):
+        prefetched = self._prefetched_objects_cache.get("translations") if hasattr(self, "_prefetched_objects_cache") else None
+        if prefetched is not None:
+            for t in prefetched:
+                if t.language == language:
+                    return t
+            return None
         return self.translations.filter(language=language).first()
 
 

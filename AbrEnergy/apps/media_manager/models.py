@@ -15,21 +15,19 @@ class MediaFile(models.Model):
     FILE_TYPE_CHOICES = [
         ("image", "Image"),
         ("document", "Document"),
-        ("video", "Video"),
-        ("other", "Other"),
     ]
+
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+    ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+    MAX_UPLOAD_SIZE = 10 * 1024 * 1024
+    ALLOWED_DOC_EXTENSIONS = {"pdf"}
+    ALLOWED_DOC_MIME_TYPES = {"application/pdf"}
+    MAX_DOC_SIZE = 25 * 1024 * 1024
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     file = models.FileField(
         upload_to=media_upload_path,
-        validators=[FileExtensionValidator(
-            allowed_extensions=[
-                "jpg", "jpeg", "png", "gif", "webp", "svg", "bmp",
-                "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
-                "mp4", "avi", "mov", "mkv",
-                "zip", "rar", "txt",
-            ]
-        )],
+        validators=[FileExtensionValidator(allowed_extensions=["jpg", "jpeg", "png", "webp", "pdf"])],
     )
     thumbnail = VersatileImageField(
         upload_to="thumbnails/", blank=True, null=True
@@ -66,15 +64,7 @@ class MediaFile(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.file_type:
-            ext = self.original_name.split(".")[-1].lower()
-            image_exts = {"jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"}
-            video_exts = {"mp4", "avi", "mov", "mkv"}
-            if ext in image_exts:
-                self.file_type = "image"
-            elif ext in video_exts:
-                self.file_type = "video"
-            elif ext in {"pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"}:
-                self.file_type = "document"
-            else:
-                self.file_type = "other"
+            name = getattr(self.file, "name", "") or ""
+            ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+            self.file_type = "document" if ext in self.ALLOWED_DOC_EXTENSIONS else "image"
         super().save(*args, **kwargs)

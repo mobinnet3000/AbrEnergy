@@ -1,11 +1,15 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sun } from 'lucide-react';
+import { ArrowLeft, Sun } from 'lucide-react';
 import { useArticles } from '@/hooks/use-api';
+import { useLocale } from '@/i18n';
 import { CardLoading } from '@/components/shared';
+import { homepageCopy } from '@/lib/homepage';
+import type { HomepageSection } from '@/types';
 
 function ArticleCard({ article }: { article: Record<string, unknown> }) {
+  const { t } = useLocale();
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -25,7 +29,7 @@ function ArticleCard({ article }: { article: Record<string, unknown> }) {
           </div>
           <div className="p-6">
             <p className="text-xs font-semibold text-emerald-400/80 uppercase tracking-widest mb-2">
-              {(article as { category_title?: string }).category_title || 'Article'}
+              {(article as { category_title?: string }).category_title || t('articles.label')}
             </p>
             <h3 className="font-heading font-semibold text-lg text-white leading-snug group-hover:text-emerald-400 transition-colors duration-300">
               {article.title as string}
@@ -40,16 +44,27 @@ function ArticleCard({ article }: { article: Record<string, unknown> }) {
   );
 }
 
-export function ArticlesSection() {
+export function ArticlesSection({ cms }: {
+  cms?: { items?: Record<string, unknown>[] | null; section?: HomepageSection | null } | null;
+}) {
+  const { t } = useLocale();
   const { data: articlesData, isLoading: articlesLoading } = useArticles({ is_featured: 'true' });
-  const articles = Array.isArray(articlesData?.results) ? articlesData.results : (Array.isArray(articlesData) ? articlesData : []);
+  const hookArticles = Array.isArray(articlesData?.results) ? articlesData.results : (Array.isArray(articlesData) ? articlesData : []);
 
-  if (articles.length === 0) return null;
+  if (cms?.section && cms.section.enabled === false) return null;
+
+  const hasCmsItems = cms?.items !== undefined && cms?.items !== null;
+  const articles = hasCmsItems ? (cms.items as Record<string, unknown>[]) : hookArticles;
+  const loading = hasCmsItems ? false : articlesLoading;
+  const title = homepageCopy(cms?.section?.title, t('home.articles_title'));
+  const subtitle = homepageCopy(cms?.section?.subtitle, t('home.articles_subtitle'));
+
+  if (!loading && articles.length === 0) return null;
 
   return (
-    <section data-section="articles" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="articles" aria-labelledby="homepage-articles-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-teal-950/5 to-black" />
-      
+
       <div className="container-page relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -59,15 +74,16 @@ export function ArticlesSection() {
           className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14"
         >
           <div>
-            <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">Insights</p>
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white">Latest Articles</h2>
+            <p className="text-sm font-semibold text-emerald-400/80 uppercase tracking-[0.2em] mb-4">{t('articles.label')}</p>
+            <h2 id="homepage-articles-heading" className="font-heading text-4xl md:text-5xl font-bold text-white">{title}</h2>
+            <p className="text-white/40 text-lg max-w-2xl mt-3">{subtitle}</p>
           </div>
           <Link href="/articles" className="inline-flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors duration-300">
-            View All <ArrowRight className="h-4 w-4" />
+            {t('common.view_all')} <ArrowLeft className="h-4 w-4" aria-hidden />
           </Link>
         </motion.div>
 
-        {articlesLoading ? (
+        {loading ? (
           <CardLoading count={3} />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">

@@ -4,3 +4,4 @@ export { LoadingSkeleton, PageLoading, CardLoading, TableLoading } from './loadi
 export { EmptyState, ErrorState, SuccessState, NotFoundState } from './states';
 export { RichTextEditor } from './rich-text-editor';
 export { MediaUpload } from './media-upload';
+export { ConfirmDialog } from './confirm-dialog';

@@ -22,6 +22,9 @@ class ServiceTranslation(models.Model):
         return f"{self.service_id} - {self.language}: {self.title[:50]}"
 
     def save(self, *args, **kwargs):
+        from apps.core.sanitizer import clean_html
+        if self.description:
+            self.description = clean_html(self.description)
         if not self.slug:
             self.slug = slugify(self.title, allow_unicode=True)
         super().save(*args, **kwargs)

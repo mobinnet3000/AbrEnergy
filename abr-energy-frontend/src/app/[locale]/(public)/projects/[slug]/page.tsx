@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, MapPin, Zap, Calendar, Loader2 } from 'lucide-re
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useLocale } from '@/i18n';
 import type { ProjectDetail } from '@/types';
 
@@ -74,7 +75,7 @@ export default function ProjectDetailPage() {
           <ScrollReveal variant="fade">
             <div className="max-w-3xl mx-auto">
               <h2 className="font-heading text-3xl font-bold text-white mb-6">{t('projects.overview')}</h2>
-              <div className="prose prose-invert prose-emerald max-w-none [&_p]:text-white/50 [&_p]:leading-relaxed" dangerouslySetInnerHTML={{ __html: project.description }} />
+              <div className="prose prose-invert prose-emerald max-w-none [&_p]:text-white/50 [&_p]:leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }} />
             </div>
           </ScrollReveal>
         </div>

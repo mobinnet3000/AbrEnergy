@@ -1,18 +1,20 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.utils import timezone
+from datetime import timedelta
 from apps.media_manager.models import MediaFile
 from apps.media_manager.api.v1.serializers.media import (
     MediaFileUploadSerializer,
     MediaFileListSerializer,
 )
-from apps.users.api.v1.permissions import IsAdminUser
+from apps.users.api.v1.permissions import IsAdminUser, IsContentManager
 
 
 class MediaUploadView(generics.CreateAPIView):
     serializer_class = MediaFileUploadSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsContentManager]
     parser_classes = [MultiPartParser, FormParser]
 
     def create(self, request, *args, **kwargs):
@@ -47,5 +49,10 @@ class MediaDeleteView(generics.DestroyAPIView):
 @api_view(["POST"])
 @permission_classes([IsAdminUser])
 def cleanup_temp_media(request):
-    deleted_count, _ = MediaFile.objects.filter(is_temp=True).delete()
-    return Response({"deleted": deleted_count})
+    threshold = timezone.now() - timedelta(days=7)
+    qs = MediaFile.objects.filter(is_temp=True, uploaded_at__lt=threshold)
+    deleted_count = qs.count()
+    ids = list(qs.values_list("id", flat=True)[:100])
+    if ids:
+        MediaFile.objects.filter(id__in=ids).delete()
+    return Response({"deleted": deleted_count, "sample_ids": [str(i) for i in ids]})

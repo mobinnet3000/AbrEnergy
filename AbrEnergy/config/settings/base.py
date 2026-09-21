@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "apps.contacts",
     "apps.gallery",
     "apps.notifications",
+    "apps.products",
+    "apps.homepage",
 ]
 
 MIDDLEWARE = [
@@ -75,28 +77,32 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-# Database
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": config("DB_NAME", default="abrenv_db"),
-#         "USER": config("DB_USER", default="postgres"),
-#         "PASSWORD": config("DB_PASSWORD", default="postgres"),
-#         "HOST": config("DB_HOST", default="localhost"),
-#         "PORT": config("DB_PORT", default="5432"),
-#         "ATOMIC_REQUESTS": True,
-#         "CONN_MAX_AGE": 60,
-#         "OPTIONS": {
-#             "connect_timeout": 10,
-#         },
-#     }
-# }
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Database: PostgreSQL when DB_ENGINE=postgresql (or DB_HOST set),
+# explicit SQLite only when DB_ENGINE=sqlite. No silent fallback.
+_DB_ENGINE = config("DB_ENGINE", default="postgresql")
+if _DB_ENGINE == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": config("DB_NAME", default=str(BASE_DIR / "db.sqlite3")),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="abrenv_db"),
+            "USER": config("DB_USER", default="postgres"),
+            "PASSWORD": config("DB_PASSWORD", default="postgres"),
+            "HOST": config("DB_HOST", default="localhost"),
+            "PORT": config("DB_PORT", default="5432"),
+            "ATOMIC_REQUESTS": True,
+            "CONN_MAX_AGE": 60,
+            "OPTIONS": {
+                "connect_timeout": 10,
+            },
+        }
+    }
 
 AUTH_USER_MODEL = "users.User"
 
@@ -172,11 +178,12 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
-# CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-]
+# CORS: environment-driven. Comma-separated origins.
+CORS_ALLOWED_ORIGINS = config(
+    "CORS_ALLOWED_ORIGINS",
+    default="http://localhost:3000,http://localhost:3001",
+    cast=Csv(),
+)
 CORS_ALLOW_CREDENTIALS = True
 CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
 
@@ -184,10 +191,11 @@ CORS_EXPOSE_HEADERS = ["Content-Type", "Authorization"]
 CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-]
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="http://localhost:3000,http://localhost:3001",
+    cast=Csv(),
+)
 # Sessions
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True

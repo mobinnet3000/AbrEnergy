@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Zap } from 'lucide-react';
 import { useLocale } from '@/i18n';
-import { localeNames, locales } from '@/i18n';
+import { localeNames, activeLocales } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
 
@@ -106,7 +106,7 @@ export function Footer() {
           <ScrollReveal variant="fade" delay={0.25} className="lg:col-span-3">
             <FooterColumn title={t('common.language')}>
               <div className="flex flex-wrap gap-2">
-                {locales.map((l) => (
+                {activeLocales.map((l) => (
                   <button
                     key={l}
                     type="button"

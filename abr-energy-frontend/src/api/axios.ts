@@ -69,7 +69,8 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         if (typeof window !== 'undefined') {
-          window.location.href = '/login';
+          const locale = localStorage.getItem('locale') || 'fa';
+          window.location.href = `/${locale}/login`;
         }
         return Promise.reject(err);
       } finally {

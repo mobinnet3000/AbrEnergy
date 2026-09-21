@@ -54,6 +54,7 @@ def dashboard_stats(request):
     from apps.services.models import Service
     from apps.projects.models import Project
     from apps.contacts.models import ContactRequest, ProjectInquiry
+    from apps.products.models import Product, ProductCategory
 
     data = {
         "total_users": User.objects.count(),
@@ -64,6 +65,12 @@ def dashboard_stats(request):
         "total_inquiries": ProjectInquiry.objects.count(),
         "pending_contacts": ContactRequest.objects.filter(status="pending").count(),
         "pending_inquiries": ProjectInquiry.objects.filter(status="new").count(),
+        # Phase 3: product overview (4 aggregate COUNTs, no N+1).
+        "total_product_categories": ProductCategory.objects.count(),
+        "total_products": Product.objects.count(),
+        "published_products": Product.objects.filter(status="published").count(),
+        "draft_products": Product.objects.filter(status="draft").count(),
+        "featured_products": Product.objects.filter(is_featured=True).count(),
     }
     return Response(data)
 

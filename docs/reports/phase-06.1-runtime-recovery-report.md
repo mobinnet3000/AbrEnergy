@@ -1,0 +1,387 @@
+# Phase 06.1 — Local Runtime Recovery & Verification Report
+
+Date: 2026-09-21. Scope: recovery + verification ONLY. No Phase 7 work, no new
+features, no homepage redesign, no animation-architecture change, no Hero3D
+rewrite. Phase 6 implementation preserved verbatim.
+
+## 1. Executive summary
+
+Both runtime blockers are fixed with minimal, non-destructive actions:
+
+- **Frontend** (`GET /fa` 500, `Cannot find module './vendor-chunks/three.js'`):
+  root cause was a **stale/corrupt `.next` dev build cache** — the generated
+  `webpack-runtime.js` referenced `./vendor-chunks/three.js` while the
+  `.next/server/vendor-chunks/` directory contained only `@swc.js` and
+  `next.js`. Fix: stopped Next processes, deleted ONLY the generated `.next`
+  directory, restarted. No source change, no reinstall, no upgrade.
+  Dev `/fa` → 200 and production `next build` + `next start` `/fa` → 200.
+- **Backend** (`FATAL: password authentication failed for user "postgres"`):
+  root cause was a **credential mismatch, not a code problem** — no `.env`
+  file exists, so Django used the documented defaults while the local
+  PostgreSQL 16 `postgres` role had a different (unknown, pre-existing)
+  password and the `abrenv_db` database did not exist. Fix: via local
+  administrative access, aligned the local dev role password with the
+  documented default from the tracked `.env.example`, created the missing
+  (empty) `abrenv_db`, restored `pg_hba.conf` byte-identical. No data
+  destroyed (there was none), no SQLite fallback, no secrets committed.
+- **Warnings**: `staticfiles.W004` fixed (created missing `AbrEnergy/static/`);
+  `ckeditor.W001` is pre-existing, non-blocking, deferred (no CKEditor 4→5
+  migration in this phase).
+- **Regression**: Phase 6 homepage fully intact (slogan h1, single h1, RTL,
+  Hero3D/canvas, CursorGlow, particles, ripple, gradients, ScrollReveal,
+  TextReveal, parallax, tilt, all 9 sections, real-API wiring, no fake data).
+- **Tests**: backend pytest **115 passed**; frontend Vitest **145 passed**
+  (21 files); `tsc` 0 errors; ESLint 0 errors / 55 warnings — all identical
+  to the Phase 6 report counts.
+
+## 2. Initial frontend error
+
+Reproduced before any change via `GET http://localhost:3000/fa`:
+
+- HTTP 500 with Next error page payload:
+  `Cannot find module './vendor-chunks/three.js'`
+- Require stack: `.next/server/webpack-runtime.js` →
+  `.next/server/app/[locale]/(public)/page.js` → `next/dist/server/require.js`
+  → `load-components.js` → `build/utils.js` →
+  `server/dev/static-paths-worker.js`. Identical to the reported blocker.
+
+## 3. Root cause of frontend error
+
+Stale/corrupt `.next` output. Evidence (all checked before acting):
+
+- `three@0.185.1` IS installed (`node_modules/three/package.json` present);
+  `package-lock.json` records `node_modules/three` at `0.185.1` — no
+  lockfile mismatch, no missing package.
+- `npm ls three`: single deduped `three@0.185.1` for `three`,
+  `@react-three/fiber@9.6.1`, `@react-three/drei@10.7.7` (plus a nested
+  `three@0.170.0` under drei's `stats-gl` — observation only, not causal).
+- Next `15.5.21` + React `19.2.4` + fiber 9 + drei 10 + three 0.185 is a
+  compatible tree; no incompatibility proven.
+- `.next/server/vendor-chunks/` contained ONLY `@swc.js` and `next.js` —
+  `three.js` was referenced by `webpack-runtime.js` but never generated.
+- Source is sound: `Hero3D.tsx` is `'use client'`, imported via the client
+  `HeroSection` into the server homepage — the normal pattern, untouched.
+
+Conclusion: incomplete/stale webpack vendor-chunk generation in the dev
+cache, NOT a source-code or dependency problem. Hero3D was NOT modified.
+
+## 4. Frontend fix
+
+Minimal safe recovery, in order:
+
+1. Stopped ONLY the AbrEnergy frontend Next processes (`next dev` and the
+   `next-server` child; verified port 3000 closed afterwards).
+2. Deleted ONLY the generated `abr-energy-frontend/.next` directory.
+3. Explicitly did NOT delete source, `package-lock.json`, or `node_modules`;
+   did NOT run any install/upgrade.
+4. Restarted with the project's own script (`npm run dev`).
+5. First `GET /fa` after recovery: **200** (also visible in the dev log).
+
+## 5. Frontend dependency state before/after
+
+No installation or upgrade was performed (not needed — inconsistency was
+disproven). Before = after, all from `package.json` + installed tree:
+
+| Package | Version |
+|---|---|
+| `next` | 15.5.21 |
+| `react` / `react-dom` | 19.2.4 |
+| `three` | 0.185.1 (lockfile agrees) |
+| `@react-three/fiber` | 9.6.1 |
+| `@react-three/drei` | 10.7.7 |
+
+Observation (no action): `npm ls three` shows one nested `three@0.170.0`
+under `@react-three/drei → stats-gl`. Deduped everywhere else. Left alone;
+see deferred debt (§27).
+
+## 6. `.next`/cache handling
+
+- Removed: `abr-energy-frontend/.next/` (generated, gitignored) — and nothing
+  else.
+- Source, lockfile, `node_modules` verified intact after removal
+  (`Hero3D.tsx`, `package-lock.json`, `node_modules/three/package.json`
+  all present).
+- Fresh `.next` regenerated by `npm run dev` and later by `npm run build`
+  (BUILD_ID `tez6-vbthO5OvJo5Ao8pC`). Both are gitignored; never committed.
+
+## 7. Initial backend error
+
+Reproduced before any change:
+
+- `python manage.py migrate --check` → traceback ending in PostgreSQL
+  `FATAL: password authentication failed for user "postgres"`.
+- Direct probe with the documented default credentials:
+  `psql -U postgres -h localhost -c "SELECT 1;"` → same FATAL, exit 2.
+- `python manage.py check` (no DB needed) worked and showed only the two
+  known warnings — proving the failure is purely at DB-connect time.
+
+## 8. Root cause of PostgreSQL authentication failure
+
+Credential/environment mismatch, not application code:
+
+- The repo ships NO `.env` (only the tracked `.env.example`); `config`
+  reads `DB_*` via `python-decouple` with documented defaults
+  (`DB_NAME`/`DB_USER`/`DB_PASSWORD`/`DB_HOST`/`DB_PORT` per `.env.example`).
+- Local PostgreSQL 16 service (`postgresql-x64-16`) IS running and port
+  5432 IS listening, but the `postgres` role password did not match the
+  documented default, and the `abrenv_db` database did not exist at all
+  (cluster held only unrelated pre-existing databases; roles: `postgres`
+  plus unrelated app roles).
+- `pg_hba.conf` requires `scram-sha-256` for all local/host connections —
+  no trust/peer path existed, so the wrong password failed hard.
+- No password was ever guessed: the fix aligned the dev role with the
+  already-documented default.
+
+## 9. Database configuration discovered
+
+- Intended setup: **(A) local PostgreSQL installation** (service
+  `postgresql-x64-16`, port 5432 open; **Docker is not installed** on this
+  machine, so option B was unavailable; no remote instance configured).
+- Effective Django settings (`AbrEnergy/config/settings/base.py` + `.env.example`,
+  no `.env` overrides, no environment `DB_*` vars): PostgreSQL engine,
+  documented default name/user/password/host/port.
+- `docker-compose.yml` documents the same defaults
+  (`POSTGRES_DB/USER/PASSWORD` defaulting from `DB_*` with identical
+  fallbacks) — consistent with the local setup.
+- README (`AbrEnergy/README.md`): Docker quick-start (`cp .env.example .env`
+  + `docker compose up`) and manual setup (`createdb abrenv_db` +
+  `migrate` + `runserver`). Manual path applies here (no Docker).
+
+## 10. Database fix performed
+
+Non-destructive, local-dev only, with rollback safety:
+
+1. Backed up `pg_hba.conf` to temp (outside the repo).
+2. Prepended two temporary `trust` host lines (first-match wins), reloaded
+   config (`pg_ctl reload`, exit 0).
+3. Aligned the local dev `postgres` role password with the documented
+   default from the tracked `.env.example` (`ALTER USER postgres ...` → OK).
+4. Created the missing database `CREATE DATABASE abrenv_db OWNER postgres`
+   → OK. (Fresh and empty — nothing dropped, deleted, or reset; migration
+   history started clean via `migrate`.)
+5. Restored `pg_hba.conf` from backup byte-identical (verified: only the
+   original six `scram-sha-256` lines remain), reloaded (exit 0).
+6. Verified `psql -U postgres -h localhost -d abrenv_db -c "SELECT 1;"` → 1 row.
+7. No `.env` file was created (defaults now match); no passwords committed.
+
+## 11. Whether local PostgreSQL or Docker was used
+
+**Local PostgreSQL 16** (`postgresql-x64-16` Windows service, `localhost:5432`,
+database `abrenv_db`). Docker was not used — the `docker` CLI does not exist
+on this machine.
+
+## 12. Migration result
+
+- `python manage.py migrate` → **exit 0**, all migrations `OK` (admin, auth,
+  contenttypes, sessions, articles incl. translations, services, projects,
+  calculator, contacts, gallery, notifications, media_manager,
+  products/slughistory, token_blacklist, etc.).
+- `python manage.py makemigrations --check --dry-run` → `No changes detected`,
+  **exit 0** (plus the pre-existing W001 text on stderr).
+- No migration files were created, edited, or deleted.
+
+## 13. Django runtime result
+
+- `python manage.py runserver 127.0.0.1:8000 --noreload` → starts normally,
+  no PostgreSQL error (startup log shows only the single remaining W001
+  warning).
+- Smoke tests (all live, fresh empty DB → empty paginated results, no errors):
+  - `GET /api/v1/site-config/` → **200** (real row: brand names, hero/about
+    fields, site URL).
+  - `GET /api/v1/services/` → **200** `{"count":0,...}`.
+  - `GET /api/v1/products/featured/` → **200** `{"count":0,...}`.
+  - `GET /api/v1/product-categories/` → **200** `{"count":0,...}`.
+  - `GET /api/v1/projects/featured/` → **200** `{"count":0,...}`.
+- No seed command was run: the project documents no bootstrap/seed command,
+  and inventing one is out of scope. Empty results are the CORRECT backend
+  state — Phase 6 sections hide on empty rather than faking data.
+
+## 14. CKEditor warning status
+
+- `ckeditor.W001` (CKEditor 4.22.1 unsupported/security) — **pre-existing,
+  non-blocking, DEFERRED**. Present before this phase, still present after
+  (`manage.py check` → 1 issue, exit 0). No editor migration performed, per
+  phase constraints. Tracked as technical debt (§27).
+
+## 15. STATICFILES warning status
+
+- `staticfiles.W004` (`AbrEnergy/static` in `STATICFILES_DIRS` did not
+  exist) — **FIXED**: created the expected empty `AbrEnergy/static/`
+  directory. `manage.py check` went from 2 issues → 1 issue (W001 only).
+- The directory is intentionally part of the settings structure; no config
+  change was needed. Note: empty directories are not tracked by git, so this
+  fix is environment-local; a fresh clone will need the same one-command
+  step (see §27).
+
+## 16. Phase 6 regression verification
+
+Verified against served HTML (dev AND production `/fa`), all PASS:
+
+- `/fa` → 200 in both modes; no `vendor-chunks` error text in responses.
+- Persian hero slogan present as the page's single `h1` (`h1 count: 1`).
+- `dir="rtl"` present; NO `Powering the Future` English fallback.
+- Hero3D canvas present; GradientMesh, particles canvas, ripple, CursorGlow
+  radial layers present in markup; `TextReveal` word spans in `h1`.
+- All 9 Phase 6 sections present with original wiring:
+  `data-section="hero|featured|categories|services|calculator|projects|articles|contact"`.
+- Featured-products rail, category rail, services grid, projects grid render
+  loading skeletons against the live empty backend (correct hide-on-empty
+  behavior — no fake products/services; API 200s in §13 prove backend-driven
+  wiring).
+- Pricing remains backend-driven (`ProductPrice` untouched); category slugs
+  backend-driven; services link `/services/<slug>`.
+- Calculator CTA → `/calculator` and contact CTAs → `/contact` present and
+  functional in markup.
+- No invented statistics (`25 MW`/`150+` absent); `StatsSection` stays
+  unrendered per Phase 6 ruling.
+- Zero source files changed in this phase (see §24) — preservation by
+  construction; Hero3D/animation architecture byte-identical.
+
+## 17. Frontend test results
+
+`npm run test` (`vitest run`) — **21 test files passed, 145 tests passed**,
+duration 6.94s, exit 0. Includes `homepage.test.tsx` (24 tests). Exact
+tallies match the Phase 6 report (121 prior + 24 new). No test was skipped,
+weakened, or rewritten.
+
+## 18. Backend test results
+
+`python -m pytest` — **115 passed in 14.00s**, exit 0. Exact count matches
+the Phase 6 report. (Runs against PostgreSQL `abrenv_test` per
+`config/settings/test.py` — now possible because role auth works.) No test
+was skipped, weakened, or rewritten.
+
+## 19. TypeScript result
+
+`npm run typecheck` (`tsc --noEmit`) — **0 errors**, exit 0.
+
+## 20. ESLint result
+
+`npm run lint` — **0 errors, 55 warnings**, exit 0. Identical to the Phase 6
+report (63 → 55; zero warnings in Phase 6 files; remaining warnings are
+pre-existing `no-img-element`/`unused-vars`/`exhaustive-deps` items in
+unrelated files).
+
+## 21. Production build result
+
+`npm run build` — **success** (full route table emitted, BUILD_ID written,
+no errors). No build flag or config was changed to achieve this.
+
+## 22. Development /fa result
+
+`npm run dev` after cache recovery — `GET /fa` → **HTTP 200**
+(79,952 bytes), content checks: slogan ✓, exactly one h1 ✓, RTL ✓, no
+English fallback ✓, canvas ✓, no invented stats ✓.
+
+## 23. API health result
+
+The project ships **no dedicated `/api/health/` endpoint** (no `health`
+route in `config/`; only docker `healthcheck` stanzas). Health-equivalent
+used: `GET /api/v1/site-config/` → **200** with the real settings row,
+plus the four catalog/service/project smokes in §13 (all 200). DJANGO
+`check` exit 0 and `migrate` exit 0 corroborate runtime health.
+
+## 24. Changed files
+
+**Tracked source-code changes introduced by Phase 06.1: NONE.**
+`git status --short` shows 102 lines, all pre-existing uncommitted Phase 1–6
+work (same modified/untracked set as before this phase began — backend app
+files, frontend Phase 6 sections/locales/config, untracked Phase 6 test/lib
+files). In particular: `package.json`, `package-lock.json`, `next.config.ts`,
+`Hero3D.tsx`, `HeroSection.tsx`, homepage `page.tsx`, Django settings, and
+all migration files are byte-identical to their pre-phase state. Phase 6 work
+was not undone.
+
+## 25. Environment-only changes
+
+All local, all gitignored or outside the repo — nothing committed:
+
+- PostgreSQL: local dev `postgres` role password aligned with the documented
+  `.env.example` default; fresh empty `abrenv_db` (+ `abrenv_test` via pytest)
+  created; `pg_hba.conf` restored byte-identical (backup kept outside repo).
+- Filesystem: created empty `AbrEnergy/static/` (fixes W004; invisible to git
+  by nature of empty dirs); regenerated `abr-energy-frontend/.next/`
+  (gitignored) via dev + build.
+- Processes (left running for the operator): Django runserver on
+  `127.0.0.1:8000`, Next production server on `127.0.0.1:3001`.
+- No `.env` or secret file was created anywhere in the repo.
+
+## 26. Any remaining blockers
+
+**None** for local runtime verification. Both reported blockers are resolved
+and verified end-to-end (dev + prod frontend, Django + PostgreSQL +
+migrations + API smokes + full test suites). Redis/Celery connectivity was
+not explicitly exercised (same standing as Phase 6: connections are lazy and
+`runserver`/tests pass without a local Redis assertion) — noted, not blocking.
+
+## 27. Deferred technical debt
+
+1. **CKEditor 4 → 5 migration** (`ckeditor.W001`): pre-existing upstream
+   notice; requires a dedicated phase (license/UX implications). Not started.
+2. **`AbrEnergy/static/` durability**: the W004 fix is environment-local
+   because git does not track empty dirs. Options for a later phase: commit a
+   `.gitkeep` (would ship into `collectstatic` output — harmless but a
+   tracked change) or remove the `STATICFILES_DIRS` entry if project static
+   sources never materialize. Deliberately left undecided here.
+3. **Nested `three@0.170.0`** under `@react-three/drei → stats-gl`: dedupe
+   observation only; everything resolves to 0.185.1 otherwise. No action
+   unless a real conflict surfaces.
+4. **Redis/Celery live verification**: same gap as Phases 1–6 (no local
+   Redis assertion); dev defaults point at `localhost:6379`.
+5. **Fresh-DB content**: `abrenv_db` is empty, so catalog/service/project
+   sections correctly hide. Any content seeding must use a future documented
+   mechanism — none was invented here.
+
+## 28. Exact commands used for verification
+
+Frontend (cwd `abr-energy-frontend/`):
+
+- `node -e "console.log(require('./node_modules/three/package.json').version)"` → 0.185.1 (fiber 9.6.1, drei 10.7.7, next 15.5.21, react 19.2.4 likewise)
+- `npm ls three` → single deduped 0.185.1 (+ nested 0.170.0 note)
+- `Remove-Item -LiteralPath "abr-energy-frontend\.next" -Recurse -Force` (after stopping Next processes)
+- `npm run dev` → `GET /fa 200`
+- `curl.exe ... "http://127.0.0.1:3000/fa"` → HTTP 200 (+ content-check script: slogan/1×h1/RTL/no-fallback/canvas/no-stats)
+- `npm run build` → success
+- `node node_modules\next\dist\bin\next start -p 3001` → `GET /fa` → HTTP 200 (93,907 bytes, same content checks)
+- `npm run test` → 21 files / 145 tests passed
+- `npm run typecheck` → 0 errors
+- `npm run lint` → 0 errors, 55 warnings
+
+Backend (cwd `AbrEnergy/`):
+
+- `python manage.py check` → 1 issue (W001 only), exit 0
+- `python manage.py makemigrations --check --dry-run` → No changes detected, exit 0
+- `python manage.py migrate` → exit 0, all OK
+- `python manage.py runserver 127.0.0.1:8000 --noreload` → serving
+- `curl.exe ... "/api/v1/site-config|services|products/featured|product-categories|projects/featured"` → all HTTP 200
+- `python -m pytest` → 115 passed in 14.00s
+
+Database:
+
+- `psql -U postgres -h localhost -c "SELECT 1;"` (documented default) → FATAL before fix
+- `pg_ctl.exe reload -D ...` → `server signaled`, exit 0 (×2)
+- `psql -U postgres -h 127.0.0.1 -c "SELECT usename FROM pg_user;"` / `"SELECT datname FROM pg_database;"` → roles/DBs listed (`abrenv_db` absent)
+- `ALTER USER postgres ...` → ALTER ROLE; `CREATE DATABASE abrenv_db OWNER postgres;` → CREATE DATABASE
+- `psql -U postgres -h localhost -d abrenv_db -c "SELECT 1 AS ok;"` → 1 row, exit 0
+
+## 29. Security note confirming no credentials/secrets were committed
+
+Confirmed: no password or secret value appears in any tracked file change —
+this phase introduced **zero tracked changes at all** (`git status` delta vs
+pre-phase: none). No `.env`/secret file was created in the repo (all `*.env`
+paths are gitignored; verified no `static|`/`env` untracked entries). The
+database credential value itself is the already-tracked documented dev
+default in `.env.example` and is deliberately NOT restated here. The
+temporary `pg_hba.conf` trust lines were removed and the file restored from
+backup (verified six original `scram-sha-256` lines only). No production
+system was touched; only the local dev cluster.
+
+## 30. Final STOP status confirming Phase 7 was NOT started
+
+STOP. Phase 06.1 objectives are complete: frontend `/fa` works in dev and
+production, Django starts against PostgreSQL, migrations work, Phase 6
+regression checks pass, both test suites pass at their exact Phase 6 counts,
+warnings are classified, and this report is written. **Phase 7 was NOT
+started**: no new features, no redesigns, no migrations beyond recovery, no
+dependency upgrades, no test modifications. Live servers (Django :8000,
+Next prod :3001) left running for operator convenience.

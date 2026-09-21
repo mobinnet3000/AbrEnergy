@@ -21,6 +21,14 @@ export default function AdminDashboardPage() {
     { label: 'Pending ' + t('admin.inquiries'), value: stats.pending_inquiries, color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
   ];
 
+  const productCards = [
+    { label: t('admin.total_product_categories'), value: stats.total_product_categories },
+    { label: t('admin.total_products'), value: stats.total_products },
+    { label: t('admin.published_products'), value: stats.published_products },
+    { label: t('admin.draft_products'), value: stats.draft_products },
+    { label: t('admin.featured_products'), value: stats.featured_products },
+  ];
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">{t('admin.dashboard')}</h1>
@@ -34,6 +42,21 @@ export default function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+      {(stats.total_products != null || stats.total_product_categories != null) && (
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">{t('admin.products_overview')}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {productCards.map((c) => (
+              <Card key={c.label}>
+                <CardContent className="p-6 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300">
+                  <p className="text-sm opacity-80">{c.label}</p>
+                  <p className="text-3xl font-bold mt-1">{c.value ?? 0}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

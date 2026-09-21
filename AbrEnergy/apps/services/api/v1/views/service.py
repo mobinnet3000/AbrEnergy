@@ -1,4 +1,6 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from apps.core.mixins import TranslatedSlugDetailMixin
 from apps.services.models import Service, ServiceCategory
 from apps.services.api.v1.serializers.service import (
     ServiceListSerializer,
@@ -25,13 +27,20 @@ class ServiceListView(generics.ListCreateAPIView):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsAdminUser()]
 
-    queryset = Service.objects.select_related("category", "image").all()
+    def get_queryset(self):
+        return Service.objects.select_related("category", "image").prefetch_related("translations").all()
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "status", "is_featured"]
-    search_fields = ["title", "short_description"]
+    search_fields = ["translations__title", "translations__short_description"]
     ordering_fields = ["order", "created_at"]
 
+    def filter_queryset(self, queryset):
+        qs = super().filter_queryset(queryset)
+        return qs.distinct()
 
-class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+class ServiceDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_class(self):
         if self.request.method in ["PUT", "PATCH"]:
             return ServiceWriteSerializer
@@ -47,7 +56,7 @@ class ServiceDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsAdminUser()]
 
-    queryset = Service.objects.select_related("category", "image").all()
+    queryset = Service.objects.select_related("category", "image").prefetch_related("translations").all()
     lookup_field = "slug"
 
 

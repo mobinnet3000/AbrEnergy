@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Clock, Eye, User, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useLocale } from '@/i18n';
 import type { Article } from '@/types';
 
@@ -40,7 +41,7 @@ export default function ArticleDetailPage() {
 
   // Extract headings for Table of Contents
   const headings: { id: string; text: string }[] = [];
-  const contentWithIds = article.content.replace(/<h2[^>]*>.*?<\/h2>/gi, (match, offset) => {
+  const contentWithIds = sanitizeHtml(article.content).replace(/<h2[^>]*>.*?<\/h2>/gi, (match, offset) => {
     const id = `h-${offset}`;
     const text = match.replace(/<[^>]*>/g, '');
     headings.push({ id, text });

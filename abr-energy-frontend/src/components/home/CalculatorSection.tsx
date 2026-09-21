@@ -3,9 +3,20 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calculator } from 'lucide-react';
 import { useLocale } from '@/i18n';
+import { homepageCopy } from '@/lib/homepage';
+import type { HomepageTeaser } from '@/types';
 
-export function CalculatorSection() {
+/** Phase 7 — optional CMS marketing copy. Calculation logic stays in the app. */
+export function CalculatorSection({ cms }: { cms?: HomepageTeaser | null }) {
   const { t } = useLocale();
+
+  if (cms && cms.enabled === false) return null;
+
+  const title = homepageCopy(cms?.title, t('home.calculator_title'));
+  const text = homepageCopy(cms?.description, t('home.calculator_text'));
+  const ctaLabel = homepageCopy(cms?.cta_label, t('home.calculator_cta'));
+  const ctaUrl = cms?.cta_url?.trim() ? cms.cta_url : '/calculator';
+  const external = ctaUrl.startsWith('http://') || ctaUrl.startsWith('https://');
   return (
     <section data-section="calculator" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0">
@@ -34,18 +45,31 @@ export function CalculatorSection() {
             </div>
           </motion.div>
           
-          <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{t('home.calculator_title')}</h2>
+          <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h2>
           <p className="text-white/40 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
-            {t('home.calculator_text')}
+            {text}
           </p>
-          <Link
-            href="/calculator"
-            className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold rounded-2xl overflow-hidden transition-all duration-500"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500" />
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
-            <span className="relative z-10 flex items-center gap-2 text-white"><Calculator className="h-5 w-5" /> {t('home.calculator_cta')}</span>
-          </Link>
+          {external ? (
+            <a
+              href={ctaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold rounded-2xl overflow-hidden transition-all duration-500"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500" />
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+              <span className="relative z-10 flex items-center gap-2 text-white"><Calculator className="h-5 w-5" /> {ctaLabel}</span>
+            </a>
+          ) : (
+            <Link
+              href={ctaUrl}
+              className="group relative inline-flex items-center justify-center px-12 py-5 text-lg font-semibold rounded-2xl overflow-hidden transition-all duration-500"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500" />
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+              <span className="relative z-10 flex items-center gap-2 text-white"><Calculator className="h-5 w-5" /> {ctaLabel}</span>
+            </Link>
+          )}
         </motion.div>
       </div>
     </section>

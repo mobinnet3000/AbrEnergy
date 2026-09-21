@@ -10,9 +10,11 @@ interface MediaUploadProps {
   currentImage?: string;
   accept?: string;
   label?: string;
+  /** Backend storage subfolder (e.g. 'articles', 'products', 'categories'). Defaults to 'articles' for back-compat. */
+  subfolder?: string;
 }
 
-export function MediaUpload({ onUpload, currentImage, accept = 'image/*', label = 'Upload Image' }: MediaUploadProps) {
+export function MediaUpload({ onUpload, currentImage,   accept = '.jpg,.jpeg,.png,.webp', label = 'Upload Image', subfolder = 'articles' }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentImage || '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,7 +32,7 @@ export function MediaUpload({ onUpload, currentImage, accept = 'image/*', label 
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('subfolder', 'articles');
+      formData.append('subfolder', subfolder);
 
       const res = await axiosInstance.post('/media/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
