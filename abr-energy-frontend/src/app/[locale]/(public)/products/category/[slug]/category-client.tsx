@@ -32,19 +32,26 @@ function statusOf(error: unknown): number | undefined {
   return (error as AxiosError)?.response?.status;
 }
 
-export function CategoryClient({ slug }: { slug: string }) {
+export function CategoryClient({ slug, previewCategory }: { slug: string; previewCategory?: import('@/types').ProductCategoryDetail | null }) {
   const { t } = useLocale();
   // Page state lives here; the route renders <CategoryClient key={slug}>
   // so navigating between categories remounts and resets pagination.
   const [page, setPage] = useState(1);
 
+  // Phase 8.2 — saved-state preview: when `previewCategory` is provided the
+  // public category fetch is disabled and the SAME rendering below consumes
+  // the token-gated preview payload (public CategorySerializer — no admin
+  // fields). The product grid keeps its normal public filtering. The normal
+  // public path (`previewCategory` undefined) is untouched.
+  const isPreview = previewCategory !== undefined;
   const {
-    data: category,
+    data: fetchedCategory,
     isLoading: categoryLoading,
     isError: categoryError,
     error: categoryErr,
     refetch: refetchCategory,
-  } = usePublicProductCategory(slug);
+  } = usePublicProductCategory(slug, { enabled: !isPreview });
+  const category = (isPreview ? previewCategory : fetchedCategory) as typeof fetchedCategory;
 
   const { data: treeData } = usePublicProductCategories();
   const tree: ProductCategory[] = useMemo(

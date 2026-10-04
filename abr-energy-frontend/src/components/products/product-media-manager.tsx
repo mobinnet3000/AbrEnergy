@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton, type MediaPickerItem } from '@/components/shared/media-picker-dialog';
 import { useLocale } from '@/i18n';
 import { formKey, type ProductImageFormItem } from '@/lib/product-form';
 
@@ -34,6 +35,27 @@ export function ProductMediaManager({ images, onChange, errors }: ProductMediaMa
         alt_text: '',
         caption: '',
       },
+    ]));
+  };
+
+  // Phase 9.5 — reference-based reuse: attach EXISTING MediaFile ids as new
+  // ProductImage rows (no new MediaFile, no file copy). Already-attached ids
+  // are skipped; cover/order/remove semantics below are unchanged.
+  const addExisting = (picked: MediaPickerItem[]) => {
+    const known = new Set(images.map((im) => im.media_file));
+    const fresh = picked.filter((p) => p.id && !known.has(p.id));
+    if (fresh.length === 0) return;
+    onChange(renumber([
+      ...images,
+      ...fresh.map((p, i) => ({
+        key: formKey('img'),
+        media_file: p.id,
+        url: p.url,
+        sort_order: images.length + i,
+        is_cover: images.length === 0 && i === 0,
+        alt_text: p.alt_text || '',
+        caption: '',
+      })),
     ]));
   };
 
@@ -126,7 +148,15 @@ export function ProductMediaManager({ images, onChange, errors }: ProductMediaMa
           </div>
         ))}
       </div>
-      <MediaUpload onUpload={addImage} label={t('admin.media_upload_images')} subfolder="products" />
+      <div className="flex items-center gap-2 flex-wrap">
+        <MediaUpload onUpload={addImage} label={t('admin.media_upload_images')} subfolder="products" />
+        <ChooseMediaButton
+          mode="image"
+          multiple
+          selectedIds={images.map((im) => im.media_file).filter(Boolean)}
+          onSelect={addExisting}
+        />
+      </div>
       {errors && errors.length > 0 && (
         <ul className="text-sm text-destructive space-y-1" role="alert">
           {errors.map((e, i) => <li key={i}>{e}</li>)}

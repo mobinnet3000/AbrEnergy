@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import axiosInstance from '@/api/axios';
+import { normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -43,8 +44,13 @@ export function MediaUpload({ onUpload, currentImage,   accept = '.jpg,.jpeg,.pn
       setPreview(fileUrl);
       onUpload(fileUrl, fileId);
       toast.success('Image uploaded');
-    } catch {
-      toast.error('Upload failed');
+    } catch (err) {
+      // Phase 8.5 (BUG-06): extract a safe user-facing message through the
+      // shared normalizer (nested field errors keep their path; network and
+      // permission failures stay generic). Hardcoded fallback preserved —
+      // upload-toast localization is pre-existing debt, out of scope.
+      const summary = summarizeNormalizedError(normalizeApiError(err));
+      toast.error(summary ?? 'Upload failed');
       setPreview(currentImage || '');
     } finally {
       setUploading(false);
@@ -77,7 +83,7 @@ export function MediaUpload({ onUpload, currentImage,   accept = '.jpg,.jpeg,.pn
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="flex flex-col items-center justify-center w-full max-w-xs aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors bg-muted/20"
+          className="flex flex-col items-center justify-center w-full max-w-xs aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors bg-muted/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {uploading ? (
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

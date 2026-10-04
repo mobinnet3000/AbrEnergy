@@ -7,7 +7,7 @@ from apps.projects.api.v1.serializers.project import (
     ProjectDetailSerializer,
     ProjectWriteSerializer,
 )
-from apps.users.api.v1.permissions import IsAdminUser
+from apps.users.api.v1.permissions import IsContentManager
 
 
 class ProjectListView(generics.ListCreateAPIView):
@@ -24,7 +24,7 @@ class ProjectListView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsAdminUser()]
+        return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
         qs = Project.objects.prefetch_related(
@@ -61,7 +61,7 @@ class ProjectDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestro
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsAdminUser()]
+        return [permissions.IsAuthenticated(), IsContentManager()]
 
     queryset = Project.objects.prefetch_related(
         "translations", "images__media_file"

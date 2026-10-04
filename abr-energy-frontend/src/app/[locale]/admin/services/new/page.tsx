@@ -13,6 +13,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
@@ -27,16 +29,26 @@ const statuses = [
   { value: 'inactive', label: 'Inactive' },
 ];
 
+const emptyServiceForm = {
+  icon: '', category: '', order: 0, status: 'active', is_featured: false, features: '',
+  title_fa: '', short_description_fa: '', description_fa: '',
+  title_ar: '', short_description_ar: '', description_ar: '',
+  title_en: '', short_description_en: '', description_en: '',
+};
+
 export default function AdminServiceNewPage() {
   const { t } = useLocale();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    icon: '', category: '', order: 0, status: 'active', is_featured: false, features: '',
-    title_fa: '', short_description_fa: '', description_fa: '',
-    title_ar: '', short_description_ar: '', description_ar: '',
-    title_en: '', short_description_en: '', description_en: '',
-  });
+  const [form, setForm] = useState({ ...emptyServiceForm });
+
+  // Phase 9.2 — dirty navigation guard over the EXISTING form state (no new
+  // dirty system): `isDirty` is the initial-vs-current comparison owned by
+  // this form. Save-success navigation runs directly; failed saves never
+  // touch the form, so edits stay dirty by construction.
+  const isDirty = JSON.stringify(form) !== JSON.stringify(emptyServiceForm);
+  const guard = useDirtyNavigationGuard({ isDirty });
+  const backHref = '/admin/services';
 
   const update = (field: string, value: unknown) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -59,7 +71,11 @@ export default function AdminServiceNewPage() {
 
   return (
     <div>
-      <Link href="/admin/services" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/services"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_services')}
       </Link>
       <PageHeader title={t('admin.new_service')}>
@@ -136,6 +152,18 @@ export default function AdminServiceNewPage() {
           </Card>
         </div>
       </div>
+
+      {/* Phase 9.2 (8.3 mechanism) — single dirty-navigation confirmation. */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

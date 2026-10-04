@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useLocale } from '@/i18n';
 import { homepageFormKey, reorderItems, type HomepageRelationItem } from '@/lib/homepage-form';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { toast } from 'sonner';
 
 export interface PickerOption {
@@ -48,10 +49,14 @@ export function HomepageRelationPicker({
   const { t } = useLocale();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
+  // Phase 8.6 (BUG-07): the visible input stays immediate (`search`);
+  // only the API query waits for the debounce window (`debouncedSearch`).
+  // Opening, selecting, removing, and cancelling are NOT debounced.
+  const debouncedSearch = useDebouncedValue(search);
 
   const { data: options = [], isLoading } = useQuery({
-    queryKey: ['homepage-picker', kind, search],
-    queryFn: () => onSearch(search.trim()),
+    queryKey: ['homepage-picker', kind, debouncedSearch],
+    queryFn: () => onSearch(debouncedSearch.trim()),
     enabled: open,
   });
 
@@ -87,7 +92,7 @@ export function HomepageRelationPicker({
             role="switch"
             aria-checked={r.enabled}
             onClick={() => patch(r.key, { enabled: !r.enabled })}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${r.enabled ? 'bg-primary' : 'bg-input'}`}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${r.enabled ? 'bg-primary' : 'bg-input'}`}
             aria-label={t('admin.active')}
           >
             <span

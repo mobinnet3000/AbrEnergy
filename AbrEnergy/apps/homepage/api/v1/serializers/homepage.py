@@ -33,7 +33,7 @@ from apps.products.api.v1.serializers.products import (
     ProductListSerializer,
 )
 from apps.products.api.v1.views.products import public_product_qs
-from apps.products.models import ProductCategory
+from apps.products.models import Product, ProductCategory, ProductImage
 from apps.projects.api.v1.serializers.project import ProjectListSerializer
 from apps.projects.models import Project, ProjectImage
 from apps.services.api.v1.serializers.service import ServiceListSerializer
@@ -71,7 +71,7 @@ def _ordered_by_relation(objects, id_to_order, id_attr="id"):
     return sorted(objects, key=lambda o: (order.get(str(getattr(o, id_attr)), 10**9), str(getattr(o, id_attr))))
 
 
-def build_homepage_payload(language="fa"):
+def build_homepage_payload(language="fa", preview=False):
     """Compose the public homepage. Only publicly visible rows are exposed:
 
     - products: ``public_product_qs()`` (published + public + active)
@@ -81,6 +81,13 @@ def build_homepage_payload(language="fa"):
       draft/hidden/inactive state; the existing public endpoints expose the
       same set)
     - articles: ``status=published``
+
+    Phase 8.1: ``preview=True`` is an explicit, additive preview branch
+    used ONLY by the token-gated preview view. It reuses this composer
+    but bypasses the public filters above so saved-but-hidden relations
+    (including ``enabled=False`` relation rows) are visible to an
+    authorized preview caller. The default ``preview=False`` path is
+    byte-equivalent to the pre-8.1 public behavior.
     """
     config = get_homepage_config()
     ensure_default_sections()
@@ -101,82 +108,156 @@ def build_homepage_payload(language="fa"):
 
     ctx = {"language": language or "fa"}
 
-    # -- featured products (CMS order, public-only) -------------------------
-    fp_rows = list(
-        HomepageFeaturedProduct.objects.filter(enabled=True)
-        .select_related("product").order_by("order", "id")
-    )
+    # -- featured products (CMS order, public-only; preview bypasses) ----
+    if preview:
+        fp_rows = list(
+            HomepageFeaturedProduct.objects
+            .select_related("product").order_by("order", "id")
+        )
+    else:
+        fp_rows = list(
+            HomepageFeaturedProduct.objects.filter(enabled=True)
+            .select_related("product").order_by("order", "id")
+        )
     fp_order = {str(r.product_id): r.order for r in fp_rows}
     fp_ids = list(fp_order.keys())
     products = []
     if fp_ids:
-        qs = public_product_qs().filter(id__in=fp_ids)
-        products = _ordered_by_relation(list(qs), fp_order)
+        if preview:
+            qs = (
+                Product.objects.filter(id__in=fp_ids)
+                .select_related("category", "og_image")
+                .prefetch_related(
+                    "translations",
+                    Prefetch("images", queryset=ProductImage.objects.select_related("media_file")),
+                )
+            )
+            products = _ordered_by_relation(list(qs), fp_order)
+        else:
+            qs = public_product_qs().filter(id__in=fp_ids)
+            products = _ordered_by_relation(list(qs), fp_order)
     featured_products = ProductListSerializer(products, many=True, context=ctx).data
 
-    # -- categories (CMS order, active-only) --------------------------------
-    cat_rows = list(
-        HomepageCategory.objects.filter(enabled=True)
-        .select_related("category").order_by("order", "id")
-    )
+    # -- categories (CMS order, active-only; preview bypasses) -------------
+    if preview:
+        cat_rows = list(
+            HomepageCategory.objects
+            .select_related("category").order_by("order", "id")
+        )
+    else:
+        cat_rows = list(
+            HomepageCategory.objects.filter(enabled=True)
+            .select_related("category").order_by("order", "id")
+        )
     cat_order = {str(r.category_id): r.order for r in cat_rows}
     categories = []
     if cat_order:
-        qs = (
-            ProductCategory.objects.filter(is_active=True, id__in=list(cat_order.keys()))
-            .select_related("parent")
-            .prefetch_related("translations", "children__translations")
-        )
+        if preview:
+            qs = (
+                ProductCategory.objects.filter(id__in=list(cat_order.keys()))
+                .select_related("parent")
+                .prefetch_related("translations", "children__translations")
+            )
+        else:
+            qs = (
+                ProductCategory.objects.filter(is_active=True, id__in=list(cat_order.keys()))
+                .select_related("parent")
+                .prefetch_related("translations", "children__translations")
+            )
         categories = _ordered_by_relation(list(qs), cat_order)
     categories_data = CategoryTreeSerializer(categories, many=True, context=ctx).data
 
-    # -- services (CMS order, active-only) ----------------------------------
-    svc_rows = list(
-        HomepageService.objects.filter(enabled=True)
-        .select_related("service").order_by("order", "id")
-    )
+    # -- services (CMS order, active-only; preview bypasses) ---------------
+    if preview:
+        svc_rows = list(
+            HomepageService.objects
+            .select_related("service").order_by("order", "id")
+        )
+    else:
+        svc_rows = list(
+            HomepageService.objects.filter(enabled=True)
+            .select_related("service").order_by("order", "id")
+        )
     svc_order = {str(r.service_id): r.order for r in svc_rows}
     services = []
     if svc_order:
-        qs = (
-            Service.objects.filter(status="active", id__in=list(svc_order.keys()))
-            .select_related("category", "image")
-            .prefetch_related("translations")
-        )
+        if preview:
+            qs = (
+                Service.objects.filter(id__in=list(svc_order.keys()))
+                .select_related("category", "image")
+                .prefetch_related("translations")
+            )
+        else:
+            qs = (
+                Service.objects.filter(status="active", id__in=list(svc_order.keys()))
+                .select_related("category", "image")
+                .prefetch_related("translations")
+            )
         services = _ordered_by_relation(list(qs), svc_order)
     services_data = ServiceListSerializer(services, many=True, context=ctx).data
 
-    # -- projects (CMS order, cancelled excluded) ---------------------------
-    prj_rows = list(
-        HomepageProject.objects.filter(enabled=True)
-        .select_related("project").order_by("order", "id")
-    )
+    # -- projects (CMS order, cancelled excluded; preview bypasses) --------
+    if preview:
+        prj_rows = list(
+            HomepageProject.objects
+            .select_related("project").order_by("order", "id")
+        )
+    else:
+        prj_rows = list(
+            HomepageProject.objects.filter(enabled=True)
+            .select_related("project").order_by("order", "id")
+        )
     prj_order = {str(r.project_id): r.order for r in prj_rows}
     projects = []
     if prj_order:
-        qs = (
-            Project.objects.exclude(status="cancelled")
-            .filter(id__in=list(prj_order.keys()))
-            .select_related("service_category")
-            .prefetch_related(
-                "translations",
-                Prefetch("images", queryset=ProjectImage.objects.select_related("media_file")),
+        if preview:
+            qs = (
+                Project.objects.filter(id__in=list(prj_order.keys()))
+                .select_related("service_category")
+                .prefetch_related(
+                    "translations",
+                    Prefetch("images", queryset=ProjectImage.objects.select_related("media_file")),
+                )
             )
-        )
+        else:
+            qs = (
+                Project.objects.exclude(status="cancelled")
+                .filter(id__in=list(prj_order.keys()))
+                .select_related("service_category")
+                .prefetch_related(
+                    "translations",
+                    Prefetch("images", queryset=ProjectImage.objects.select_related("media_file")),
+                )
+            )
         projects = _ordered_by_relation(list(qs), prj_order)
     projects_data = ProjectListSerializer(projects, many=True, context=ctx).data
 
     # -- articles: pinned first, latest published fills up to count --------
-    art_rows = list(
-        HomepageArticle.objects.filter(enabled=True)
-        .select_related("article").order_by("order", "id")
-    )
+    # (preview: pinned rows of any status render first; fill uses latest
+    # rows of any status so drafts are visible in preview only)
+    if preview:
+        art_rows = list(
+            HomepageArticle.objects
+            .select_related("article").order_by("order", "id")
+        )
+    else:
+        art_rows = list(
+            HomepageArticle.objects.filter(enabled=True)
+            .select_related("article").order_by("order", "id")
+        )
     art_order = {str(r.article_id): r.order for r in art_rows}
-    article_qs_base = (
-        Article.objects.filter(status="published")
-        .select_related("author", "category", "cover_image")
-        .prefetch_related("tags", "translations")
-    )
+    if preview:
+        article_qs_base = (
+            Article.objects
+            .select_related("author", "category", "cover_image")
+            .prefetch_related("tags", "translations")
+        )
+    else:
+        article_qs_base = (
+            Article.objects.filter(status="published")
+            .select_related("author", "category", "cover_image")
+            .prefetch_related("tags", "translations")
+        )
     pinned = []
     if art_order:
         pinned = _ordered_by_relation(list(article_qs_base.filter(id__in=list(art_order.keys()))), art_order)
@@ -188,11 +269,17 @@ def build_homepage_payload(language="fa"):
         articles = articles + list(fill)
     articles_data = ArticleListSerializer(articles, many=True, context=ctx).data
 
-    # -- visuals -------------------------------------------------------------
-    visuals = list(
-        HomepageVisual.objects.filter(enabled=True)
-        .select_related("image").order_by("order", "id")
-    )
+    # -- visuals (preview includes disabled rows) --------------------------
+    if preview:
+        visuals = list(
+            HomepageVisual.objects
+            .select_related("image").order_by("order", "id")
+        )
+    else:
+        visuals = list(
+            HomepageVisual.objects.filter(enabled=True)
+            .select_related("image").order_by("order", "id")
+        )
     visuals_data = HomepageVisualPublicSerializer(visuals, many=True).data
 
     hero = copy("hero")
@@ -204,7 +291,7 @@ def build_homepage_payload(language="fa"):
     except Exception:
         og_image_url = ""
 
-    return {
+    payload = {
         "hero": {
             "eyebrow": config.hero_eyebrow or "",
             "title": hero["title"],
@@ -258,6 +345,11 @@ def build_homepage_payload(language="fa"):
             "og_image_url": og_image_url,
         },
     }
+    if preview:
+        # Marker exists ONLY on the token-gated preview path. The normal
+        # public payload keeps its exact pre-8.1 shape.
+        payload["preview"] = True
+    return payload
 
 
 # ---------------------------------------------------------------------------
@@ -413,6 +505,30 @@ class VisualWriteSerializer(_OrderEnabledSerializer):
         return value
 
 
+def _validate_relation_ids(label, rows, fk, model):
+    """Reject unknown or duplicated relation ids with a 400 (Phase 7.5).
+
+    Relation items carry raw ``UUIDField`` ids (not
+    ``PrimaryKeyRelatedField``), so without this check a stale/deleted id —
+    or the same id twice — passes validation and only explodes as an
+    ``IntegrityError`` at commit time (HTTP 500, see phase-07.5 audit
+    BUG-01). The Studio picker only offers live records, but ids can go
+    stale between picker load and save (record deleted by another editor).
+    """
+    rows = rows or []
+    ids = [row[fk] for row in rows]
+    if len(set(ids)) != len(ids):
+        raise serializers.ValidationError(f"{label}: duplicate ids are not allowed.")
+    if ids:
+        existing = set(model.objects.filter(pk__in=ids).values_list("pk", flat=True))
+        missing = [str(i) for i in ids if i not in existing]
+        if missing:
+            raise serializers.ValidationError(
+                f"{label}: unknown ids: {', '.join(missing[:5])}."
+            )
+    return rows
+
+
 class HomepageWriteSerializer(serializers.ModelSerializer):
     og_image = serializers.PrimaryKeyRelatedField(
         queryset=MediaFile.objects.all(), allow_null=True, required=False,
@@ -463,6 +579,21 @@ class HomepageWriteSerializer(serializers.ModelSerializer):
         if value < 0 or value > 12:
             raise serializers.ValidationError("articles_count must be between 0 and 12.")
         return value
+
+    def validate_featured_products_data(self, value):
+        return _validate_relation_ids("featured_products", value, "product", Product)
+
+    def validate_categories_data(self, value):
+        return _validate_relation_ids("categories", value, "category", ProductCategory)
+
+    def validate_services_data(self, value):
+        return _validate_relation_ids("services", value, "service", Service)
+
+    def validate_projects_data(self, value):
+        return _validate_relation_ids("projects", value, "project", Project)
+
+    def validate_articles_data(self, value):
+        return _validate_relation_ids("articles", value, "article", Article)
 
     def _replace(self, model, fk_name, rows, extra=()):
         model.objects.all().delete()

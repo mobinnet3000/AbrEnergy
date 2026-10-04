@@ -1,14 +1,25 @@
 'use client';
-import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import axiosInstance from '@/api/axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { PageHeader, TableLoading } from '@/components/shared';
+import { PageHeader, TableLoading, EmptyState, ErrorState } from '@/components/shared';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useAdminProjects } from '@/hooks/use-api';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import {
+  buildListQuery,
+  parseFeaturedParam,
+  parsePageParam,
+  parseSearchParam,
+} from '@/lib/admin-list-query';
 import { useLocale } from '@/i18n';
 
 const locales = [
@@ -17,21 +28,117 @@ const locales = [
   { code: 'en', label: 'EN', color: 'text-blue-600' },
 ];
 
+const PAGE_SIZE = 20;
+
+type ProjectRow = Record<string, unknown>;
+
+// Phase 9.2 — projects admin list consumes the EXISTING `/admin/projects/`
+// endpoint (same ProjectListView as the public catalog, JWT-authenticated)
+// instead of the public `/projects/` endpoint. Only backend-supported params
+// are sent: `search` (translations title + location), `is_featured`, `page`,
+// `page_size`. `status` / `project_type` filters exist server-side but have no
+// localized option labels in this slice (no new locale keys per scope
+// discipline — documented in the Phase 9.2 report, not faked). The view
+// declares no `ordering_fields`, so no ordering UI is offered.
 export default function AdminProjectsPage() {
   const { t } = useLocale();
   const qc = useQueryClient();
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['admin-projects'],
-    queryFn: async () => {
-      const res = await axiosInstance.get('/projects/');
-      return res.data;
-    },
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Phase 9.3-A — the URL is the source of truth for list view state
+  // (search + featured + page — the only controls this list renders; no
+  // status/project_type filter exists, so none is persisted).
+  const urlSearch = parseSearchParam(searchParams.get('search'));
+  const urlFeatured = parseFeaturedParam(searchParams.get('featured')) ? 'featured' : 'all';
+  const urlPage = parsePageParam(searchParams.get('page'));
+
+  const [search, setSearch] = useState(urlSearch);
+  const [featured, setFeatured] = useState(urlFeatured);
+  const [page, setPage] = useState(urlPage);
+
+  // Phase 9.1 pattern (shared Phase 8.6 abstraction): the visible input stays
+  // immediate; only the query-driving value is debounced (300 ms).
+  const debouncedSearch = useDebouncedValue(search);
+
+  // Canonical snapshot of the live URL (validated parses — never raw
+  // `useSearchParams()` object identity, which effects must not depend on).
+  // Refreshed in the sync effect; read by the commit effect.
+  const urlSnapshotRef = useRef('');
+
+  // Phase 9.3-A — URL → state (back/forward + external navigation; refresh /
+  // deep-link is covered by the initializers). Guarded per field.
+  /* eslint-disable react-hooks/set-state-in-effect -- The address bar is
+  external state: adopt its snapshot into local state when navigation changes
+  it underneath us. Every setter is a guarded no-op when already equal, so
+  this converges without looping; proven by the 9.3-A URL suites. */
+  useEffect(() => {
+    urlSnapshotRef.current = buildListQuery({
+      search: urlSearch,
+      featured: urlFeatured === 'featured',
+      page: urlPage,
+    });
+    setSearch((p) => (p === urlSearch ? p : urlSearch));
+    setFeatured((p) => (p === urlFeatured ? p : urlFeatured));
+    setPage((p) => (p === urlPage ? p : urlPage));
+  }, [urlSearch, urlFeatured, urlPage]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Phase 9.3-A — state → URL via `replace` (pagination uses `push` in
+  // goPage). Canonical-compare: no navigation loop. The commit waits until
+  // the search settles so a stale in-flight debounce can never resurrect a
+  // search just left via back/forward navigation.
+  const searchSettled = debouncedSearch === search;
+  const targetQuery = buildListQuery({
+    search: debouncedSearch,
+    featured: featured === 'featured',
+    page,
   });
+  // Commit effect: reacts to TARGET changes only — never to the URL itself —
+  // so an external navigation (back/forward) can never trigger a commit of
+  // pre-sync state in the same commit the sync effect adopts the new URL.
+  // Comparing against the canonical snapshot (not the raw URL) also
+  // preserves unknown params: they are ignored, never dropped.
+  useEffect(() => {
+    if (!searchSettled) return;
+    if (targetQuery !== urlSnapshotRef.current) {
+      router.replace(targetQuery ? `${pathname}?${targetQuery}` : pathname);
+    }
+  }, [searchSettled, targetQuery, pathname, router]);
 
-  useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error]);
+  const params = useMemo(() => {
+    const p: Record<string, string> = { page: String(page), page_size: String(PAGE_SIZE) };
+    if (debouncedSearch.trim()) p.search = debouncedSearch.trim();
+    if (featured === 'featured') p.is_featured = 'true';
+    return p;
+  }, [debouncedSearch, featured, page]);
 
-  const projects = Array.isArray(data?.results) ? data.results : [];
+  const resetPage = (fn: (v: string) => void) => (v: string | null) => { setPage(1); fn(v ?? 'all'); };
 
+  // Phase 9.3-A — pagination uses `push` so Back returns to the previous page.
+  const goPage = (n: number) => {
+    setPage(n);
+    const q = buildListQuery({
+      search: debouncedSearch,
+      featured: featured === 'featured',
+      page: n,
+    });
+    router.push(q ? `${pathname}?${q}` : pathname);
+  };
+
+  const { data, isLoading, error, refetch } = useAdminProjects(params);
+
+  const projects: ProjectRow[] = useMemo(() => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data?.results) ? data.results : [];
+  }, [data]);
+  const count: number = typeof data?.count === 'number' ? data.count : projects.length;
+  const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+
+  // Existing delete behavior preserved verbatim (confirm + toasts + prefix
+  // invalidation, which still matches the parametrized `admin-projects` keys).
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this project?')) return;
     try {
@@ -43,6 +150,20 @@ export default function AdminProjectsPage() {
     }
   };
 
+  if (error) {
+    const st = (error as { response?: { status?: number } })?.response?.status;
+    return (
+      <div>
+        <PageHeader title={t('admin.projects')} description="Manage CMS projects and multilingual content" />
+        <ErrorState
+          title={t('admin.failed_load_projects')}
+          message={t(st === 403 ? 'admin.permission_denied' : 'admin.server_connection_failed')}
+          action={{ label: t('admin.try_again'), onClick: () => refetch() }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHeader title={t('admin.projects')} description="Manage CMS projects and multilingual content">
@@ -51,22 +172,44 @@ export default function AdminProjectsPage() {
         </Link>
       </PageHeader>
 
+      <Card className="mb-4">
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              placeholder={t('admin.search_placeholder')}
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              dir="auto"
+              aria-label={t('admin.search_placeholder')}
+            />
+            <Select value={featured} onValueChange={resetPage(setFeatured)}>
+              <SelectTrigger className="w-full" aria-label={t('admin.featured')}>
+                <SelectValue placeholder={t('admin.featured')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('admin.filter_all')}</SelectItem>
+                <SelectItem value="featured">{t('admin.filter_featured')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {isLoading ? (
         <TableLoading rows={5} />
-      ) : error ? (
-        <div className="text-center py-12 text-destructive">{t('admin.failed_load_projects')}</div>
       ) : projects.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <p>{t('admin.no_projects')}</p>
-            <Link href="/admin/projects/new">
-              <Button variant="outline" className="mt-4">{t('admin.create_first_project')}</Button>
-            </Link>
+          <CardContent>
+            <EmptyState
+              title={t('admin.no_projects')}
+              message=""
+              action={{ label: t('admin.create_first_project'), onClick: () => { router.push('/admin/projects/new'); } }}
+            />
           </CardContent>
         </Card>
       ) : (
         <Card>
-          <CardHeader><CardTitle>{t('admin.all_projects')} ({projects.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('admin.all_projects')} ({count})</CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -82,7 +225,7 @@ export default function AdminProjectsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {projects.map((p: Record<string, unknown>) => (
+                  {projects.map((p) => (
                     <tr key={p.id as string} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="py-3 px-4 font-medium">{p.title as string}</td>
                       <td className="py-3 px-4"><Badge variant="outline" className="capitalize">{(p.project_type as string || '').replace('_', ' ')}</Badge></td>
@@ -111,6 +254,17 @@ export default function AdminProjectsPage() {
                 </tbody>
               </table>
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => goPage(Math.max(1, page - 1))}>
+                  {t('common.previous')}
+                </Button>
+                <span className="text-xs text-muted-foreground" dir="ltr">{page} / {totalPages}</span>
+                <Button type="button" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goPage(Math.min(totalPages, page + 1))}>
+                  {t('common.next')}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

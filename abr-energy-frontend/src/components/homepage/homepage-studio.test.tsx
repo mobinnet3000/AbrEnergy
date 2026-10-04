@@ -14,6 +14,10 @@ vi.mock('@/components/shared/media-upload', () => ({
   MediaUpload: ({ label }: { label: string }) => <div>{label}</div>,
 }));
 
+vi.mock('@/components/shared/media-picker-dialog', () => ({
+  ChooseMediaButton: () => <div />,
+}));
+
 function queryWrapper() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return function Wrapper({ children }: { children: React.ReactNode }) {

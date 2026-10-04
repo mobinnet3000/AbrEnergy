@@ -4,6 +4,7 @@ import {
   canManageProductCategories,
   canViewAdminItem,
 } from '@/lib/admin-permissions';
+import { adminNavSections } from '@/config/navigation';
 
 describe('admin permissions (UI shaping only — backend remains authoritative)', () => {
   it('grants shell access to manager roles only', () => {
@@ -28,5 +29,19 @@ describe('admin permissions (UI shaping only — backend remains authoritative)'
     expect(canViewAdminItem([...restricted], 'website_admin')).toBe(true);
     expect(canViewAdminItem(undefined, 'customer')).toBe(true);
     expect(canViewAdminItem([...restricted], null)).toBe(false);
+  });
+
+  it('Phase 10.1 (E-01/I-01, Option A) — services/projects CMS surfaces stay visible to content_manager', () => {
+    // Backend writes for services/projects are gated by IsContentManager, so
+    // the CMS UI must keep offering these workflows to content_manager (no
+    // admin-only role restriction on the nav entries, shell admitted).
+    const entries = adminNavSections.flatMap((s) => s.items);
+    for (const href of ['/admin/services', '/admin/projects']) {
+      const entry = entries.find((i) => i.href === href);
+      expect(entry).toBeDefined();
+      expect(entry!.roles).toBeUndefined();
+      expect(canViewAdminItem(entry!.roles, 'content_manager')).toBe(true);
+    }
+    expect(canAccessAdminShell('content_manager')).toBe(true);
   });
 });

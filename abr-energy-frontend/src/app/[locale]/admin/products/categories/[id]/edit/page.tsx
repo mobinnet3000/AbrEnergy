@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,17 @@ import { Badge } from '@/components/ui/badge';
 import { PageHeader, PageLoading, ErrorState } from '@/components/shared';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import {
   useAdminProductCategory, useAdminProductCategories,
   useUpdateAdminProductCategory, useDeleteAdminProductCategory,
 } from '@/hooks/use-api';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
 import { useLocale } from '@/i18n';
+import { previewApi } from '@/api';
+import { buildCategoryPreviewUrl } from '@/lib/preview';
+import { flattenNormalizedError, normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
 import type { ProductCategoryDetail } from '@/types';
 
 const ROBOT_OPTIONS = [
@@ -73,7 +78,7 @@ export default function EditCategoryPage() {
   const updateMut = useUpdateAdminProductCategory();
   const deleteMut = useDeleteAdminProductCategory();
   const { data, isLoading, error, refetch } = useAdminProductCategory(id);
-  const { data: parentData } = useAdminProductCategories({ page_size: '200' });
+  const { data: parentData } = useAdminProductCategories({ page_size: '100' });
 
   const parents: Array<{ id: string; title: string; parent: string | null }> = (() => {
     const list = Array.isArray(parentData?.results) ? parentData.results : Array.isArray(parentData) ? parentData : [];
@@ -86,6 +91,11 @@ export default function EditCategoryPage() {
   );
   const [edits, setEdits] = useState<Partial<FormState>>({});
   const [showDelete, setShowDelete] = useState(false);
+  const [isPreviewIssuing, setIsPreviewIssuing] = useState(false);
+  // Phase 8.5 (BUG-06) — normalized save-error summary (inline + toast).
+  // Separate state: error branches never touch `edits`, so failed saves
+  // keep the form dirty by construction.
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
   const form: FormState | null = useMemo(
     () => (initial ? { ...initial, ...edits } : null),
     [initial, edits],
@@ -93,14 +103,15 @@ export default function EditCategoryPage() {
   const set = <K extends keyof FormState>(key: K, val: FormState[K]) =>
     setEdits((p) => ({ ...p, [key]: val }));
 
-  useEffect(() => {
-    if (!form || !initial) return;
-    const handler = (e: BeforeUnloadEvent) => {
-      if (JSON.stringify(form) !== JSON.stringify(initial)) e.preventDefault();
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [form, initial]);
+  // Phase 8.3 — dirty navigation guard over the EXISTING initial-vs-form
+  // comparison (no second dirty system). beforeunload is armed only while
+  // dirty (the previous listener was attached even on a clean form);
+  // breadcrumb/back/Cancel SPA navigations prompt while dirty. Save/delete
+  // success navigations run directly: save leaves nothing unsaved, delete
+  // is an intentional discard of an entity that no longer exists.
+  const dirty = !!form && !!initial && JSON.stringify(form) !== JSON.stringify(initial);
+  const guard = useDirtyNavigationGuard({ isDirty: dirty });
+  const backHref = '/admin/products/categories';
 
   if (isLoading) return <PageLoading />;
   if (error || !form || !initial) {
@@ -116,37 +127,72 @@ export default function EditCategoryPage() {
   const originalSlug = (data as ProductCategoryDetail)?.slug || '';
   const slugChanged = form.slug !== originalSlug;
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const buildPayload = () => ({
+    translations: { fa: { title: form.title.trim(), slug: form.slug || undefined, description: form.description, content: form.content, meta_title: form.meta_title, meta_description: form.meta_description } },
+    slug: form.slug || form.title.trim(),
+    parent: form.parent || null,
+    sort_order: form.sort_order,
+    is_active: form.is_active,
+    is_featured: form.is_featured,
+    cover: form.cover_id || null,
+    seo_title: form.seo_title,
+    seo_description: form.seo_description,
+    canonical_url: form.canonical_url,
+    robots: form.robots,
+    og_title: form.og_title,
+    og_description: form.og_description,
+    og_image: form.og_image_id || null,
+  });
+
+  // Phase 8.5 (BUG-06): one shared normalization path. Nested backend
+  // errors surface with field context instead of a bare generic toast.
+  const handleSaveError = (err: unknown) => {
+    const normalized = normalizeApiError(err);
+    if (normalized.kind === 'permission') {
+      toast.error(t('admin.permission_denied'));
+      setSaveErrors(flattenNormalizedError(normalized));
+      return;
+    }
+    if (normalized.kind === 'network' || normalized.kind === 'server') {
+      toast.error(t('admin.server_connection_failed'));
+      setSaveErrors([]);
+      return;
+    }
+    const details = flattenNormalizedError(normalized).slice(0, 8);
+    setSaveErrors(details);
+    toast.error(summarizeNormalizedError(normalized) ?? t('admin.category_save_failed'));
+  };
+
+  const submitWithMode = (mode: 'save' | 'continue') => {
     if (!form.title.trim()) {
       toast.error(t('admin.required_field'));
       return;
     }
+    setSaveErrors([]);
     updateMut.mutate(
+      { id, data: buildPayload() },
       {
-        id,
-        data: {
-          translations: { fa: { title: form.title.trim(), slug: form.slug || undefined, description: form.description, content: form.content, meta_title: form.meta_title, meta_description: form.meta_description } },
-          slug: form.slug || form.title.trim(),
-          parent: form.parent || null,
-          sort_order: form.sort_order,
-          is_active: form.is_active,
-          is_featured: form.is_featured,
-          cover: form.cover_id || null,
-          seo_title: form.seo_title,
-          seo_description: form.seo_description,
-          canonical_url: form.canonical_url,
-          robots: form.robots,
-          og_title: form.og_title,
-          og_description: form.og_description,
-          og_image: form.og_image_id || null,
+        onSuccess: () => {
+          toast.success(t('admin.category_updated'));
+          if (mode === 'continue') {
+            // Phase 9.1 Save & Continue: remain on this editor and
+            // reconcile with the server. The update hook already
+            // invalidates the detail query; the explicit refetch refreshes
+            // the baseline so the dirty comparison resets (failed saves
+            // never reach this branch, so edits stay dirty on error).
+            refetch();
+            return;
+          }
+          router.push('/admin/products/categories');
         },
-      },
-      {
-        onSuccess: () => { toast.success(t('admin.category_updated')); router.push('/admin/products/categories'); },
-        onError: () => { toast.error(t('admin.category_save_failed')); },
+        onError: handleSaveError,
       },
     );
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitWithMode('save');
   };
 
   const onDelete = () => {
@@ -156,22 +202,70 @@ export default function EditCategoryPage() {
     });
   };
 
+  // Phase 8.2 — saved-state preview: issue a short-lived signed token
+  // (IsContentManager only) and open the isolated preview route in a new
+  // tab. Unsaved edits are NOT previewed (no draft persistence — save
+  // first). Duplicate issuance is blocked while a request is in flight.
+  const onPreview = async () => {
+    if (isPreviewIssuing) return;
+    setIsPreviewIssuing(true);
+    try {
+      const res = await previewApi.issue({ resource_type: 'category', resource_id: id, locale: 'fa' });
+      window.open(buildCategoryPreviewUrl(res.token, id, 'fa'), '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error(t('admin.preview_failed'));
+    } finally {
+      setIsPreviewIssuing(false);
+    }
+  };
+
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
-        <Link href="/admin" className="hover:text-foreground">{t('admin.dashboard')}</Link>
+        <Link
+          href="/admin"
+          className="hover:text-foreground"
+          onClick={(e) => guard.guardLinkClick(e, '/admin', () => router.push('/admin'))}
+        >{t('admin.dashboard')}</Link>
         <span aria-hidden="true">/</span>
-        <Link href="/admin/products/categories" className="hover:text-foreground">{t('admin.product_categories')}</Link>
+        <Link
+          href="/admin/products/categories"
+          className="hover:text-foreground"
+          onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        >{t('admin.product_categories')}</Link>
         <span aria-hidden="true">/</span>
         <span className="text-foreground truncate max-w-[200px]">{form.title || originalSlug}</span>
       </nav>
       <PageHeader title={t('admin.edit_category')} description={form.title}>
         <Badge variant={form.is_active ? 'default' : 'secondary'}>{t(form.is_active ? 'admin.active' : 'admin.inactive')}</Badge>
         {form.is_featured && <Badge variant="outline">{t('admin.featured')}</Badge>}
+        {/* Phase 8.2 — saved-state preview: secondary to Save, never
+            auto-saves, previews the persisted category only. */}
+        <Button type="button" variant="outline" size="sm" disabled={updateMut.isPending || isPreviewIssuing} onClick={onPreview}>
+          {isPreviewIssuing ? <Loader2 className="h-4 w-4 animate-spin me-1" /> : <ExternalLink className="h-4 w-4 me-1" />}{t('admin.category_preview')}
+        </Button>
         <Button type="button" variant="destructive" size="sm" onClick={() => setShowDelete(true)}>
           <Trash2 className="h-4 w-4 me-1" />{t('admin.delete')}
         </Button>
       </PageHeader>
+
+      {/* Phase 8.5 (BUG-06) — normalized save errors with field context.
+          Plain text list (never color-only, `role="alert"`); rendering it
+          never touches `edits`, so the form stays dirty for retry. */}
+      {saveErrors.length > 0 && (
+        <div
+          id="cms-form-errors"
+          role="alert"
+          className="mb-6 rounded-lg border border-destructive/40 bg-destructive/5 p-3"
+        >
+          <p className="text-sm font-semibold">{t('admin.form_errors_present')}</p>
+          <ul className="mt-1 space-y-1 text-sm text-destructive">
+            {saveErrors.map((message, i) => (
+              <li key={i}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <form onSubmit={onSubmit}>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
@@ -181,7 +275,13 @@ export default function EditCategoryPage() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.title_fa')} *</label>
-                <Input value={form.title} onChange={(e) => set('title', e.target.value)} dir="auto" />
+                <Input
+                  value={form.title}
+                  onChange={(e) => set('title', e.target.value)}
+                  dir="auto"
+                  aria-invalid={saveErrors.length > 0}
+                  aria-describedby={saveErrors.length > 0 ? 'cms-form-errors' : undefined}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.slug_field')}</label>
@@ -233,11 +333,23 @@ export default function EditCategoryPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.og_image')}</label>
-                <MediaUpload
-                  onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
-                  currentImage={form.og_image_url}
-                  label={t('admin.og_image')}
-                />
+                <div className="flex items-start gap-2 flex-wrap">
+                  <MediaUpload
+                    key={form.og_image_url}
+                    onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
+                    currentImage={form.og_image_url}
+                    label={t('admin.og_image')}
+                  />
+                  <ChooseMediaButton
+                    mode="image"
+                    onSelect={(picked) => {
+                      const first = picked[0];
+                      if (!first) return;
+                      set('og_image_url', first.url);
+                      set('og_image_id', first.id);
+                    }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -281,21 +393,41 @@ export default function EditCategoryPage() {
           <Card>
             <CardHeader><CardTitle>{t('admin.cover')}</CardTitle></CardHeader>
             <CardContent>
-              <MediaUpload
-                onUpload={(url, fid) => { set('cover_url', url); set('cover_id', fid || ''); }}
-                currentImage={form.cover_url}
-                label={t('admin.cover')}
-              />
+              <div className="flex items-start gap-2 flex-wrap">
+                <MediaUpload
+                  key={form.cover_url}
+                  onUpload={(url, fid) => { set('cover_url', url); set('cover_id', fid || ''); }}
+                  currentImage={form.cover_url}
+                  label={t('admin.cover')}
+                />
+                <ChooseMediaButton
+                  mode="image"
+                  onSelect={(picked) => {
+                    const first = picked[0];
+                    if (!first) return;
+                    set('cover_url', first.url);
+                    set('cover_id', first.id);
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </aside>
       </div>
       <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t py-4 mt-6 -mx-4 md:-mx-8 px-4 md:px-8 flex justify-between gap-3 z-10">
-        <Link href="/admin/products/categories" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href="/admin/products/categories"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        >
           <ArrowLeft className="h-4 w-4 me-1" />{t('admin.back_to_categories')}
         </Link>
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={() => router.push('/admin/products/categories')}>{t('common.cancel')}</Button>
+          <Button type="button" variant="outline" onClick={() => guard.requestNavigation(backHref, () => router.push(backHref))}>{t('common.cancel')}</Button>
+          <Button type="button" variant="outline" disabled={updateMut.isPending} onClick={() => submitWithMode('continue')}>
+            {updateMut.isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}
+            {t('admin.save_continue')}
+          </Button>
           <Button type="submit" disabled={updateMut.isPending}>
             {updateMut.isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}
             {t('admin.save')}
@@ -313,6 +445,18 @@ export default function EditCategoryPage() {
         cancelText={t('common.cancel')}
         onConfirm={onDelete}
         loading={deleteMut.isPending}
+      />
+
+      {/* Phase 8.3 — single dirty-navigation confirmation (Stay/Leave). */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
       />
     </div>
   );

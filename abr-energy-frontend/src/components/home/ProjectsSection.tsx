@@ -65,7 +65,7 @@ export function ProjectsSection({ cms }: {
   if (!loading && !loadError && projects.length === 0) return null;
 
   return (
-    <section data-section="projects" aria-labelledby="homepage-projects-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="projects" data-testid="projects-showcase" aria-labelledby="homepage-projects-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-blue-950/5 to-black" />
       
       <div className="container-page relative z-10">

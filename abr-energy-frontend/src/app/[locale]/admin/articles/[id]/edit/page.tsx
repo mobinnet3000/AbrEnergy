@@ -16,6 +16,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
@@ -31,6 +34,9 @@ interface FormData {
   is_featured: boolean;
   publish_date: string;
   cover_image_url: string;
+  // Phase 9.5 — additive MediaFile reference (legacy URL-only rows keep
+  // rendering via `cover_image_url`; `''` serializes as null on save).
+  cover_image: string;
   tags: string;
   title_fa: string; short_description_fa: string; content_fa: string;
   title_ar: string; short_description_ar: string; content_ar: string;
@@ -53,7 +59,7 @@ export default function AdminArticleEditPage() {
   });
 
   const initialForm: FormData = {
-    status: 'draft', category: '', is_featured: false, publish_date: '', cover_image_url: '', tags: '',
+    status: 'draft', category: '', is_featured: false, publish_date: '', cover_image_url: '', cover_image: '', tags: '',
     title_fa: '', short_description_fa: '', content_fa: '',
     title_ar: '', short_description_ar: '', content_ar: '',
     title_en: '', short_description_en: '', content_en: '',
@@ -68,6 +74,7 @@ export default function AdminArticleEditPage() {
       is_featured: data.is_featured || false,
       publish_date: data.publish_date ? data.publish_date.slice(0, 10) : '',
       cover_image_url: data.cover_image_url || '',
+      cover_image: data.cover_image || '',
       tags: Array.isArray(data.tags) ? data.tags.map((t: { id?: string; title?: string }) => t.title || t).join(', ') : '',
       title_fa: data.title_fa || '', short_description_fa: data.short_description_fa || '', content_fa: data.content_fa || '',
       title_ar: data.title_ar || '', short_description_ar: data.short_description_ar || '', content_ar: data.content_ar || '',
@@ -78,6 +85,14 @@ export default function AdminArticleEditPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Phase 9.2 — dirty navigation guard over the EXISTING `edits` state (same
+  // semantics as Homepage Studio: any pending edit = dirty; failed saves
+  // never touch `edits`, so dirty is preserved for retry). Save/delete
+  // navigations run directly (persisted / intentionally discarded).
+  const isDirty = Object.keys(edits).length > 0;
+  const guard = useDirtyNavigationGuard({ isDirty });
+  const backHref = '/admin/articles';
+
   useEffect(() => { if (error) toast.error(t('admin.failed_load_articles')); }, [error]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
@@ -85,7 +100,9 @@ export default function AdminArticleEditPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axiosInstance.patch(`/admin/articles/${id}/`, form);
+      // Phase 9.5 — `cover_image: ''` would fail UUID validation; a cleared
+      // cover serializes as null (nullable FK). All other fields unchanged.
+      await axiosInstance.patch(`/admin/articles/${id}/`, { ...form, cover_image: form.cover_image || null });
       toast.success('Article updated');
       router.push('/admin/articles');
     } catch {
@@ -115,7 +132,11 @@ export default function AdminArticleEditPage() {
 
   return (
     <div>
-      <Link href="/admin/articles" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/articles"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_articles')}
       </Link>
       <PageHeader title={t('admin.edit_article')}>
@@ -194,11 +215,23 @@ export default function AdminArticleEditPage() {
                 <Input type="date" value={form.publish_date} onChange={(e) => update('publish_date', e.target.value)} />
               </div>
               <div>
-                <MediaUpload
-                  onUpload={(url) => update('cover_image_url', url)}
-                  currentImage={form.cover_image_url}
-                  label={t('admin.cover_image')}
-                />
+                <div className="flex items-start gap-2 flex-wrap">
+                  <MediaUpload
+                    key={form.cover_image_url}
+                    onUpload={(url, fid) => { update('cover_image_url', url); update('cover_image', fid || ''); }}
+                    currentImage={form.cover_image_url}
+                    label={t('admin.cover_image')}
+                  />
+                  <ChooseMediaButton
+                    mode="image"
+                    onSelect={(picked) => {
+                      const first = picked[0];
+                      if (!first) return;
+                      update('cover_image_url', first.url);
+                      update('cover_image', first.id);
+                    }}
+                  />
+                </div>
               </div>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox checked={form.is_featured} onCheckedChange={(v) => update('is_featured', v)} />
@@ -208,6 +241,18 @@ export default function AdminArticleEditPage() {
           </Card>
         </div>
       </div>
+
+      {/* Phase 9.2 (8.3 mechanism) — single dirty-navigation confirmation. */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

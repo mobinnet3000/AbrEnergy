@@ -1,10 +1,16 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calculator } from 'lucide-react';
+import { Calculator, ClipboardList, PanelTop, TrendingUp } from 'lucide-react';
 import { useLocale } from '@/i18n';
 import { homepageCopy } from '@/lib/homepage';
 import type { HomepageTeaser } from '@/types';
+
+const CALC_STEPS = [
+  { key: 'home.calculator_step_1', Icon: ClipboardList },
+  { key: 'home.calculator_step_2', Icon: PanelTop },
+  { key: 'home.calculator_step_3', Icon: TrendingUp },
+] as const;
 
 /** Phase 7 — optional CMS marketing copy. Calculation logic stays in the app. */
 export function CalculatorSection({ cms }: { cms?: HomepageTeaser | null }) {
@@ -18,7 +24,7 @@ export function CalculatorSection({ cms }: { cms?: HomepageTeaser | null }) {
   const ctaUrl = cms?.cta_url?.trim() ? cms.cta_url : '/calculator';
   const external = ctaUrl.startsWith('http://') || ctaUrl.startsWith('https://');
   return (
-    <section data-section="calculator" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="calculator" data-testid="calculator-teaser" aria-labelledby="homepage-calculator-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[200px]">
           <motion.div className="w-full h-full bg-gradient-to-r from-emerald-500/20 via-amber-500/15 to-emerald-500/20" animate={{ rotate: [0, 360] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} />
@@ -45,10 +51,35 @@ export function CalculatorSection({ cms }: { cms?: HomepageTeaser | null }) {
             </div>
           </motion.div>
           
-          <h2 className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h2>
-          <p className="text-white/40 text-lg max-w-2xl mx-auto mb-12 leading-relaxed">
+          <h2 id="homepage-calculator-heading" className="font-heading text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">{title}</h2>
+          <p className="text-white/40 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
             {text}
           </p>
+
+          {/* Phase 11 — tool framing: three honest steps describing what the
+              calculator does. Generic tool copy only; no numbers invented. */}
+          <ol className="mx-auto mb-12 grid max-w-3xl gap-3 text-start sm:grid-cols-3">
+            {CALC_STEPS.map(({ key, Icon }, i) => (
+              <motion.li
+                key={key}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.12, ease: [0.25, 0.4, 0.25, 1] }}
+                className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3.5 backdrop-blur-sm"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <Icon className="h-5 w-5 text-amber-300" aria-hidden />
+                </span>
+                <span className="text-sm leading-6 text-white/70">
+                  <span className="me-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.06] text-[11px] font-bold text-white/60" aria-hidden>
+                    {i + 1}
+                  </span>
+                  {t(key)}
+                </span>
+              </motion.li>
+            ))}
+          </ol>
           {external ? (
             <a
               href={ctaUrl}

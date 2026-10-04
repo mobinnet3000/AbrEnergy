@@ -124,4 +124,40 @@ describe('mapHomepageErrors', () => {
     expect(mapHomepageErrors(new Error('x'))).toEqual([]);
     expect(mapHomepageErrors(null)).toEqual([]);
   });
+  it('unwraps the backend { errors, status } envelope (Phase 7.5 BUG-02)', () => {
+    const err = {
+      response: {
+        data: {
+          errors: { hero_primary_cta_url: ['Bad URL.'], featured_products_data: ['dupes.'] },
+          status: 400,
+        },
+      },
+    };
+    const out = mapHomepageErrors(err);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toContain('hero_primary_cta_url');
+    expect(out[1]).toContain('featured_products_data');
+  });
+  it('flattens nested backend objects to dotted paths (Phase 8.5 BUG-06)', () => {
+    const err = {
+      response: {
+        status: 400,
+        data: {
+          success: false,
+          message: 'Validation failed.',
+          errors: {
+            hero_primary_cta_url: ['Bad URL.'],
+            sections_data: { hero: { title: ['Too long.'] } },
+            visuals_data: [{ image: ['Missing file.'] }],
+          },
+          status: 400,
+        },
+      },
+    };
+    const out = mapHomepageErrors(err);
+    expect(out).toContain('hero_primary_cta_url: Bad URL.');
+    expect(out).toContain('sections_data.hero.title: Too long.');
+    expect(out).toContain('visuals_data.0.image: Missing file.');
+    expect(JSON.stringify(out)).not.toContain('[object Object]');
+  });
 });

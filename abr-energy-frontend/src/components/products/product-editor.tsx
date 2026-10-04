@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, ExternalLink, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,8 @@ import {
   type ProductFormState,
 } from '@/lib/product-form';
 import { useAdminProductCategories, useAttributeDefinitions } from '@/hooks/use-api';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import type { ProductAttributeDefinition, ProductCategory, ProductDetail, ProductWritePayload } from '@/types';
 import {
   CategorySelector,
@@ -50,6 +53,16 @@ interface ProductEditorProps {
   onDelete?: () => void;
   isDeleting?: boolean;
   backHref?: string;
+  /** Phase 8.2 — saved-state preview (edit mode only; omitted in create mode). */
+  onPreview?: () => void;
+  isPreviewIssuing?: boolean;
+  /**
+   * Phase 8.3 — incremented by the host page after a successful
+   * Save & Continue so the dirty latch resets (server state now matches
+   * the form). Without this the latch would stay true forever and the
+   * guard would prompt even though nothing is unsaved.
+   */
+  dirtyResetSignal?: number;
 }
 
 function SectionErrors({ errors }: { errors?: string[] }) {
@@ -65,6 +78,7 @@ function SectionErrors({ errors }: { errors?: string[] }) {
 export function ProductEditor({
   mode, initial, isLoading, loadError, onRetry, onSubmit, isPending,
   serverErrorMap, productId, onDelete, isDeleting, backHref = '/admin/products',
+  onPreview, isPreviewIssuing, dirtyResetSignal = 0,
 }: ProductEditorProps) {
   const { t } = useLocale();
   // Phase 3 `initial + edits` pattern: no set-state-in-effect. The merged form
@@ -84,21 +98,37 @@ export function ProductEditor({
     setDirty(true);
   };
 
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  // Phase 8.3 — Save & Continue success clears the latch (failed saves
+  // never touch this signal, so dirty is preserved on error by construction).
+  // Render-phase adjustment (no set-state-in-effect): when the host bumps
+  // the signal, the saved form matches the server again.
+  const [resetSeen, setResetSeen] = useState(dirtyResetSignal);
+  if (resetSeen !== dirtyResetSignal) {
+    setResetSeen(dirtyResetSignal);
+    setDirty(false);
+  }
 
-  const { data: catData } = useAdminProductCategories({ page_size: '200' });
+  // Phase 8.3 — dirty navigation guard over the EXISTING `dirty` latch:
+  // beforeunload (only while dirty) + confirmation for Back-link and Cancel
+  // (both leave this page via `backHref`). Save navigations live in the host
+  // page and run only after success, so they never prompt.
+  // Phase 9.1 — SPA navigation: the guarded Back-link/Cancel destination
+  // runs through `router.push` (same guarded closure, no reload). Dirty
+  // forms still prompt via the guard; clean forms navigate directly.
+  const router = useRouter();
+  const guard = useDirtyNavigationGuard({ isDirty: dirty });
+  const leaveToBack = () => {
+    router.push(backHref);
+  };
+
+  const { data: catData } = useAdminProductCategories({ page_size: '100' });
   const categories: ProductCategory[] = useMemo(() => {
     if (!catData) return [];
     if (Array.isArray(catData)) return catData;
     return Array.isArray(catData?.results) ? catData.results : [];
   }, [catData]);
 
-  const { data: defsData, isLoading: defsLoading } = useAttributeDefinitions({ page_size: '200', is_active: 'true' });
+  const { data: defsData, isLoading: defsLoading } = useAttributeDefinitions({ page_size: '100', is_active: 'true' });
   const allDefinitions: ProductAttributeDefinition[] = useMemo(() => {
     if (!defsData) return [];
     if (Array.isArray(defsData)) return defsData;
@@ -169,7 +199,11 @@ export function ProductEditor({
 
   return (
     <div>
-      <Link href={backHref} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href={backHref}
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+        onClick={(e) => guard.guardLinkClick(e, backHref, leaveToBack)}
+      >
         <ArrowLeft className="h-4 w-4 ms-0 me-2 rtl:rotate-180" />{t('admin.back_to_products')}
       </Link>
       <PageHeader
@@ -322,10 +356,17 @@ export function ProductEditor({
       </div>
 
       <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t py-4 mt-6 -mx-4 md:-mx-8 px-4 md:px-8 flex justify-end gap-3 z-10 flex-wrap">
-        <Button type="button" variant="outline" onClick={() => { window.location.href = backHref; }}>
+        <Button type="button" variant="outline" onClick={() => guard.requestNavigation(backHref, leaveToBack)}>
           {t('common.cancel')}
         </Button>
-        {form.status !== 'published' && (
+        {/* Phase 8.2 — saved-state preview: secondary to Save, never
+            auto-saves, previews the persisted product only. Rendered only
+            when the host page supplies onPreview (edit mode). */}
+        {onPreview && (
+          <Button type="button" variant="outline" disabled={isPending || isPreviewIssuing} onClick={onPreview}>
+            {isPreviewIssuing ? <Loader2 className="h-4 w-4 animate-spin me-1" /> : <ExternalLink className="h-4 w-4 me-1" />}{t('admin.product_preview')}
+          </Button>
+        )}        {form.status !== 'published' && (
           <Button type="button" variant="secondary" disabled={isPending} onClick={() => submit('publish')}>
             {isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}{t('admin.save_publish')}
           </Button>
@@ -337,6 +378,18 @@ export function ProductEditor({
           {isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}{t('admin.save')}
         </Button>
       </div>
+
+      {/* Phase 8.3 — single dirty-navigation confirmation (Stay/Leave). */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

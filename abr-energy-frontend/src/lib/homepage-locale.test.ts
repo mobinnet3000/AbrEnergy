@@ -8,6 +8,7 @@ import { canManageHomepage } from './admin-permissions';
 // Every admin.homepage_* key referenced by the Homepage Studio and its cards.
 const REQUIRED_HOMEPAGE_KEYS = [
   'homepage', 'homepage_studio', 'homepage_studio_desc', 'homepage_preview',
+  'homepage_preview_failed',
   'homepage_saved', 'homepage_save_failed',
   'homepage_hero', 'homepage_hero_hint', 'homepage_eyebrow',
   'homepage_cta_label', 'homepage_cta_url', 'homepage_cta_enabled',

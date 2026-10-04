@@ -8,7 +8,7 @@ from apps.services.api.v1.serializers.service import (
     ServiceWriteSerializer,
     ServiceCategorySerializer,
 )
-from apps.users.api.v1.permissions import IsAdminUser
+from apps.users.api.v1.permissions import IsAdminUser, IsContentManager
 
 
 class ServiceListView(generics.ListCreateAPIView):
@@ -25,7 +25,7 @@ class ServiceListView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsAdminUser()]
+        return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
         return Service.objects.select_related("category", "image").prefetch_related("translations").all()
@@ -54,7 +54,7 @@ class ServiceDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestro
     def get_permissions(self):
         if self.request.method == "GET":
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated(), IsAdminUser()]
+        return [permissions.IsAuthenticated(), IsContentManager()]
 
     queryset = Service.objects.select_related("category", "image").prefetch_related("translations").all()
     lookup_field = "slug"

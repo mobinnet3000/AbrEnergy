@@ -40,16 +40,19 @@ export default function AdminMediaPage() {
               {items.map((item: Record<string, unknown>) => (
                 <div key={item.id as string} className="border rounded-lg p-4">
                   <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-md mb-3 flex items-center justify-center overflow-hidden">
-                    {(item as { file?: string }).file ? (
-                      <img src={(item as { file: string }).file} alt={item.name as string} className="w-full h-full object-cover" />
+                    {/* Phase 9.5 shape: MediaFileListSerializer exposes `url` /
+                      `original_name` / `file_size` (legacy `file` / `name` /
+                      `size` kept as fallback). */}
+                    {((item as { url?: string; file?: string }).url || (item as { file?: string }).file) ? (
+                      <img src={((item as { url?: string; file?: string }).url || (item as { file: string }).file) as string} alt={(item.original_name ?? item.name) as string} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-muted-foreground text-xs">{t('admin.no_preview')}</span>
                     )}
                   </div>
-                  <p className="font-medium text-sm truncate">{item.name as string}</p>
+                  <p className="font-medium text-sm truncate">{(item.original_name ?? item.name) as string}</p>
                   <p className="text-xs text-muted-foreground truncate">{(item as { file_type?: string }).file_type || 'Unknown'}</p>
                   <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-muted-foreground">{(item as { size?: number }).size !== undefined ? formatSize((item as { size: number }).size) : '-'}</span>
+                    <span className="text-xs text-muted-foreground">{(item as { file_size?: number; size?: number }).file_size !== undefined ? formatSize((item as { file_size: number }).file_size) : (item as { size?: number }).size !== undefined ? formatSize((item as { size: number }).size) : '-'}</span>
                     <span className="text-xs text-muted-foreground">{new Date((item as { uploaded_at?: string }).uploaded_at || (item as { created_at?: string }).created_at || '').toLocaleDateString()}</span>
                   </div>
                 </div>

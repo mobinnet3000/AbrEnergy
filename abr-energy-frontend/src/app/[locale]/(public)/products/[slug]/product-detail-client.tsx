@@ -63,10 +63,15 @@ function ProductJsonLd({ product }: { product: ProductDetail }) {
   );
 }
 
-export function ProductDetailClient({ slug }: { slug: string }) {
+export function ProductDetailClient({ slug, previewProduct }: { slug: string; previewProduct?: ProductDetail | null }) {
   const { t } = useLocale();
-  const { data, isLoading, isError, error, refetch } = usePublicProduct(slug);
-  const product = data as ProductDetail | undefined;
+  // Phase 8.2 — saved-state preview: when `previewProduct` is provided the
+  // public fetch is disabled and the SAME rendering below consumes the
+  // token-gated preview payload (public ProductDetailSerializer — no admin
+  // fields). The normal public path (`previewProduct` undefined) is untouched.
+  const isPreview = previewProduct !== undefined;
+  const { data, isLoading, isError, error, refetch } = usePublicProduct(slug, { enabled: !isPreview });
+  const product = (isPreview ? previewProduct : (data as ProductDetail | undefined)) as ProductDetail | undefined;
 
   const { data: categoriesData } = usePublicProductCategories();
   const categoryIndex = useMemo(() => {

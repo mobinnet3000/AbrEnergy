@@ -641,6 +641,22 @@ export interface HomepagePayload {
   contact: HomepageContact;
   visuals: HomepageVisual[];
   seo: HomepageSeo;
+  /** Phase 8.1: present and true ONLY on the token-gated preview payload. */
+  preview?: boolean;
+}
+
+export interface PreviewTokenIssueInput {
+  resource_type: 'homepage' | 'product' | 'category';
+  resource_id?: string;
+  locale?: string;
+}
+
+export interface PreviewTokenIssueResponse {
+  token: string;
+  resource_type: string;
+  resource_id: string;
+  locale: string;
+  expires_in: number;
 }
 
 export interface HomepageRelationRow {

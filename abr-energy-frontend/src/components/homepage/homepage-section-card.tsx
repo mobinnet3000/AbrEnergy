@@ -38,7 +38,7 @@ export function HomepageSectionCard({ section, onMove, onChange, isFirst, isLast
             aria-checked={section.enabled}
             aria-label={name}
             onClick={() => onChange(section.key, { enabled: !section.enabled })}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${section.enabled ? 'bg-primary' : 'bg-input'}`}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${section.enabled ? 'bg-primary' : 'bg-input'}`}
           >
             <span
               className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${section.enabled ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0.5 rtl:-translate-x-0.5'}`}

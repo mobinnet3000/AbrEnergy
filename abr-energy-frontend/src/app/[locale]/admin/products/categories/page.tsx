@@ -1,11 +1,12 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   Plus, Pencil, Trash2, FolderPlus, ChevronDown, ChevronLeft, ChevronRight,
-  Folder, Star, StarOff, Power, PowerOff, MoreHorizontal,
+  Folder, Star, StarOff, Power, PowerOff, MoreHorizontal, Copy, Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,10 +21,21 @@ import { PageHeader, TableLoading, EmptyState, ErrorState } from '@/components/s
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import {
   useAdminProductCategories, useUpdateAdminProductCategory, useDeleteAdminProductCategory,
+  useDuplicateAdminProductCategory,
 } from '@/hooks/use-api';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import {
+  ACTIVE_FILTER_VALUES,
+  buildListQuery,
+  parseEnumParam,
+  parseFeaturedParam,
+  parseIdParam,
+  parseSearchParam,
+} from '@/lib/admin-list-query';
 import { useLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth-store';
 import { canManageProductCategories } from '@/lib/admin-permissions';
+import { normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
 import type { ProductCategory } from '@/types';
 import { buildCategoryTree, type CategoryTreeNode } from '@/lib/category-tree';
 
@@ -32,29 +44,126 @@ export default function AdminProductCategoriesPage() {
   const role = useAuthStore((s) => s.user?.role);
   const canWrite = canManageProductCategories(role);
   const qc = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [featuredFilter, setFeaturedFilter] = useState('all');
-  const [parentFilter, setParentFilter] = useState('all');
+  // Phase 9.3-A — the URL is the source of truth for the filter state that
+  // actually exists on this page (search + active/featured/parent). This list
+  // is intentionally a single tree fetch (`page_size=100`, no pager), so no
+  // `page` is invented here — a stray `?page=` in the URL is ignored.
+  const urlSearch = parseSearchParam(searchParams.get('search'));
+  const urlStatus = parseEnumParam(searchParams.get('active'), ACTIVE_FILTER_VALUES) ?? 'all';
+  const urlFeatured = parseFeaturedParam(searchParams.get('featured')) ? 'featured' : 'all';
+  const urlParent = parseIdParam(searchParams.get('parent')) ?? 'all';
+
+  const [search, setSearch] = useState(urlSearch);
+  const [statusFilter, setStatusFilter] = useState(urlStatus);
+  const [featuredFilter, setFeaturedFilter] = useState(urlFeatured);
+  const [parentFilter, setParentFilter] = useState(urlParent);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState<ProductCategory | null>(null);
+  // Phase 9.4 — id of the row with an in-flight duplicate request (per-item
+  // pending state; the item is disabled while set, blocking double-submit).
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
+  // Phase 9.1 — the visible input stays immediate; only the query-driving
+  // value is debounced (shared Phase 8.6 abstraction, 300 ms).
+  const debouncedSearch = useDebouncedValue(search);
+
+  // Canonical snapshot of the live URL (validated parses — never raw
+  // `useSearchParams()` object identity, which effects must not depend on).
+  // Refreshed in the sync effect; read by the commit effect.
+  const urlSnapshotRef = useRef('');
+
+  // Phase 9.3-A — URL → state (browser back/forward + external router
+  // navigation; refresh/deep-link is covered by the initializers). Guarded
+  // per field; never clobbers in-flight typing.
+  /* eslint-disable react-hooks/set-state-in-effect -- The address bar is
+  external state: adopt its snapshot into local state when navigation changes
+  it underneath us. Every setter is a guarded no-op when already equal, so
+  this converges without looping; proven by the 9.3-A URL suites. */
+  useEffect(() => {
+    urlSnapshotRef.current = buildListQuery({
+      search: urlSearch,
+      active: urlStatus,
+      featured: urlFeatured === 'featured',
+      parent: urlParent,
+    });
+    setSearch((p) => (p === urlSearch ? p : urlSearch));
+    setStatusFilter((p) => (p === urlStatus ? p : urlStatus));
+    setFeaturedFilter((p) => (p === urlFeatured ? p : urlFeatured));
+    setParentFilter((p) => (p === urlParent ? p : urlParent));
+  }, [urlSearch, urlStatus, urlFeatured, urlParent]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Phase 9.3-A — state → URL via `replace` (no history entry per keystroke
+  // or filter change). Canonical-compare on both sides: no navigation loop.
+  // The commit waits until the search settles so a stale in-flight debounce
+  // can never resurrect a search just left via back/forward navigation.
+  const searchSettled = debouncedSearch === search;
+  const targetQuery = buildListQuery({
+    search: debouncedSearch,
+    active: statusFilter,
+    featured: featuredFilter === 'featured',
+    parent: parentFilter,
+  });
+  // Commit effect: reacts to TARGET changes only — never to the URL itself —
+  // so an external navigation (back/forward) can never trigger a commit of
+  // pre-sync state in the same commit the sync effect adopts the new URL.
+  // Comparing against the canonical snapshot (not the raw URL) also
+  // preserves unknown params: they are ignored, never dropped.
+  useEffect(() => {
+    if (!searchSettled) return;
+    if (targetQuery !== urlSnapshotRef.current) {
+      router.replace(targetQuery ? `${pathname}?${targetQuery}` : pathname);
+    }
+  }, [searchSettled, targetQuery, pathname, router]);
+
+  // Phase 9.1 — page_size capped to the backend StandardPagination max (100);
+  // the previous 200 was silently truncated server-side past 100 rows.
   const params = useMemo(() => {
-    const p: Record<string, string> = { page_size: '200' };
-    if (search.trim()) p.search = search.trim();
+    const p: Record<string, string> = { page_size: '100' };
+    if (debouncedSearch.trim()) p.search = debouncedSearch.trim();
     if (statusFilter === 'active') p.is_active = 'true';
     if (statusFilter === 'inactive') p.is_active = 'false';
     if (featuredFilter === 'featured') p.is_featured = 'true';
     if (parentFilter !== 'all') p.parent = parentFilter;
     return p;
-  }, [search, statusFilter, featuredFilter, parentFilter]);
+  }, [debouncedSearch, statusFilter, featuredFilter, parentFilter]);
 
   const hasFilter = search.trim() !== '' || statusFilter !== 'all' || featuredFilter !== 'all' || parentFilter !== 'all';
 
   const { data, isLoading, error, refetch } = useAdminProductCategories(params);
   const updateMut = useUpdateAdminProductCategory();
   const deleteMut = useDeleteAdminProductCategory();
+  const duplicateMut = useDuplicateAdminProductCategory();
+
+  // Phase 9.4 — node-only duplicate under the same parent (no confirm, no
+  // dirty guard). Exactly one POST per click; success navigates to the
+  // RETURNED duplicate id's edit page.
+  const handleDuplicate = (row: ProductCategory) => {
+    if (duplicatingId !== null) return;
+    setDuplicatingId(row.id);
+    duplicateMut.mutate(row.id, {
+      onSuccess: (data: { id: string }) => {
+        setDuplicatingId(null);
+        toast.success(t('admin.category_duplicated'));
+        router.push(`/admin/products/categories/${data.id}/edit`);
+      },
+      onError: (e: unknown) => {
+        setDuplicatingId(null);
+        const normalized = normalizeApiError(e);
+        if (normalized.kind === 'permission') {
+          toast.error(t('admin.permission_denied'));
+        } else if (normalized.kind === 'network' || normalized.kind === 'server') {
+          toast.error(t('admin.server_connection_failed'));
+        } else {
+          toast.error(summarizeNormalizedError(normalized) ?? t('admin.category_save_failed'));
+        }
+      },
+    });
+  };
 
   const rows: ProductCategory[] = useMemo(() => {
     if (!data) return [];
@@ -177,14 +286,22 @@ export default function AdminProductCategoriesPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={() => { window.location.href = `/admin/products/categories/${node.id}/edit`; }}
+                    onClick={() => { router.push(`/admin/products/categories/${node.id}/edit`); }}
                   >
                     <Pencil className="h-3.5 w-3.5" />{t('admin.edit')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => { window.location.href = `/admin/products/categories/new?parent=${node.id}`; }}
+                    onClick={() => { router.push(`/admin/products/categories/new?parent=${node.id}`); }}
                   >
                     <FolderPlus className="h-3.5 w-3.5" />{t('admin.add_child')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={duplicatingId === node.id}
+                    onClick={() => handleDuplicate(node)}
+                  >
+                    {duplicatingId === node.id
+                      ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      : <Copy className="h-3.5 w-3.5" />}{t('admin.duplicate')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={() => setDeleting(node)}>
@@ -263,7 +380,7 @@ export default function AdminProductCategoriesPage() {
             <EmptyState
               title={t('admin.no_product_categories')}
               message=""
-              action={canWrite ? { label: t('admin.create_first_category'), onClick: () => { window.location.href = '/admin/products/categories/new'; } } : undefined}
+              action={canWrite ? { label: t('admin.create_first_category'), onClick: () => { router.push('/admin/products/categories/new'); } } : undefined}
             />
           </CardContent>
         </Card>

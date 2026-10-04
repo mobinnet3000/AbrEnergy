@@ -14,6 +14,10 @@ export function sanitizeHtml(dirty: string): string {
       'src', 'alt', 'width', 'height',
       'colspan', 'rowspan', 'id',
     ],
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.-]|$))/i,
+    // URI allowlist: http/https/mailto/tel plus relative URLs, anchors,
+    // and fragments. Executable schemes (javascript:, data:, vbscript:, file:)
+    // are rejected — DOMPurify's default regexp is intentionally NOT copied
+    // verbatim because its generic "any scheme" branch permits javascript:.
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   });
 }

@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
@@ -75,6 +77,14 @@ export default function AdminProjectEditPage() {
   }, [data, edits]);
   const [saving, setSaving] = useState(false);
 
+  // Phase 9.2 — dirty navigation guard over the EXISTING `edits` state (same
+  // semantics as Homepage Studio: any pending edit = dirty; failed saves
+  // never touch `edits`, so dirty is preserved for retry). Save-success
+  // navigation runs directly (the persisted entity is left behind).
+  const isDirty = Object.keys(edits).length > 0;
+  const guard = useDirtyNavigationGuard({ isDirty });
+  const backHref = '/admin/projects';
+
   useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
@@ -98,7 +108,11 @@ export default function AdminProjectEditPage() {
 
   return (
     <div>
-      <Link href="/admin/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/projects"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_projects')}
       </Link>
       <PageHeader title={t('admin.edit_project')}>
@@ -176,6 +190,18 @@ export default function AdminProjectEditPage() {
           </Card>
         </div>
       </div>
+
+      {/* Phase 9.2 (8.3 mechanism) — single dirty-navigation confirmation. */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

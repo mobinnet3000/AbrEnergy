@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { useLocale } from '@/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { adminProductsApi } from '@/api';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { formKey, type ProductRelationFormItem } from '@/lib/product-form';
 import type { ProductListItem } from '@/types';
 import { toast } from 'sonner';
@@ -25,10 +26,14 @@ export function ProductRelationsEditor({ currentProductId, relations, onChange, 
   const { t } = useLocale();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
+  // Phase 8.6 (BUG-07): the visible input stays immediate (`search`);
+  // only the API query waits for the debounce window (`debouncedSearch`).
+  // Opening, selecting, removing, and cancelling are NOT debounced.
+  const debouncedSearch = useDebouncedValue(search);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-products', { relSearch: search }],
-    queryFn: () => adminProductsApi.list({ search: search.trim(), page_size: '10' }),
+    queryKey: ['admin-products', { relSearch: debouncedSearch }],
+    queryFn: () => adminProductsApi.list({ search: debouncedSearch.trim(), page_size: '10' }),
     enabled: open,
   });
   const results: ProductListItem[] = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];

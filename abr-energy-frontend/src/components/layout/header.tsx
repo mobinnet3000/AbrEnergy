@@ -18,11 +18,23 @@ export function Header() {
   const [langOpen, setLangOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  // next-themes resolves the stored theme only on the client, so the icon
+  // must render a deterministic (server-identical) fallback until mount —
+  // otherwise a stored `dark` theme hydrates Sun over the server's Moon.
+  const [mounted, setMounted] = useState(false);
   const lastScrollY = useRef(0);
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, user } = useAuthStore();
   const { locale, setLocale, t, isRTL } = useLocale();
+
+  /* eslint-disable react-hooks/set-state-in-effect -- Mount flag is the
+  documented next-themes hydration guard: the theme icon must render the
+  server-identical fallback until client mount. Fires exactly once. */
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const onScroll = () => {
@@ -156,7 +168,7 @@ export function Header() {
               )}
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {mounted && theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
             {/* Auth */}

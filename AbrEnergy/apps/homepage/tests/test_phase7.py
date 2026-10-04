@@ -5,6 +5,8 @@ CTA validation, relation ordering + duplicate prevention, public-only
 filtering per entity, SEO persistence, permissions, public response shape,
 and a query-count guard against N+1.
 """
+import uuid
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -308,3 +310,67 @@ class PublicShapeTest(TestCase):
         # 5 products + 3 cats + 3 svc + 3 prj + 3 art + sections/config/visuals:
         # must stay far below one-query-per-field territory (~200 in Phase 0).
         assert len(ctx) < 60, f"{len(ctx)} queries"
+
+
+@pytest.mark.django_db
+class RelationValidationTest(TestCase):
+    """Phase 7.5 (BUG-01): stale/duplicate relation ids must 400, never 500.
+
+    Relation items carry raw UUIDs, so without serializer-level existence +
+    uniqueness checks a deleted-between-picker-and-save id (or a doubled
+    id) sailed through validation and exploded as an IntegrityError at
+    commit time (HTTP 500 on the admin write path).
+    """
+
+    def _authed(self, email):
+        ed = make_editor(email=email)
+        client = APIClient()
+        client.force_authenticate(user=ed)
+        return client
+
+    def test_unknown_product_uuid_returns_400_and_writes_nothing(self):
+        client = self._authed("hp-v1@test.com")
+        res = client.patch(
+            ADMIN,
+            {"featured_products_data": [{"product": str(uuid.uuid4()), "order": 0, "enabled": True}]},
+            format="json",
+        )
+        assert res.status_code == 400
+        assert "featured_products_data" in res.data["errors"]
+        assert HomepageFeaturedProduct.objects.count() == 0
+
+    def test_duplicate_product_uuid_returns_400_and_writes_nothing(self):
+        client = self._authed("hp-v2@test.com")
+        cat = make_category(slug="hp-v2c"); make_cat_tr(cat, title="دسته")
+        p = make_product(sku="HP-V2", cat=cat); make_tr(p, title="کالا")
+        payload = [
+            {"product": str(p.id), "order": 0, "enabled": True},
+            {"product": str(p.id), "order": 1, "enabled": True},
+        ]
+        res = client.patch(ADMIN, {"featured_products_data": payload}, format="json")
+        assert res.status_code == 400
+        assert "featured_products_data" in res.data["errors"]
+        assert HomepageFeaturedProduct.objects.count() == 0
+
+    def test_unknown_category_uuid_returns_400(self):
+        client = self._authed("hp-v3@test.com")
+        res = client.patch(
+            ADMIN,
+            {"categories_data": [{"category": str(uuid.uuid4()), "order": 0, "enabled": True}]},
+            format="json",
+        )
+        assert res.status_code == 400
+        assert "categories_data" in res.data["errors"]
+        assert HomepageCategory.objects.count() == 0
+
+    def test_valid_relation_still_writes_200(self):
+        client = self._authed("hp-v4@test.com")
+        cat = make_category(slug="hp-v4c"); make_cat_tr(cat, title="دسته")
+        p = make_product(sku="HP-V4", cat=cat); make_tr(p, title="کالا")
+        res = client.patch(
+            ADMIN,
+            {"featured_products_data": [{"product": str(p.id), "order": 0, "enabled": True}]},
+            format="json",
+        )
+        assert res.status_code == 200
+        assert HomepageFeaturedProduct.objects.count() == 1

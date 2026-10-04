@@ -14,6 +14,14 @@ vi.mock('@/components/shared/media-upload', () => ({
   ),
 }));
 
+vi.mock('@/components/shared/media-picker-dialog', () => ({
+  ChooseMediaButton: ({ onSelect }: { onSelect: (items: { id: string; url: string; alt_text?: string }[]) => void }) => (
+    <button type="button" onClick={() => onSelect([{ id: 'media-picked', url: 'http://x/picked.png', alt_text: '' }])}>
+      admin.media_choose_existing
+    </button>
+  ),
+}));
+
 const img = (over: Partial<ProductImageFormItem> = {}): ProductImageFormItem => ({
   key: 'k1',
   media_file: 'm1',
@@ -61,6 +69,23 @@ describe('ProductMediaManager', () => {
     expect(onChange).toHaveBeenCalledWith([
       expect.objectContaining({ media_file: 'media-new', is_cover: true }),
     ]);
+  });
+
+  it('Phase 9.5 — choose-existing appends picked ids as new rows (no new upload)', () => {
+    const onChange = vi.fn();
+    render(<ProductMediaManager images={[img()]} onChange={onChange} />);
+    fireEvent.click(screen.getByText('admin.media_choose_existing'));
+    expect(onChange).toHaveBeenCalledWith([
+      expect.objectContaining({ media_file: 'm1' }),
+      expect.objectContaining({ media_file: 'media-picked', url: 'http://x/picked.png', is_cover: false, sort_order: 1 }),
+    ]);
+  });
+
+  it('Phase 9.5 — choose-existing skips already-attached ids', () => {
+    const onChange = vi.fn();
+    render(<ProductMediaManager images={[img({ media_file: 'media-picked' })]} onChange={onChange} />);
+    fireEvent.click(screen.getByText('admin.media_choose_existing'));
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('renders nested API errors near the gallery', () => {

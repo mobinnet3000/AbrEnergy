@@ -1,10 +1,11 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
-  Plus, Pencil, Trash2, Star, StarOff, Power, PowerOff, MoreHorizontal,
+  Plus, Pencil, Trash2, Star, StarOff, Power, PowerOff, MoreHorizontal, Copy, Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,10 +20,24 @@ import { PageHeader, TableLoading, EmptyState, ErrorState } from '@/components/s
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import {
   useAdminProducts, useUpdateAdminProduct, useDeleteAdminProduct, useAdminProductCategories,
+  useDuplicateAdminProduct,
 } from '@/hooks/use-api';
+import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import {
+  ACTIVE_FILTER_VALUES,
+  PRODUCT_LIST_STATUSES,
+  PRODUCT_LIST_VISIBILITY,
+  buildListQuery,
+  parseEnumParam,
+  parseFeaturedParam,
+  parseIdParam,
+  parsePageParam,
+  parseSearchParam,
+} from '@/lib/admin-list-query';
 import { useLocale } from '@/i18n';
 import { useAuthStore } from '@/stores/auth-store';
 import { canManageProducts } from '@/lib/admin-permissions';
+import { normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
 import { formatPrice, priceStateLabelKey } from '@/lib/product-form';
 import { ProductStatusBadge, ProductVisibilityBadge } from '@/components/products';
 import type { ProductCategory, ProductListItem } from '@/types';
@@ -34,19 +49,104 @@ export default function AdminProductsPage() {
   const role = useAuthStore((s) => s.user?.role);
   const canWrite = canManageProducts(role);
   const qc = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('all');
-  const [status, setStatus] = useState('all');
-  const [visibility, setVisibility] = useState('all');
-  const [active, setActive] = useState('all');
-  const [featured, setFeatured] = useState('all');
-  const [page, setPage] = useState(1);
+  // Phase 9.3-A — the URL is the source of truth for list view state. The
+  // values below are parsed once per render from the live search params
+  // (invalid values fail safely: bad page → 1, unknown enum → 'all').
+  const urlSearch = parseSearchParam(searchParams.get('search'));
+  const urlCategory = parseIdParam(searchParams.get('category')) ?? 'all';
+  const urlStatus = parseEnumParam(searchParams.get('status'), PRODUCT_LIST_STATUSES) ?? 'all';
+  const urlVisibility = parseEnumParam(searchParams.get('visibility'), PRODUCT_LIST_VISIBILITY) ?? 'all';
+  const urlActive = parseEnumParam(searchParams.get('active'), ACTIVE_FILTER_VALUES) ?? 'all';
+  const urlFeatured = parseFeaturedParam(searchParams.get('featured')) ? 'featured' : 'all';
+  const urlPage = parsePageParam(searchParams.get('page'));
+
+  const [search, setSearch] = useState(urlSearch);
+  const [category, setCategory] = useState(urlCategory);
+  const [status, setStatus] = useState(urlStatus);
+  const [visibility, setVisibility] = useState(urlVisibility);
+  const [active, setActive] = useState(urlActive);
+  const [featured, setFeatured] = useState(urlFeatured);
+  const [page, setPage] = useState(urlPage);
   const [deleting, setDeleting] = useState<ProductListItem | null>(null);
+  // Phase 9.4 — id of the row with an in-flight duplicate request (per-item
+  // pending state; the item is disabled while set, blocking double-submit).
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  // Phase 9.1 — the visible input stays immediate; only the query-driving
+  // value is debounced (shared Phase 8.6 abstraction, 300 ms).
+  const debouncedSearch = useDebouncedValue(search);
+
+  // Canonical snapshot of the live URL (validated parses — never raw
+  // `useSearchParams()` object identity, which effects must not depend on).
+  // Refreshed in the sync effect; read by the commit effect.
+  const urlSnapshotRef = useRef('');
+
+  // Phase 9.3-A — URL → state: refresh/deep-link is covered by the
+  // initializers above; this covers browser back/forward and any router
+  // navigation landing here with a different query. Guarded per field, so it
+  // only runs when a parsed URL value actually changes and never clobbers
+  // in-flight typing (typing does not touch the URL until the debounce
+  // effect below commits it).
+  /* eslint-disable react-hooks/set-state-in-effect -- The address bar is
+  external state: adopt its snapshot into local state when navigation changes
+  it underneath us. Every setter is a guarded no-op when already equal, so
+  this converges without looping; proven by the 9.3-A URL suites. */
+  useEffect(() => {
+    urlSnapshotRef.current = buildListQuery({
+      search: urlSearch,
+      category: urlCategory,
+      status: urlStatus,
+      visibility: urlVisibility,
+      active: urlActive,
+      featured: urlFeatured === 'featured',
+      page: urlPage,
+    });
+    setSearch((p) => (p === urlSearch ? p : urlSearch));
+    setCategory((p) => (p === urlCategory ? p : urlCategory));
+    setStatus((p) => (p === urlStatus ? p : urlStatus));
+    setVisibility((p) => (p === urlVisibility ? p : urlVisibility));
+    setActive((p) => (p === urlActive ? p : urlActive));
+    setFeatured((p) => (p === urlFeatured ? p : urlFeatured));
+    setPage((p) => (p === urlPage ? p : urlPage));
+  }, [urlSearch, urlCategory, urlStatus, urlVisibility, urlActive, urlFeatured, urlPage]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  // Phase 9.3-A — state → URL: reflect the debounced search + filters + page
+  // with `replace` (never a history entry per keystroke; pagination uses
+  // `push` in goPage). Both sides are canonically serialized so param
+  // ordering or unknown params can never cause a navigation loop. The commit
+  // waits until the search settles (`debouncedSearch === search`) so a stale
+  // in-flight debounce can never resurrect a search the user just left via
+  // back/forward navigation.
+  const searchSettled = debouncedSearch === search;
+  const targetQuery = buildListQuery({
+    search: debouncedSearch,
+    category,
+    status,
+    visibility,
+    active,
+    featured: featured === 'featured',
+    page,
+  });
+  // Commit effect: reacts to TARGET changes only — never to the URL itself —
+  // so an external navigation (back/forward) can never trigger a commit of
+  // pre-sync state in the same commit the sync effect adopts the new URL.
+  // Comparing against the canonical snapshot (not the raw URL) also
+  // preserves unknown params: they are ignored, never dropped.
+  useEffect(() => {
+    if (!searchSettled) return;
+    if (targetQuery !== urlSnapshotRef.current) {
+      router.replace(targetQuery ? `${pathname}?${targetQuery}` : pathname);
+    }
+  }, [searchSettled, targetQuery, pathname, router]);
 
   const params = useMemo(() => {
     const p: Record<string, string> = { page: String(page), page_size: String(PAGE_SIZE) };
-    if (search.trim()) p.search = search.trim();
+    if (debouncedSearch.trim()) p.search = debouncedSearch.trim();
     if (category !== 'all') p.category = category;
     if (status !== 'all') p.status = status;
     if (visibility !== 'all') p.visibility = visibility;
@@ -54,14 +154,58 @@ export default function AdminProductsPage() {
     if (active === 'inactive') p.is_active = 'false';
     if (featured === 'featured') p.is_featured = 'true';
     return p;
-  }, [search, category, status, visibility, active, featured, page]);
+  }, [debouncedSearch, category, status, visibility, active, featured, page]);
 
   const resetPage = (fn: (v: string) => void) => (v: string | null) => { setPage(1); fn(v ?? 'all'); };
 
+  // Phase 9.3-A — pagination is a meaningful navigation step, so it uses
+  // `push` (Back returns to the previous page). Search/filter changes stay on
+  // `replace` via the sync effect above.
+  const goPage = (n: number) => {
+    setPage(n);
+    const q = buildListQuery({
+      search: debouncedSearch,
+      category,
+      status,
+      visibility,
+      active,
+      featured: featured === 'featured',
+      page: n,
+    });
+    router.push(q ? `${pathname}?${q}` : pathname);
+  };
+
   const { data, isLoading, error, refetch } = useAdminProducts(params);
-  const { data: catData } = useAdminProductCategories({ page_size: '200' });
+  const { data: catData } = useAdminProductCategories({ page_size: '100' });
   const updateMut = useUpdateAdminProduct();
   const deleteMut = useDeleteAdminProduct();
+  const duplicateMut = useDuplicateAdminProduct();
+
+  // Phase 9.4 — duplicate is a non-destructive create: no confirmation, no
+  // dirty guard (list pages own none). Exactly one POST per click; success
+  // navigates to the RETURNED duplicate id's edit page.
+  const handleDuplicate = (row: ProductListItem) => {
+    if (duplicatingId !== null) return;
+    setDuplicatingId(row.id);
+    duplicateMut.mutate(row.id, {
+      onSuccess: (data: { id: string }) => {
+        setDuplicatingId(null);
+        toast.success(t('admin.product_duplicated'));
+        router.push(`/admin/products/${data.id}/edit`);
+      },
+      onError: (e: unknown) => {
+        setDuplicatingId(null);
+        const normalized = normalizeApiError(e);
+        if (normalized.kind === 'permission') {
+          toast.error(t('admin.permission_denied'));
+        } else if (normalized.kind === 'network' || normalized.kind === 'server') {
+          toast.error(t('admin.server_connection_failed'));
+        } else {
+          toast.error(summarizeNormalizedError(normalized) ?? t('admin.product_save_failed'));
+        }
+      },
+    });
+  };
 
   const rows: ProductListItem[] = useMemo(() => {
     if (!data) return [];
@@ -221,7 +365,7 @@ export default function AdminProductsPage() {
             <EmptyState
               title={t('admin.no_products')}
               message=""
-              action={canWrite ? { label: t('admin.create_first_product'), onClick: () => { window.location.href = '/admin/products/new'; } } : undefined}
+              action={canWrite ? { label: t('admin.create_first_product'), onClick: () => { router.push('/admin/products/new'); } } : undefined}
             />
           </CardContent>
         </Card>
@@ -296,8 +440,16 @@ export default function AdminProductsPage() {
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => { window.location.href = `/admin/products/${row.id}/edit`; }}>
+                                <DropdownMenuItem onClick={() => { router.push(`/admin/products/${row.id}/edit`); }}>
                                   <Pencil className="h-3.5 w-3.5" />{t('admin.edit')}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  disabled={duplicatingId === row.id}
+                                  onClick={() => handleDuplicate(row)}
+                                >
+                                  {duplicatingId === row.id
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <Copy className="h-3.5 w-3.5" />}{t('admin.duplicate')}
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem variant="destructive" onClick={() => setDeleting(row)}>
@@ -317,11 +469,11 @@ export default function AdminProductsPage() {
             </div>
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-3 py-3 border-t">
-                <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => goPage(Math.max(1, page - 1))}>
                   {t('common.previous') ?? '‹'}
                 </Button>
                 <span className="text-xs text-muted-foreground" dir="ltr">{page} / {totalPages}</span>
-                <Button type="button" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+                <Button type="button" variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goPage(Math.min(totalPages, page + 1))}>
                   {t('common.next') ?? '›'}
                 </Button>
               </div>

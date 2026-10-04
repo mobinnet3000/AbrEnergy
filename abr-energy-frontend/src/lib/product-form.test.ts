@@ -141,6 +141,23 @@ describe('mapProductErrors', () => {
   it('falls back to a detail message for string errors', () => {
     expect(mapProductErrors('boom').detail).toEqual(['boom']);
   });
+
+  it('flattens deeply nested backend errors without [object Object] (Phase 8.5 BUG-06)', () => {
+    const mapped = mapProductErrors({
+      status: 400,
+      errors: {
+        translations: { fa: { title: ['Title is required'] } },
+        price_data: { regular_price: ['Must be positive'] },
+        images_data: [{ media_file: ['Missing file'] }],
+        non_field_errors: ['Cross-field conflict'],
+      },
+    });
+    expect(mapped.identity).toContain('fa.title: Title is required');
+    expect(mapped.price).toContain('regular_price: Must be positive');
+    expect(mapped.media).toContain('0.media_file: Missing file');
+    expect(mapped.detail).toContain('Cross-field conflict');
+    expect(JSON.stringify(mapped)).not.toContain('[object Object]');
+  });
 });
 
 describe('productToForm', () => {

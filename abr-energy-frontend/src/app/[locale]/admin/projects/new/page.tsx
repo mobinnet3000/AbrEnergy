@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
@@ -34,16 +36,26 @@ const statuses = [
   { value: 'on_hold', label: 'On Hold' },
 ];
 
+const emptyProjectForm = {
+  project_type: 'on_grid', capacity: '', location: '', status: 'planned', start_date: '', end_date: '',
+  title_fa: '', description_fa: '',
+  title_ar: '', description_ar: '',
+  title_en: '', description_en: '',
+};
+
 export default function AdminProjectNewPage() {
   const { t } = useLocale();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    project_type: 'on_grid', capacity: '', location: '', status: 'planned', start_date: '', end_date: '',
-    title_fa: '', description_fa: '',
-    title_ar: '', description_ar: '',
-    title_en: '', description_en: '',
-  });
+  const [form, setForm] = useState({ ...emptyProjectForm });
+
+  // Phase 9.2 — dirty navigation guard over the EXISTING form state (no new
+  // dirty system): `isDirty` is the initial-vs-current comparison owned by
+  // this form. Save-success navigation runs directly; failed saves never
+  // touch the form, so edits stay dirty by construction.
+  const isDirty = JSON.stringify(form) !== JSON.stringify(emptyProjectForm);
+  const guard = useDirtyNavigationGuard({ isDirty });
+  const backHref = '/admin/projects';
 
   const update = (field: string, value: unknown) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -62,7 +74,11 @@ export default function AdminProjectNewPage() {
 
   return (
     <div>
-      <Link href="/admin/projects" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/projects"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> {t('admin.back_to_projects')}
       </Link>
       <PageHeader title={t('admin.new_project')}>
@@ -140,6 +156,18 @@ export default function AdminProjectNewPage() {
           </Card>
         </div>
       </div>
+
+      {/* Phase 9.2 (8.3 mechanism) — single dirty-navigation confirmation. */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

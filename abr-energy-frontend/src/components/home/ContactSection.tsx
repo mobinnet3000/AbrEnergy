@@ -19,7 +19,7 @@ export function ContactSection({ cms }: { cms?: HomepageContact | null }) {
   const quoteLabel = homepageCopy(cms?.secondary_cta?.label, t('home.contact_quote'));
   const quoteUrl = cms?.secondary_cta?.url?.trim() ? cms.secondary_cta.url : '/contact';
   return (
-    <section data-section="contact" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="contact" data-testid="contact-panel" aria-labelledby="homepage-contact-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
       </div>
@@ -33,8 +33,8 @@ export function ContactSection({ cms }: { cms?: HomepageContact | null }) {
           transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
         >
           <div className="max-w-2xl mx-auto p-12 md:p-16 rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-xl">
-            <Phone className="h-16 w-16 mx-auto mb-8 text-emerald-400/60" />
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">{title}</h2>
+            <Phone className="h-16 w-16 mx-auto mb-8 text-emerald-400/60" aria-hidden />
+            <h2 id="homepage-contact-heading" className="font-heading text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">{title}</h2>
             <p className="text-white/40 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
               {text}
             </p>

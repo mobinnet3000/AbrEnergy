@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, articlesApi, servicesApi, projectsApi, calculatorApi, contactApi, siteApi, galleryApi, notificationsApi, adminApi, productsApi, adminProductCategoriesApi, adminProductsApi, adminAttributeDefinitionsApi, homepageApi, adminHomepageApi } from '@/api';
+import { authApi, articlesApi, servicesApi, projectsApi, calculatorApi, contactApi, siteApi, galleryApi, notificationsApi, adminApi, productsApi, adminProductCategoriesApi, adminProductsApi, adminArticlesApi, adminServicesApi, adminProjectsApi, adminAttributeDefinitionsApi, homepageApi, adminHomepageApi, previewApi } from '@/api';
 import type { CalculatorInput, ContactFormInput, ProjectInquiryInput, ProductCategoryWritePayload, ProductWritePayload } from '@/types';
 
 export const useSiteSettings = () => useQuery({ queryKey: ['site-settings'], queryFn: siteApi.getSettings, staleTime: 5 * 60 * 1000 });
@@ -69,6 +69,16 @@ export const useDeleteAdminProductCategory = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-product-categories'] }),
   });
 };
+// ── Phase 9.4 — duplicate (server-generated copy; returns the NEW detail) ──
+export const useDuplicateAdminProductCategory = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminProductCategoriesApi.duplicate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-product-categories'] });
+    },
+  });
+};
 
 export const useAdminProducts = (params?: Record<string, string>) =>
   useQuery({ queryKey: ['admin-products', params], queryFn: () => adminProductsApi.list(params) });
@@ -106,6 +116,31 @@ export const useDeleteAdminProduct = () => {
     },
   });
 };
+// ── Phase 9.4 — duplicate (server-generated copy; returns the NEW detail) ──
+export const useDuplicateAdminProduct = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => adminProductsApi.duplicate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-products'] });
+      qc.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
+  });
+};
+
+// ── Phase 9.2 — admin content lists (Articles / Services / Projects) ─────
+// Distinct `admin-*` query namespaces (never collide with the public
+// `articles` / `services` / `projects` keys). Params flow straight to the
+// matching `/admin/*` endpoint; only backend-supported params are passed
+// by the list pages. Global `staleTime` policy untouched.
+export const useAdminArticles = (params?: Record<string, string>) =>
+  useQuery({ queryKey: ['admin-articles', params], queryFn: () => adminArticlesApi.list(params) });
+
+export const useAdminServices = (params?: Record<string, string>) =>
+  useQuery({ queryKey: ['admin-services', params], queryFn: () => adminServicesApi.list(params) });
+
+export const useAdminProjects = (params?: Record<string, string>) =>
+  useQuery({ queryKey: ['admin-projects', params], queryFn: () => adminProjectsApi.list(params) });
 
 export const useAttributeDefinitions = (params?: Record<string, string>) =>
   useQuery({
@@ -120,14 +155,14 @@ export const useAttributeDefinitions = (params?: Record<string, string>) =>
 export const usePublicProductCategories = () =>
   useQuery({ queryKey: ['public-product-categories'], queryFn: () => productsApi.listCategories(), staleTime: 5 * 60 * 1000 });
 
-export const usePublicProductCategory = (slug: string) =>
-  useQuery({ queryKey: ['public-product-category', slug], queryFn: () => productsApi.getCategory(slug), enabled: !!slug, staleTime: 5 * 60 * 1000 });
+export const usePublicProductCategory = (slug: string, options?: { enabled?: boolean }) =>
+  useQuery({ queryKey: ['public-product-category', slug], queryFn: () => productsApi.getCategory(slug), enabled: options?.enabled ?? !!slug, staleTime: 5 * 60 * 1000 });
 
 export const usePublicProducts = (params?: Record<string, string>, options?: { enabled?: boolean }) =>
   useQuery({ queryKey: ['public-products', params], queryFn: () => productsApi.list(params), enabled: options?.enabled ?? true });
 
-export const usePublicProduct = (slug: string) =>
-  useQuery({ queryKey: ['public-product', slug], queryFn: () => productsApi.getBySlug(slug), enabled: !!slug });
+export const usePublicProduct = (slug: string, options?: { enabled?: boolean }) =>
+  useQuery({ queryKey: ['public-product', slug], queryFn: () => productsApi.getBySlug(slug), enabled: options?.enabled ?? !!slug });
 
 export const useFeaturedPublicProducts = (params?: Record<string, string>) =>
   useQuery({ queryKey: ['public-products', 'featured', params], queryFn: () => productsApi.getFeatured(params), staleTime: 5 * 60 * 1000 });
@@ -154,3 +189,38 @@ export const useUpdateAdminHomepage = () => {
     },
   });
 };
+
+// ── Phase 8.1 — homepage preview (token-gated, no-store, never cached) ────
+export const useHomepagePreview = (token: string | null) =>
+  useQuery({
+    queryKey: ['homepage-preview', token],
+    queryFn: () => previewApi.getHomepagePreview(token as string),
+    enabled: !!token,
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+// ── Phase 8.2 — product/category preview (same token model, never cached) ──
+export const useProductPreview = (id: string | null, token: string | null) =>
+  useQuery({
+    queryKey: ['product-preview', id, token],
+    queryFn: () => previewApi.getProductPreview(id as string, token as string),
+    enabled: !!id && !!token,
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+export const useCategoryPreview = (id: string | null, token: string | null) =>
+  useQuery({
+    queryKey: ['category-preview', id, token],
+    queryFn: () => previewApi.getCategoryPreview(id as string, token as string),
+    enabled: !!id && !!token,
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });

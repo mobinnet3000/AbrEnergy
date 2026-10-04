@@ -7,6 +7,7 @@ import type {
   ProductVisibility,
   ProductWritePayload,
 } from '@/types';
+import { normalizeApiError } from '@/lib/api-errors';
 
 // ── Form state ──────────────────────────────────────────────────────────────
 // Persian-only editing surface. Translation tabs for additional locales can be
@@ -377,8 +378,11 @@ export function formatPrice(value?: string | number | null): string {
 }
 
 // ── Error mapping ───────────────────────────────────────────────────────────
-// DRF may return `{field: [messages]}` at top level or nested under
-// `price_data` / `images_data` / ... keys (see backend `_save_row`).
+// Phase 8.5 (BUG-06): section mapping lives here, but ALL parsing/flattening
+// is delegated to the shared `normalizeApiError` (`lib/api-errors.ts`) so
+// nested DRF structures (e.g. `{ translations: { fa: { title: [...] } } }`
+// or `{ price_data: { regular_price: [...] } }`) flatten to dotted paths
+// instead of dropping to a generic toast or `[object Object]`.
 // Flatten to a section-keyed map the editor can render near each card.
 
 export type ProductErrorMap = Partial<Record<string, string[]>>;
@@ -407,42 +411,27 @@ function pushError(map: ProductErrorMap, section: string, messages: unknown): vo
 
 export function mapProductErrors(payload: unknown): ProductErrorMap {
   const map: ProductErrorMap = {};
-  if (payload == null) return map;
-  if (typeof payload === 'string') {
-    pushError(map, 'detail', [payload]);
-    return map;
-  }
-  if (Array.isArray(payload)) {
-    pushError(map, 'detail', payload);
-    return map;
-  }
-  if (typeof payload === 'object') {
-    const record = payload as Record<string, unknown>;
-    // DRF error envelope from custom_exception_handler: {status, errors}
-    const errors = record.errors ?? record;
-    if (typeof errors === 'string' || Array.isArray(errors)) {
-      pushError(map, 'detail', errors);
-      return map;
-    }
-    if (typeof errors === 'object' && errors !== null) {
-      for (const [field, messages] of Object.entries(errors as Record<string, unknown>)) {
-        if (field === 'non_field_errors' || field === 'detail') {
-          pushError(map, 'detail', messages);
-          continue;
-        }
-        const section = SECTION_FOR_FIELD[field] ?? 'identity';
-        if (messages != null && typeof messages === 'object' && !Array.isArray(messages)) {
-          for (const [sub, subMessages] of Object.entries(messages as Record<string, unknown>)) {
-            pushError(map, section, typeof subMessages === 'string' ? `${sub}: ${subMessages}` : subMessages);
-          }
-        } else {
-          pushError(map, section, messages);
-        }
+  try {
+    // The callers pass `error.response.data` (bare body or `{status, errors}`
+    // envelope); the shared normalizer accepts either, plus full axios
+    // errors, strings, and arrays — never throws, never `[object Object]`.
+    const normalized = normalizeApiError(payload);
+    for (const { path, message } of normalized.fieldErrors) {
+      const top = path.split('.')[0] ?? path;
+      if (top === 'non_field_errors' || top === 'detail') {
+        pushError(map, 'detail', [message]);
+        continue;
       }
-      return map;
+      // Existing explicit section contract (unchanged): unknown backend
+      // fields surface under `identity` rather than being dropped.
+      const section = SECTION_FOR_FIELD[top] ?? 'identity';
+      const rest = path.slice(top.length).replace(/^\./, '');
+      pushError(map, section, rest ? [`${rest}: ${message}`] : [message]);
     }
+    for (const detail of normalized.detailMessages) pushError(map, 'detail', [detail]);
+  } catch {
+    // Shared normalizer never throws; this guard only protects the mapping.
   }
-  pushError(map, 'detail', ['خطا']);
   return map;
 }
 

@@ -1,9 +1,10 @@
 from django.db.models import Prefetch
-from rest_framework import filters, generics, permissions
+from rest_framework import filters, generics, permissions, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from apps.core.mixins import TranslatedSlugDetailMixin
+from apps.homepage.preview_tokens import PreviewTokenError, verify_preview_token
 from apps.products.api.v1.serializers.products import (
     AdminProductDetailSerializer,
     AttributeDefinitionSerializer,
@@ -253,3 +254,158 @@ class AdminAttributeDefinitionView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return ProductAttributeDefinition.objects.all().select_related("category")
+
+
+# ---------------------------------------------------------------------------
+# Phase 9.4 — server-side product/category duplication (detail actions)
+# ---------------------------------------------------------------------------
+class AdminProductDuplicateView(_LangContextMixin, generics.GenericAPIView):
+    """``POST /api/v1/admin/products/<uuid:pk>/duplicate/``.
+
+    Server-side copy per ``apps.products.duplication`` (SKU/slugs/titles
+    generated server-side; the request body is accepted but ignored — no
+    SKU/slug overrides). Returns 201 with the full admin detail
+    representation of the NEW resource (its id) so the CMS can navigate
+    straight to its edit page.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    serializer_class = AdminProductDetailSerializer
+
+    def post(self, request, pk):
+        from apps.products.duplication import DuplicationError, duplicate_product
+
+        try:
+            created = duplicate_product(pk)
+        except DuplicationError as exc:
+            return Response(
+                {"status": exc.status_code, "errors": exc.errors},
+                status=exc.status_code,
+            )
+        obj = (
+            Product.objects.filter(pk=created.pk)
+            .select_related("category")
+            .prefetch_related(
+                "translations",
+                "images__media_file",
+                "documents__media_file",
+                "specifications",
+                "attribute_values__definition",
+                "price",
+                "related_from__to_product",
+            )
+            .first()
+        )
+        return Response(self.get_serializer(obj).data, status=status.HTTP_201_CREATED)
+
+
+class AdminCategoryDuplicateView(_LangContextMixin, generics.GenericAPIView):
+    """``POST /api/v1/admin/product-categories/<uuid:pk>/duplicate/``.
+
+    Node-only duplicate under the same parent (no children, no products).
+    Returns 201 with the admin category detail of the NEW resource.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    serializer_class = CategorySerializer
+
+    def post(self, request, pk):
+        from apps.products.duplication import DuplicationError, duplicate_category
+
+        try:
+            created = duplicate_category(pk)
+        except DuplicationError as exc:
+            return Response(
+                {"status": exc.status_code, "errors": exc.errors},
+                status=exc.status_code,
+            )
+        obj = (
+            ProductCategory.objects.filter(pk=created.pk)
+            .select_related("parent", "cover", "og_image")
+            .prefetch_related("translations")
+            .first()
+        )
+        return Response(self.get_serializer(obj).data, status=status.HTTP_201_CREATED)
+
+
+# ---------------------------------------------------------------------------
+# Phase 8.1 — token-gated product/category preview (saved-but-hidden only)
+# ---------------------------------------------------------------------------
+def _preview_no_store(response):
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+class ProductPreviewView(_LangContextMixin, generics.GenericAPIView):
+    """``GET /api/v1/admin/products/<uuid:pk>/preview/?token=...``.
+
+    Token itself is the credential (``AllowAny`` + signed-token verify).
+    Serializes with the PUBLIC ``ProductDetailSerializer`` over the
+    unfiltered queryset so the preview matches public rendering while
+    exposing saved-but-unpublished rows. Normal public views untouched.
+    """
+
+    permission_classes = [permissions.AllowAny]
+    serializer_class = ProductDetailSerializer
+
+    def get(self, request, pk):
+        token = request.query_params.get("token", "")
+        try:
+            verify_preview_token(token, expected_type="product", expected_id=str(pk))
+        except PreviewTokenError:
+            return Response(
+                {"detail": "Invalid or expired preview token."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        product = (
+            Product.objects.filter(pk=pk)
+            .select_related("category", "og_image")
+            .prefetch_related(
+                "translations",
+                Prefetch("images", queryset=ProductImage.objects.select_related("media_file")),
+                "price",
+                "specifications",
+                Prefetch("attribute_values", queryset=ProductAttributeValue.objects.select_related("definition")),
+                "documents",
+                Prefetch("related_from", queryset=RelatedProduct.objects.filter(is_active=True).select_related("to_product")),
+            )
+            .first()
+        )
+        if product is None:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        data = self.get_serializer(product).data
+        data["preview"] = True
+        return _preview_no_store(Response(data))
+
+
+class CategoryPreviewView(_LangContextMixin, generics.GenericAPIView):
+    """``GET /api/v1/admin/product-categories/<uuid:pk>/preview/?token=...``.
+
+    Same token model as product preview; public ``CategorySerializer``
+    over the unfiltered queryset (inactive categories visible in preview
+    only).
+    """
+
+    permission_classes = [permissions.AllowAny]
+    serializer_class = CategorySerializer
+
+    def get(self, request, pk):
+        token = request.query_params.get("token", "")
+        try:
+            verify_preview_token(token, expected_type="category", expected_id=str(pk))
+        except PreviewTokenError:
+            return Response(
+                {"detail": "Invalid or expired preview token."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        category = (
+            ProductCategory.objects.filter(pk=pk)
+            .select_related("parent", "cover", "og_image")
+            .prefetch_related("translations", "children__translations")
+            .first()
+        )
+        if category is None:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        data = self.get_serializer(category).data
+        data["preview"] = True
+        return _preview_no_store(Response(data))

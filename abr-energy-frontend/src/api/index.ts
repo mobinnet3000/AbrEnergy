@@ -180,6 +180,12 @@ export const adminProductCategoriesApi = {
   remove: async (id: string) => {
     await axiosInstance.delete(`/admin/product-categories/${id}/`);
   },
+  // Phase 9.4 — server-side node-only duplicate (same parent). The server
+  // generates SKU/slugs/titles; the body carries no overrides.
+  duplicate: async (id: string) => {
+    const res = await axiosInstance.post(`/admin/product-categories/${id}/duplicate/`, {});
+    return res.data;
+  },
 };
 
 export const adminProductsApi = {
@@ -201,6 +207,39 @@ export const adminProductsApi = {
   },
   remove: async (id: string) => {
     await axiosInstance.delete(`/admin/products/${id}/`);
+  },
+  // Phase 9.4 — server-side duplicate (draft/hidden/inactive copy). The
+  // server generates SKU/slugs/titles; the body carries no overrides.
+  duplicate: async (id: string) => {
+    const res = await axiosInstance.post(`/admin/products/${id}/duplicate/`, {});
+    return res.data;
+  },
+};
+
+// ── Phase 9.2 — admin content lists (Articles / Services / Projects) ─────
+// These consume the EXISTING `/admin/*` endpoints (same view classes as the
+// public catalog, JWT-authenticated). Only backend-supported query params
+// are ever passed (search / status / is_featured / page / page_size /
+// ordering where the view declares it). Public `articlesApi` /
+// `servicesApi` / `projectsApi` are untouched.
+export const adminArticlesApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/articles/', { params });
+    return res.data;
+  },
+};
+
+export const adminServicesApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/services/', { params });
+    return res.data;
+  },
+};
+
+export const adminProjectsApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/projects/', { params });
+    return res.data;
   },
 };
 
@@ -225,6 +264,55 @@ export const adminHomepageApi = {
   },
   update: async (data: Record<string, unknown>) => {
     const res = await axiosInstance.patch('/admin/homepage/', data);
+    return res.data;
+  },
+};
+
+// ── Phase 8.1 — token-gated preview (saved-but-hidden only) ──────────────
+// Issue requires IsContentManager JWT (Bearer interceptor). Consume uses the
+// signed token itself (`?token=...`, no auth needed, `no-store` server-side).
+export const previewApi = {
+  issue: async (data: { resource_type: string; resource_id?: string; locale?: string }) => {
+    const res = await axiosInstance.post('/admin/homepage/preview-tokens/', data);
+    return res.data as import('@/types').PreviewTokenIssueResponse;
+  },
+  getHomepagePreview: async (token: string) => {
+    const res = await axiosInstance.get('/admin/homepage/preview/', { params: { token } });
+    return res.data as import('@/types').HomepagePayload;
+  },
+  getProductPreview: async (id: string, token: string) => {
+    const res = await axiosInstance.get(`/admin/products/${id}/preview/`, { params: { token } });
+    return res.data as import('@/types').ProductDetail;
+  },
+  getCategoryPreview: async (id: string, token: string) => {
+    const res = await axiosInstance.get(`/admin/product-categories/${id}/preview/`, { params: { token } });
+    return res.data as import('@/types').ProductCategoryDetail;
+  },
+};
+
+// ── Phase 9.5 — reusable media discovery (reference-based reuse) ────────
+// Read-only browse over the EXISTING `/media/` endpoints (same
+// `MediaFileListSerializer` shape the CMS already consumes). Uploads keep
+// using `/media/upload/` directly; no new upload path, no delete here.
+export interface MediaListParams {
+  file_type?: 'image' | 'document';
+  search?: string;
+  page?: number;
+  page_size?: number;
+  ordering?: string;
+}
+
+export const mediaApi = {
+  list: async (params?: MediaListParams) => {
+    const res = await axiosInstance.get('/media/', {
+      params: Object.fromEntries(
+        Object.entries(params ?? {}).filter(([, v]) => v !== undefined && v !== ''),
+      ),
+    });
+    return res.data;
+  },
+  retrieve: async (id: string) => {
+    const res = await axiosInstance.get(`/media/${id}/`);
     return res.data;
   },
 };

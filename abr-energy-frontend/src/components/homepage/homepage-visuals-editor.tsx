@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { useLocale } from '@/i18n';
 import { homepageFormKey, reorderItems, type HomepageVisualItem } from '@/lib/homepage-form';
 
@@ -38,7 +39,7 @@ export function HomepageVisualsEditor({ visuals, onChange, errors }: HomepageVis
               role="switch"
               aria-checked={v.enabled}
               onClick={() => patch(v.key, { enabled: !v.enabled })}
-              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${v.enabled ? 'bg-primary' : 'bg-input'}`}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${v.enabled ? 'bg-primary' : 'bg-input'}`}
               aria-label={t('admin.active')}
             >
               <span
@@ -61,12 +62,26 @@ export function HomepageVisualsEditor({ visuals, onChange, errors }: HomepageVis
               <Trash2 className="h-3.5 w-3.5 text-destructive" />
             </Button>
           </div>
-          <MediaUpload
-            subfolder="homepage"
-            currentImage={v.image_url}
-            onUpload={(url, fid) => patch(v.key, { image_url: url, image: fid || '' })}
-            label={t('admin.homepage_visual_image')}
-          />
+          <div className="flex items-start gap-2 flex-wrap">
+            <MediaUpload
+              key={v.image_url}
+              subfolder="homepage"
+              currentImage={v.image_url}
+              onUpload={(url, fid) => patch(v.key, { image_url: url, image: fid || '' })}
+              label={t('admin.homepage_visual_image')}
+            />
+            {/* Phase 9.5 — per-row image reuse: the shared MediaFile id is
+                written into this row only; row alt/order/enabled/link stay
+                per-row. Max/ordering behavior above is unchanged. */}
+            <ChooseMediaButton
+              mode="image"
+              onSelect={(picked) => {
+                const first = picked[0];
+                if (!first) return;
+                patch(v.key, { image_url: first.url, image: first.id });
+              }}
+            />
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="text-sm font-medium mb-1 block">{t('admin.homepage_visual_alt')}</label>

@@ -6,6 +6,8 @@ export { EnergyBackground } from './EnergyBackground';
 export { ParallaxSection } from './ParallaxSection';
 export { Hero3D } from './Hero3D';
 export { HeroSection } from './HeroSection';
+export { HeroShowcase } from './HeroShowcase';
+export { HomepageShowcase } from './HomepageShowcase';
 export { StatsSection } from './StatsSection';
 export { AboutSection } from './AboutSection';
 export { FloatingParticles } from './FloatingParticles';

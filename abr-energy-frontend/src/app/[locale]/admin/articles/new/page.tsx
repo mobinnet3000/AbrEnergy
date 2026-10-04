@@ -1,16 +1,19 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useLocale } from '@/i18n';
 
 const LANGUAGES = [
@@ -20,6 +23,21 @@ const LANGUAGES = [
 ];
 
 const emptyTrans = { title: '', slug: '', short_description: '', content: '' };
+
+const emptyArticleSnapshot = {
+  translations: {
+    fa: { ...emptyTrans },
+    ar: { ...emptyTrans },
+    en: { ...emptyTrans },
+  },
+  status: 'draft',
+  category: '',
+  tags: '',
+  publishDate: '',
+  coverImage: '',
+  coverImageId: '',
+  featured: false,
+};
 
 export default function NewArticlePage() {
   const { t } = useLocale();
@@ -35,7 +53,26 @@ export default function NewArticlePage() {
   const [tags, setTags] = useState('');
   const [publishDate, setPublishDate] = useState('');
   const [coverImage, setCoverImage] = useState('');
+  // Phase 9.5 — additive MediaFile reference for the cover (legacy URL-only
+  // rows keep rendering via `coverImage`; the id is sent as `cover_image`).
+  const [coverImageId, setCoverImageId] = useState('');
   const [featured, setFeatured] = useState(false);
+
+  // Phase 9.2 — dirty navigation guard over the EXISTING form state (no new
+  // dirty system): `isDirty` is the initial-vs-current comparison owned by
+  // this form. Save-success navigation runs directly (the created entity is
+  // persisted); failed saves never touch the form, so edits stay dirty by
+  // construction. No preview/new-tab flow exists on this page (unaffected).
+  const snapshot = useMemo(
+    () => ({ translations, status, category, tags, publishDate, coverImage, coverImageId, featured }),
+    [translations, status, category, tags, publishDate, coverImage, coverImageId, featured],
+  );
+  const isDirty = useMemo(
+    () => JSON.stringify(snapshot) !== JSON.stringify(emptyArticleSnapshot),
+    [snapshot],
+  );
+  const guard = useDirtyNavigationGuard({ isDirty });
+  const backHref = '/admin/articles';
 
   const handleTransChange = (lang: string, field: string, value: string) => {
     setTranslations((prev) => ({ ...prev, [lang]: { ...prev[lang as keyof typeof prev], [field]: value } }));
@@ -65,6 +102,8 @@ export default function NewArticlePage() {
         tags,
         publish_date: publishDate,
         cover_image_url: coverImage,
+        // Phase 9.5 — reference-based cover reuse (existing MediaFile id, no copy).
+        cover_image: coverImageId || null,
         is_featured: featured,
       });
       toast.success('Article created');
@@ -119,7 +158,11 @@ export default function NewArticlePage() {
 
   return (
     <div>
-      <Link href="/admin/articles" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/articles"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4 ms-0 me-2" /> {t('admin.back_to_articles')}
       </Link>
       <h1 className="text-3xl font-bold mb-8">{t('admin.create_article')}</h1>
@@ -173,11 +216,23 @@ export default function NewArticlePage() {
                 <input type="date" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} />
               </div>
               <div>
-                <MediaUpload
-                  onUpload={(url) => setCoverImage(url)}
-                  currentImage={coverImage}
-                  label={t('admin.cover_image')}
-                />
+                <div className="flex items-start gap-2 flex-wrap">
+                  <MediaUpload
+                    key={coverImage}
+                    onUpload={(url, fid) => { setCoverImage(url); setCoverImageId(fid || ''); }}
+                    currentImage={coverImage}
+                    label={t('admin.cover_image')}
+                  />
+                  <ChooseMediaButton
+                    mode="image"
+                    onSelect={(picked) => {
+                      const first = picked[0];
+                      if (!first) return;
+                      setCoverImage(first.url);
+                      setCoverImageId(first.id);
+                    }}
+                  />
+                </div>
               </div>
               <div className="flex items-end pb-2">
                 <label className="flex items-center gap-2 text-sm">
@@ -194,11 +249,27 @@ export default function NewArticlePage() {
             {submitting ? <Loader2 className="h-4 w-4 animate-spin me-2" /> : null}
             {t('admin.create_article')}
           </Button>
-          <Link href="/admin/articles" className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent">
+          <Link
+            href="/admin/articles"
+            onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
+          >
             {t('common.cancel')}
           </Link>
         </div>
       </form>
+
+      {/* Phase 9.2 (8.3 mechanism) — single dirty-navigation confirmation. */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

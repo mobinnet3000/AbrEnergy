@@ -5,7 +5,7 @@ import {
   FloatingParticles, MouseRipple, GradientMesh,
   ServicesSection, ProjectsSection, ArticlesSection,
   CalculatorSection, ContactSection, FeaturedProductsSection,
-  ProductRailSection, FloatingVisuals,
+  ProductRailSection,
 } from '@/components/home';
 import { useHomepage } from '@/hooks/use-api';
 import { homepageSection } from '@/lib/homepage';
@@ -34,10 +34,15 @@ function sectionKeyOf(s: { key: string }): HomepageSectionKey | null {
  * slice when the payload is available and falls back to its pre-CMS data
  * source otherwise, so the page renders identically before editors
  * publish anything. Overlays and animation components are untouched.
+ *
+ * Phase 8.1 — optional `previewPayload` reuses this exact assembly for the
+ * token-gated preview route (`/[locale]/preview/homepage?token=...`). When
+ * provided, it takes precedence over the public `useHomepage` query; when
+ * omitted, behavior is byte-identical to Phase 7.
  */
-export function HomepageClient() {
-  const { data } = useHomepage();
-  const payload = data as HomepagePayload | undefined;
+export function HomepageClient({ previewPayload }: { previewPayload?: HomepagePayload | null }) {
+  const { data } = useHomepage({ enabled: !previewPayload });
+  const payload = (previewPayload ?? data) as HomepagePayload | undefined;
 
   const orderedKeys: HomepageSectionKey[] = payload?.sections?.length
     ? [...payload.sections]
@@ -50,7 +55,14 @@ export function HomepageClient() {
   const renderSection = (key: HomepageSectionKey) => {
     switch (key) {
       case 'hero':
-        return <HeroSection hero={payload?.hero ?? null} />;
+        return (
+          <HeroSection
+            hero={payload?.hero ?? null}
+            featured={payload ? payload.featured_products : undefined}
+            visuals={payload ? payload.visuals : undefined}
+            categories={payload ? payload.categories : undefined}
+          />
+        );
       case 'featured_products':
         return (
           <FeaturedProductsSection
@@ -99,7 +111,8 @@ export function HomepageClient() {
       <FloatingParticles />
       <MouseRipple />
       <CursorGlow />
-      <FloatingVisuals visuals={payload?.visuals ?? null} />
+      {/* Phase 12 — floating visuals are composed inside the hero
+          (HeroSection), not scattered at page level. */}
 
       {keys.map((key) => (
         <Fragment key={key}>{renderSection(key)}</Fragment>

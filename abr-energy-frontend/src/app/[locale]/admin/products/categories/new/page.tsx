@@ -1,5 +1,5 @@
 'use client';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -12,7 +12,11 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { PageHeader } from '@/components/shared';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
 import { MediaUpload } from '@/components/shared/media-upload';
-import { useCreateAdminProductCategory, useAdminProductCategories } from '@/hooks/use-api';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
+import { useCreateAdminProductCategory, useUpdateAdminProductCategory, useAdminProductCategories } from '@/hooks/use-api';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { flattenNormalizedError, normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
 import { useLocale } from '@/i18n';
 
 const ROBOT_OPTIONS = [
@@ -55,7 +59,8 @@ export default function NewCategoryPage() {
   const router = useRouter();
   const search = useSearchParams();
   const createMut = useCreateAdminProductCategory();
-  const { data: parentData } = useAdminProductCategories({ page_size: '200' });
+  const updateMut = useUpdateAdminProductCategory();
+  const { data: parentData } = useAdminProductCategories({ page_size: '100' });
 
   const parents: Array<{ id: string; title: string; parent: string | null }> = useMemo(() => {
     const list = Array.isArray(parentData?.results) ? parentData.results : Array.isArray(parentData) ? parentData : [];
@@ -68,50 +73,130 @@ export default function NewCategoryPage() {
   }));
   const [dirty, setDirty] = useState(false);
   const set = <K extends keyof FormState>(key: K, val: FormState[K]) => { setForm((p) => ({ ...p, [key]: val })); setDirty(true); };
+  // Phase 8.5 (BUG-06) — normalized save-error summary (inline + toast).
+  // Separate state: error branches never touch the form, so failed saves
+  // keep the form dirty by construction.
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  // Phase 8.3 — dirty navigation guard over the EXISTING `dirty` latch:
+  // beforeunload (only while dirty) + confirmation for Back-link and Cancel.
+  // Save-success navigation runs directly (the created entity is persisted).
+  const guard = useDirtyNavigationGuard({ isDirty: dirty });
+  const backHref = '/admin/products/categories';
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Phase 9.1 — Save & Continue: after the first successful continue the
+  // editor keeps operating on the persisted category (real server id), so
+  // later saves update that entity instead of creating duplicates.
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const isPending = createMut.isPending || updateMut.isPending;
+
+  const buildPayload = () => ({
+    translations: { fa: { title: form.title.trim(), slug: form.slug || undefined, description: form.description, content: form.content } },
+    slug: form.slug || form.title.trim(),
+    parent: form.parent || null,
+    sort_order: form.sort_order,
+    is_active: form.is_active,
+    is_featured: form.is_featured,
+    cover: form.cover_id || null,
+    seo_title: form.seo_title,
+    seo_description: form.seo_description,
+    canonical_url: form.canonical_url,
+    robots: form.robots,
+    og_title: form.og_title,
+    og_description: form.og_description,
+    og_image: form.og_image_id || null,
+  });
+
+  // Phase 8.5 (BUG-06): one shared normalization path. Nested backend
+  // errors surface with field context instead of a bare generic toast.
+  const handleSaveError = (err: unknown) => {
+    const normalized = normalizeApiError(err);
+    if (normalized.kind === 'permission') {
+      toast.error(t('admin.permission_denied'));
+      setSaveErrors(flattenNormalizedError(normalized));
+      return;
+    }
+    if (normalized.kind === 'network' || normalized.kind === 'server') {
+      toast.error(t('admin.server_connection_failed'));
+      setSaveErrors([]);
+      return;
+    }
+    const details = flattenNormalizedError(normalized).slice(0, 8);
+    setSaveErrors(details);
+    toast.error(summarizeNormalizedError(normalized) ?? t('admin.category_save_failed'));
+  };
+
+  const submitWithMode = (mode: 'save' | 'continue') => {
     if (!form.title.trim()) {
       toast.error(t('admin.required_field'));
       return;
     }
-    createMut.mutate(
-      {
-        translations: { fa: { title: form.title.trim(), slug: form.slug || undefined, description: form.description, content: form.content } },
-        slug: form.slug || form.title.trim(),
-        parent: form.parent || null,
-        sort_order: form.sort_order,
-        is_active: form.is_active,
-        is_featured: form.is_featured,
-        cover: form.cover_id || null,
-        seo_title: form.seo_title,
-        seo_description: form.seo_description,
-        canonical_url: form.canonical_url,
-        robots: form.robots,
-        og_title: form.og_title,
-        og_description: form.og_description,
-        og_image: form.og_image_id || null,
+    setSaveErrors([]);
+    // Already persisted via an earlier Save & Continue: every later save
+    // (save or continue) updates the same entity — never a duplicate.
+    if (createdId) {
+      updateMut.mutate(
+        { id: createdId, data: buildPayload() },
+        {
+          onSuccess: () => {
+            toast.success(t('admin.category_updated'));
+            setDirty(false);
+            if (mode === 'save') router.push('/admin/products/categories');
+          },
+          onError: handleSaveError,
+        },
+      );
+      return;
+    }
+    createMut.mutate(buildPayload(), {
+      onSuccess: (created: unknown) => {
+        const id = (created as { id?: string } | null | undefined)?.id;
+        if (mode === 'continue' && id) {
+          setCreatedId(id);
+          setDirty(false);
+          toast.success(t('admin.category_created'));
+          return;
+        }
+        toast.success(t('admin.category_created'));
+        router.push('/admin/products/categories');
       },
-      {
-        onSuccess: () => { toast.success(t('admin.category_created')); router.push('/admin/products/categories'); },
-        onError: () => { toast.error(t('admin.category_save_failed')); },
-      },
-    );
+      onError: handleSaveError,
+    });
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitWithMode('save');
   };
 
   return (
     <div>
-      <Link href="/admin/products/categories" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        href="/admin/products/categories"
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+        onClick={(e) => guard.guardLinkClick(e, backHref, () => router.push(backHref))}
+      >
         <ArrowLeft className="h-4 w-4 ms-0 me-2" />{t('admin.back_to_categories')}
       </Link>
       <PageHeader title={t('admin.create_category')} description={t('admin.main_info')} />
+
+      {/* Phase 8.5 (BUG-06) — normalized save errors with field context.
+          Plain text list (never color-only, `role="alert"`); rendering it
+          never touches the form, so failed saves stay dirty for retry. */}
+      {saveErrors.length > 0 && (
+        <div
+          id="cms-form-errors"
+          role="alert"
+          className="mb-6 rounded-lg border border-destructive/40 bg-destructive/5 p-3"
+        >
+          <p className="text-sm font-semibold">{t('admin.form_errors_present')}</p>
+          <ul className="mt-1 space-y-1 text-sm text-destructive">
+            {saveErrors.map((message, i) => (
+              <li key={i}>{message}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <form onSubmit={onSubmit}>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
@@ -121,7 +206,13 @@ export default function NewCategoryPage() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.title_fa')} *</label>
-                <Input value={form.title} onChange={(e) => set('title', e.target.value)} dir="auto" />
+                <Input
+                  value={form.title}
+                  onChange={(e) => set('title', e.target.value)}
+                  dir="auto"
+                  aria-invalid={saveErrors.length > 0}
+                  aria-describedby={saveErrors.length > 0 ? 'cms-form-errors' : undefined}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.slug_field')}</label>
@@ -172,11 +263,23 @@ export default function NewCategoryPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.og_image')}</label>
-                <MediaUpload
-                  onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
-                  currentImage={form.og_image_url}
-                  label={t('admin.og_image')}
-                />
+                <div className="flex items-start gap-2 flex-wrap">
+                  <MediaUpload
+                    key={form.og_image_url}
+                    onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
+                    currentImage={form.og_image_url}
+                    label={t('admin.og_image')}
+                  />
+                  <ChooseMediaButton
+                    mode="image"
+                    onSelect={(picked) => {
+                      const first = picked[0];
+                      if (!first) return;
+                      set('og_image_url', first.url);
+                      set('og_image_id', first.id);
+                    }}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -220,23 +323,51 @@ export default function NewCategoryPage() {
           <Card>
             <CardHeader><CardTitle>{t('admin.cover')}</CardTitle></CardHeader>
             <CardContent>
-              <MediaUpload
-                onUpload={(url, fid) => { set('cover_url', url); set('cover_id', fid || ''); }}
-                currentImage={form.cover_url}
-                label={t('admin.cover')}
-              />
+              <div className="flex items-start gap-2 flex-wrap">
+                <MediaUpload
+                  key={form.cover_url}
+                  onUpload={(url, fid) => { set('cover_url', url); set('cover_id', fid || ''); }}
+                  currentImage={form.cover_url}
+                  label={t('admin.cover')}
+                />
+                <ChooseMediaButton
+                  mode="image"
+                  onSelect={(picked) => {
+                    const first = picked[0];
+                    if (!first) return;
+                    set('cover_url', first.url);
+                    set('cover_id', first.id);
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </aside>
       </div>
       <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t py-4 mt-6 -mx-4 md:-mx-8 px-4 md:px-8 flex justify-end gap-3 z-10">
-        <Button type="button" variant="outline" onClick={() => router.push('/admin/products/categories')}>{t('common.cancel')}</Button>
-        <Button type="submit" disabled={createMut.isPending}>
-          {createMut.isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}
+        <Button type="button" variant="outline" onClick={() => guard.requestNavigation(backHref, () => router.push(backHref))}>{t('common.cancel')}</Button>
+        <Button type="button" variant="outline" disabled={isPending} onClick={() => submitWithMode('continue')}>
+          {isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}
+          {t('admin.save_continue')}
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending && <Loader2 className="h-4 w-4 animate-spin me-1" />}
           {t('admin.save')}
         </Button>
       </div>
       </form>
+
+      {/* Phase 8.3 — single dirty-navigation confirmation (Stay/Leave). */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

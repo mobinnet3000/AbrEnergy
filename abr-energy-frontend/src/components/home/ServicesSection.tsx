@@ -39,6 +39,14 @@ function ServiceCard({ icon: Icon, title, desc, href, i }: {
         <Link href={href}>
           <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm p-8 overflow-hidden h-full hover:border-emerald-500/15 transition-colors duration-500">
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/8 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+            {/* Phase 11 — technical ghost index (engineering character). */}
+            <span
+              className="pointer-events-none absolute -top-1 end-4 font-heading text-6xl font-bold text-white/[0.05] select-none"
+              aria-hidden
+            >
+              {String(i + 1).padStart(2, '0')}
+            </span>
             
             {/* PV corner marks */}
             <svg className="absolute top-0 left-0 w-8 h-8 opacity-[0.12]" viewBox="0 0 20 20">

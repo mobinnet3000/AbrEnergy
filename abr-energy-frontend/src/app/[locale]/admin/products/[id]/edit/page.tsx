@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ProductEditor, mapProductErrors, type ProductErrorMap } from '@/components/products/product-editor';
 import { useAdminProduct, useUpdateAdminProduct, useDeleteAdminProduct } from '@/hooks/use-api';
+import { previewApi } from '@/api';
+import { buildProductPreviewUrl } from '@/lib/preview';
 import { useLocale } from '@/i18n';
 import type { ProductFormState, ProductSubmitMode } from '@/components/products/product-editor';
 import type { ProductDetail, ProductWritePayload } from '@/types';
@@ -18,6 +20,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const deleteMut = useDeleteAdminProduct();
   const [serverErrors, setServerErrors] = useState<ProductErrorMap>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isPreviewIssuing, setIsPreviewIssuing] = useState(false);
+  // Phase 8.3 — bumped on Save & Continue success so ProductEditor clears
+  // its dirty latch (server state matches the form again).
+  const [dirtyResetSignal, setDirtyResetSignal] = useState(0);
 
   const detail: ProductDetail | null = (data ?? null) as ProductDetail | null;
 
@@ -31,6 +37,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           if (submitMode === 'save' || submitMode === 'publish') {
             router.push('/admin/products');
           } else {
+            // Save & Continue: dirty is now clean (no prompt from here on);
+            // failed saves never reach this branch, so dirty is preserved.
+            setDirtyResetSignal((n) => n + 1);
             refetch();
           }
         },
@@ -59,6 +68,23 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     });
   };
 
+  // Phase 8.2 — saved-state preview: issue a short-lived signed token
+  // (IsContentManager only) and open the isolated preview route in a new
+  // tab. Unsaved edits are NOT previewed (no draft persistence — save
+  // first). Duplicate issuance is blocked while a request is in flight.
+  const handlePreview = async () => {
+    if (isPreviewIssuing) return;
+    setIsPreviewIssuing(true);
+    try {
+      const res = await previewApi.issue({ resource_type: 'product', resource_id: id, locale: 'fa' });
+      window.open(buildProductPreviewUrl(res.token, id, 'fa'), '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error(t('admin.preview_failed'));
+    } finally {
+      setIsPreviewIssuing(false);
+    }
+  };
+
   return (
     <>
       <ProductEditor
@@ -73,6 +99,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         productId={id}
         onDelete={() => setConfirmDelete(true)}
         isDeleting={deleteMut.isPending}
+        onPreview={handlePreview}
+        isPreviewIssuing={isPreviewIssuing}
+        dirtyResetSignal={dirtyResetSignal}
       />
       <ConfirmDialog
         open={confirmDelete}

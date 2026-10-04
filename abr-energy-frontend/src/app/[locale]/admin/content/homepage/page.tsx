@@ -1,8 +1,8 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, Loader2 } from 'lucide-react';
+import { ExternalLink, Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { PageHeader, PageLoading, ErrorState } from '@/components/shared';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { useAdminHomepage, useUpdateAdminHomepage, usePublicProductCategories, useServices } from '@/hooks/use-api';
-import { articlesApi, productsApi, projectsApi } from '@/api';
+import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { articlesApi, previewApi, productsApi, projectsApi } from '@/api';
 import { flattenCategoryTree } from '@/components/products/public';
 import {
   HomepageRelationPicker,
@@ -26,11 +29,12 @@ import { canManageHomepage } from '@/lib/admin-permissions';
 import {
   buildHomepagePayload,
   homepageToForm,
-  mapHomepageErrors,
   type HomepageFormState,
   type HomepageRelationItem,
   type HomepageVisualItem,
 } from '@/lib/homepage-form';
+import { flattenNormalizedError, normalizeApiError, summarizeNormalizedError } from '@/lib/api-errors';
+import { buildHomepagePreviewUrl } from '@/lib/preview';
 import type { HomepageAdminPayload, HomepageSection } from '@/types';
 
 const ROBOT_OPTIONS = [
@@ -80,7 +84,7 @@ function CtaFields({
             aria-checked={enabled}
             aria-label={t(labelKey)}
             onClick={() => onEnabled(!enabled)}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 ${enabled ? 'bg-primary' : 'bg-input'}`}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shrink-0 disabled:cursor-not-allowed disabled:opacity-50 ${enabled ? 'bg-primary' : 'bg-input'}`}
           >
             <span
               className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${enabled ? 'translate-x-4 rtl:-translate-x-4' : 'translate-x-0.5 rtl:-translate-x-0.5'}`}
@@ -127,15 +131,16 @@ export default function HomepageStudioPage() {
     [],
   );
   const dirty = !!form && !!initial && JSON.stringify(form) !== JSON.stringify(initial);
+  // Phase 8.5 (BUG-06) — normalized save-error summary rendered inline
+  // (role="alert") in addition to the toast. Separate state: error branches
+  // never touch `edits`, so failed saves keep the form dirty by construction.
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!dirty) return;
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [dirty]);
+  // Phase 8.3 — dirty navigation guard over the EXISTING `dirty` boolean:
+  // beforeunload (browser/refresh/full-reload) + confirmation for in-page
+  // SPA navigation (breadcrumb, Cancel). Save-success navigations go through
+  // `navigateAfterSave` because the success handler resets edits first.
+  const guard = useDirtyNavigationGuard({ isDirty: dirty });
 
   // ── picker search (public list endpoints — same titles the site shows) ──
   const searchProducts = useCallback(async (q: string): Promise<PickerOption[]> => {
@@ -226,16 +231,35 @@ export default function HomepageStudioPage() {
       toast.error(t('admin.permission_denied'));
       return;
     }
+    setSaveErrors([]);
     updateMut.mutate(buildHomepagePayload(form) as unknown as Record<string, unknown>, {
       onSuccess: () => {
         toast.success(t('admin.homepage_saved'));
         setEdits({});
-        if (mode === 'save') router.push('/admin');
+        setSaveErrors([]);
+        // Dirty state is now clean: navigate without prompting. Routed
+        // through the guard's bypass (not requestNavigation) because this
+        // closure still sees the pre-save `dirty === true`.
+        if (mode === 'save') guard.navigateAfterSave(() => router.push('/admin'));
         else refetch();
       },
       onError: (err) => {
-        const details = mapHomepageErrors(err);
-        toast.error(details.length > 0 ? details.join(' — ') : t('admin.homepage_save_failed'));
+        // Phase 8.5 (BUG-06): one shared normalization path. Field errors
+        // render inline with their dotted path; the toast stays concise.
+        const normalized = normalizeApiError(err);
+        if (normalized.kind === 'permission') {
+          toast.error(t('admin.permission_denied'));
+          setSaveErrors(flattenNormalizedError(normalized));
+          return;
+        }
+        if (normalized.kind === 'network' || normalized.kind === 'server') {
+          toast.error(t('admin.server_connection_failed'));
+          setSaveErrors([]);
+          return;
+        }
+        const details = flattenNormalizedError(normalized).slice(0, 8);
+        setSaveErrors(details);
+        toast.error(summarizeNormalizedError(normalized) ?? t('admin.homepage_save_failed'));
       },
     });
   };
@@ -249,7 +273,11 @@ export default function HomepageStudioPage() {
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
-        <Link href="/admin" className="hover:text-foreground">
+        <Link
+          href="/admin"
+          className="hover:text-foreground"
+          onClick={(e) => guard.guardLinkClick(e, '/admin', () => router.push('/admin'))}
+        >
           {t('admin.dashboard')}
         </Link>
         <span aria-hidden="true">/</span>
@@ -257,7 +285,24 @@ export default function HomepageStudioPage() {
       </nav>
 
       <PageHeader title={t('admin.homepage_studio')} description={t('admin.homepage_studio_desc')}>
-        <Button type="button" variant="outline" size="sm" onClick={() => window.open('/', '_blank', 'noopener,noreferrer')}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={updateMut.isPending}
+          onClick={async () => {
+            // Phase 8.1 — saved-state preview: issue a short-lived signed
+            // token (IsContentManager only) and open the isolated preview
+            // route in a new tab. Unsaved edits are NOT previewed (no
+            // draft persistence by design — save first).
+            try {
+              const res = await previewApi.issue({ resource_type: 'homepage', locale: 'fa' });
+              window.open(buildHomepagePreviewUrl(res.token, 'fa'), '_blank', 'noopener,noreferrer');
+            } catch {
+              toast.error(t('admin.homepage_preview_failed'));
+            }
+          }}
+        >
           <ExternalLink className="h-4 w-4 me-1" />
           {t('admin.homepage_preview')}
         </Button>
@@ -269,7 +314,50 @@ export default function HomepageStudioPage() {
           onSave('continue');
         }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+        {/* Phase 8.4 (BUG-05) — permission-gated read-only UX. When the
+            existing `canManageHomepage` rule denies editing, the whole
+            editable area is semantically disabled via <fieldset disabled>
+            (native behavior: no focus, no input, no dirty state) and the
+            notice below explains why. This is NOT tied to Save being
+            disabled (isPending/!dirty): editable roles keep fully editable
+            fields while saving. Navigation (breadcrumb/Cancel) and Preview
+            stay outside the fieldset so leaving always works. */}
+        {!canEdit && (
+          <div
+            id="homepage-readonly-notice"
+            role="note"
+            aria-label={t('admin.readonly_notice_title')}
+            className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3"
+          >
+            <Lock className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">{t('admin.readonly_notice_title')}</p>
+              <p className="text-sm text-muted-foreground">{t('admin.readonly_notice_desc')}</p>
+            </div>
+          </div>
+        )}
+        {/* Phase 8.5 (BUG-06) — normalized save errors with field context.
+            Plain text list (never color-only, `role="alert"`); rendering it
+            never touches `edits`, so the form stays dirty for retry. */}
+        {saveErrors.length > 0 && (
+          <div
+            id="homepage-save-errors"
+            role="alert"
+            className="mb-6 rounded-lg border border-destructive/40 bg-destructive/5 p-3"
+          >
+            <p className="text-sm font-semibold">{t('admin.form_errors_present')}</p>
+            <ul className="mt-1 space-y-1 text-sm text-destructive">
+              {saveErrors.map((message, i) => (
+                <li key={i}>{message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <fieldset
+          disabled={!canEdit}
+          aria-describedby={!canEdit ? 'homepage-readonly-notice' : undefined}
+          className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start border-0 m-0 p-0 min-w-0"
+        >
           <div className="space-y-6">
             {/* ── Hero ── */}
             <Card>
@@ -544,15 +632,27 @@ export default function HomepageStudioPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1 block">{t('admin.og_image')}</label>
-                  <MediaUpload
-                    subfolder="homepage"
-                    onUpload={(url, fid) => {
-                      set('og_image_url', url);
-                      set('og_image_id', fid || '');
-                    }}
-                    currentImage={form.og_image_url}
-                    label={t('admin.og_image')}
-                  />
+                  <div className="flex items-start gap-2 flex-wrap">
+                    <MediaUpload
+                      key={form.og_image_url}
+                      subfolder="homepage"
+                      onUpload={(url, fid) => {
+                        set('og_image_url', url);
+                        set('og_image_id', fid || '');
+                      }}
+                      currentImage={form.og_image_url}
+                      label={t('admin.og_image')}
+                    />
+                    <ChooseMediaButton
+                      mode="image"
+                      onSelect={(picked) => {
+                        const first = picked[0];
+                        if (!first) return;
+                        set('og_image_url', first.url);
+                        set('og_image_id', first.id);
+                      }}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -588,12 +688,12 @@ export default function HomepageStudioPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        </fieldset>
 
         {/* ── Sticky save bar ── */}
         <div className="sticky bottom-0 z-10 mt-6 border-t bg-background/95 backdrop-blur py-3">
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => router.push('/admin')}>
+            <Button type="button" variant="ghost" onClick={() => guard.requestNavigation('/admin', () => router.push('/admin'))}>
               {t('common.cancel')}
             </Button>
             <Button type="button" variant="outline" disabled={updateMut.isPending || !canEdit} onClick={() => onSave('continue')}>
@@ -607,6 +707,18 @@ export default function HomepageStudioPage() {
           </div>
         </div>
       </form>
+
+      {/* Phase 8.3 — single dirty-navigation confirmation (Stay/Leave). */}
+      <ConfirmDialog
+        open={guard.dialogOpen}
+        onOpenChange={guard.handleDialogOpenChange}
+        title={t('admin.unsaved_changes_title')}
+        description={t('admin.unsaved_changes')}
+        confirmText={t('admin.unsaved_changes_leave')}
+        cancelText={t('admin.unsaved_changes_stay')}
+        onConfirm={guard.confirmLeave}
+        variant="default"
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { useLocale } from '@/i18n';
 import { DOC_TYPE_OPTIONS, formKey, type ProductDocumentFormItem } from '@/lib/product-form';
 import { DocumentUpload } from './document-upload';
+import { ChooseMediaButton, type MediaPickerItem } from '@/components/shared/media-picker-dialog';
 
 interface ProductDocumentsManagerProps {
   documents: ProductDocumentFormItem[];
@@ -33,6 +34,29 @@ export function ProductDocumentsManager({ documents, onChange, errors }: Product
         description: '',
         file_name: fileName ?? '',
       },
+    ]);
+  };
+
+  // Phase 9.5 — document-mode reuse: existing PDF MediaFile ids become new
+  // ProductDocument rows (backend `clean()` stays the authoritative
+  // document-type gate). Metadata editing below is unchanged.
+  const addExisting = (picked: MediaPickerItem[]) => {
+    const known = new Set(documents.map((d) => d.media_file));
+    const fresh = picked.filter((p) => p.id && !known.has(p.id));
+    if (fresh.length === 0) return;
+    onChange([
+      ...documents,
+      ...fresh.map((p, i) => ({
+        key: formKey('doc'),
+        media_file: p.id,
+        url: p.url,
+        title: (p.original_name || '').replace(/\.pdf$/i, ''),
+        doc_type: 'catalog',
+        sort_order: documents.length + i,
+        is_active: true,
+        description: '',
+        file_name: p.original_name || '',
+      })),
     ]);
   };
 
@@ -119,7 +143,17 @@ export function ProductDocumentsManager({ documents, onChange, errors }: Product
           </div>
         </div>
       ))}
-      <DocumentUpload onUpload={addDoc} label={t('admin.docs_upload')} />
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-52">
+          <DocumentUpload onUpload={addDoc} label={t('admin.docs_upload')} />
+        </div>
+        <ChooseMediaButton
+          mode="document"
+          multiple
+          selectedIds={documents.map((d) => d.media_file).filter(Boolean)}
+          onSelect={addExisting}
+        />
+      </div>
       {errors && errors.length > 0 && (
         <ul className="text-sm text-destructive space-y-1" role="alert">
           {errors.map((e, i) => <li key={i}>{e}</li>)}

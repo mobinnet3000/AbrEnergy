@@ -10,6 +10,9 @@ import type { HomepageSection } from '@/types';
 
 function ArticleCard({ article }: { article: Record<string, unknown> }) {
   const { t } = useLocale();
+  const publishDate = typeof article.publish_date === 'string' && article.publish_date
+    ? formatPublishDate(article.publish_date)
+    : null;
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -37,11 +40,29 @@ function ArticleCard({ article }: { article: Record<string, unknown> }) {
             <p className="text-sm text-white/40 mt-2 line-clamp-2">
               {(article as { short_description?: string }).short_description || ''}
             </p>
+            {/* Phase 11 — editorial publication line, only when the backend
+                provides a date. Missing dates render nothing. */}
+            {publishDate && (
+              <p className="mt-3 text-xs text-white/35">
+                <time dateTime={article.publish_date as string}>{publishDate}</time>
+              </p>
+            )}
           </div>
         </div>
       </Link>
     </motion.div>
   );
+}
+
+/** Phase 11 — safe Persian date label; invalid input yields null. */
+function formatPublishDate(iso: string): string | null {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString('fa-IR', { dateStyle: 'medium' });
+  } catch {
+    return null;
+  }
 }
 
 export function ArticlesSection({ cms }: {
@@ -62,7 +83,7 @@ export function ArticlesSection({ cms }: {
   if (!loading && articles.length === 0) return null;
 
   return (
-    <section data-section="articles" aria-labelledby="homepage-articles-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
+    <section data-section="articles" data-testid="articles-editorial" aria-labelledby="homepage-articles-heading" className="relative py-28 md:py-36 overflow-hidden bg-black">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-teal-950/5 to-black" />
 
       <div className="container-page relative z-10">

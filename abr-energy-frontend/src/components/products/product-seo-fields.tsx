@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { MediaUpload } from '@/components/shared/media-upload';
+import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { useLocale } from '@/i18n';
 import { ROBOT_OPTIONS, type ProductFormState } from '@/lib/product-form';
 
@@ -60,12 +61,26 @@ export function ProductSeoFields({ form, set, originalSlug }: ProductSeoFieldsPr
       </div>
       <div>
         <label className="text-sm font-medium mb-1 block">{t('admin.og_image')}</label>
-        <MediaUpload
-          onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
-          currentImage={form.og_image_url}
-          label={t('admin.og_image')}
-          subfolder="products"
-        />
+        <div className="flex items-start gap-2 flex-wrap">
+          {/* Phase 9.5: `key` remounts the uploader when the picked URL
+              changes (MediaUpload previews from initial-prop state only). */}
+          <MediaUpload
+            key={form.og_image_url}
+            onUpload={(url, fid) => { set('og_image_url', url); set('og_image_id', fid || ''); }}
+            currentImage={form.og_image_url}
+            label={t('admin.og_image')}
+            subfolder="products"
+          />
+          <ChooseMediaButton
+            mode="image"
+            onSelect={(picked) => {
+              const first = picked[0];
+              if (!first) return;
+              set('og_image_url', first.url);
+              set('og_image_id', first.id);
+            }}
+          />
+        </div>
       </div>
       {slugChanged && (
         <p className="text-xs text-amber-600 dark:text-amber-400" role="note">

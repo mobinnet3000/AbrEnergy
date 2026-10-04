@@ -3,6 +3,7 @@ import type {
   HomepageSection,
   HomepageWritePayload,
 } from '@/types';
+import { flattenNormalizedError, normalizeApiError } from '@/lib/api-errors';
 
 // ── Homepage Studio form state (Phase 7) ────────────────────────────────
 // Same `initial + edits` pattern as the Product/Category studios: the page
@@ -183,17 +184,16 @@ export function reorderItems<T extends { key: string; order: number }>(items: T[
   return copy.map((r, i) => ({ ...r, order: i }));
 }
 
-/** DRF error shape → flat list of messages (best-effort, toast fallback). */
+/**
+ * Phase 8.5 (BUG-06): backend `{ errors, status }` envelope → flat
+ * `path: message` list for the Studio toast + inline summary. All parsing
+ * is delegated to the shared `normalizeApiError` so nested objects/arrays
+ * flatten to dotted paths instead of being silently dropped.
+ */
 export function mapHomepageErrors(err: unknown): string[] {
-  const out: string[] = [];
-  const data = (err as { response?: { data?: unknown } })?.response?.data;
-  if (!data || typeof data !== 'object') return out;
-  for (const [field, messages] of Object.entries(data as Record<string, unknown>)) {
-    if (Array.isArray(messages)) {
-      for (const m of messages) out.push(`${field}: ${String(m)}`);
-    } else if (typeof messages === 'string') {
-      out.push(`${field}: ${messages}`);
-    }
+  try {
+    return flattenNormalizedError(normalizeApiError(err)).slice(0, 8);
+  } catch {
+    return [];
   }
-  return out.slice(0, 8);
 }
