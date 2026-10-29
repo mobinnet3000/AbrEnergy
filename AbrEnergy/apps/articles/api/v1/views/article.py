@@ -68,7 +68,10 @@ class ArticleDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestro
         return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
-        return Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags", "images", "translations")
+        qs = Article.objects.select_related("author", "category", "cover_image").prefetch_related("tags", "images", "translations")
+        if self.request.method == "GET" and not self.request.user.is_authenticated:
+            qs = qs.filter(status="published")
+        return qs
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

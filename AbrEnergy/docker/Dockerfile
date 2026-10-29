@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev libjpeg-dev zlib1g-dev libpng-dev \
+    gcc libpq-dev libjpeg-dev zlib1g-dev libpng-dev libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements/base.txt requirements/production.txt /app/requirements/

@@ -118,6 +118,26 @@ export const galleryApi = {
     const res = await axiosInstance.get(url);
     return res.data;
   },
+  listAdminImages: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/admin/gallery/images/', { params });
+    return res.data;
+  },
+  createAdminImage: async (data: Record<string, unknown>) => {
+    const res = await axiosInstance.post('/admin/gallery/images/', data);
+    return res.data;
+  },
+  updateAdminImage: async (id: string, data: Record<string, unknown>) => {
+    const res = await axiosInstance.patch(`/admin/gallery/images/${id}/`, data);
+    return res.data;
+  },
+  deleteAdminImage: async (id: string) => {
+    const res = await axiosInstance.delete(`/admin/gallery/images/${id}/`);
+    return res.data;
+  },
+  getCategories: async () => {
+    const res = await axiosInstance.get('/admin/gallery/categories/');
+    return res.data;
+  },
 };
 
 export const notificationsApi = {
@@ -134,6 +154,16 @@ export const notificationsApi = {
   },
   markAllRead: async () => {
     await axiosInstance.patch('/notifications/read-all/');
+  },
+  delete: async (id: string) => {
+    await axiosInstance.delete(`/notifications/${id}/`);
+  },
+};
+
+export const publicDocumentsApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await axiosInstance.get('/products/documents/', { params });
+    return res.data;
   },
 };
 
@@ -315,19 +345,72 @@ export const mediaApi = {
     const res = await axiosInstance.get(`/media/${id}/`);
     return res.data;
   },
+  update: async (id: string, data: { alt_text?: string; subfolder?: string }) => {
+    const res = await axiosInstance.patch(`/media/${id}/`, data);
+    return res.data;
+  },
+  upload: async (formData: FormData) => {
+    const res = await axiosInstance.post('/media/upload/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
 };
+
+// Phase 12.15 — staff-gated aggregate counts for the CMS dashboard. Every
+// value is a real database COUNT computed server-side (see
+// `apps/core/api/v1/views/site.py::dashboard_overview`); no demo metric.
+export interface DashboardOverview {
+  products: {
+    total: number;
+    published: number;
+    draft: number;
+    archived: number;
+    hidden: number;
+    featured: number;
+    without_image: number;
+    without_document: number;
+    without_seo_title: number;
+  };
+  product_categories: { total: number; active: number; inactive: number };
+  articles: {
+    total: number;
+    published: number;
+    draft: number;
+    scheduled: number;
+    without_cover: number;
+  };
+  services: { total: number; active: number; inactive: number };
+  projects: { total: number; featured: number };
+  gallery: { images: number; images_active: number; categories: number };
+  media: { total: number; images: number; documents: number };
+  documents: { total: number };
+  generated_at: string;
+}
 
 export const adminApi = {
   getDashboard: async () => {
     const res = await axiosInstance.get('/admin/dashboard/stats/');
     return res.data;
   },
+  getDashboardOverview: async (): Promise<DashboardOverview> => {
+    const res = await axiosInstance.get('/admin/dashboard/overview/');
+    return res.data;
+  },
   getUsers: async (params?: Record<string, string>) => {
     const res = await axiosInstance.get('/admin/users/', { params });
     return res.data;
   },
+  createUser: async (data: { email: string; password: string; full_name: string; phone_number?: string; role?: string; is_active?: boolean }) => {
+    const res = await axiosInstance.post('/admin/users/', data);
+    return res.data;
+  },
   getUser: async (id: string) => {
     const res = await axiosInstance.get(`/admin/users/${id}/`);
+    return res.data;
+  },
+  updateUser: async (id: string, data: { role?: string; is_active?: boolean; full_name?: string; phone_number?: string; bio?: string }) => {
+    const res = await axiosInstance.patch(`/admin/users/${id}/`, data);
     return res.data;
   },
   changeUserRole: async (id: string, role: string) => {
@@ -341,8 +424,24 @@ export const adminApi = {
     const res = await axiosInstance.get('/admin/contact-requests/', { params });
     return res.data;
   },
+  getContact: async (id: string) => {
+    const res = await axiosInstance.get(`/admin/contact-requests/${id}/`);
+    return res.data;
+  },
+  updateContact: async (id: string, data: { status?: string; admin_note?: string; assigned_to?: string | null }) => {
+    const res = await axiosInstance.patch(`/admin/contact-requests/${id}/`, data);
+    return res.data;
+  },
   getInquiries: async (params?: Record<string, string>) => {
     const res = await axiosInstance.get('/admin/project-inquiries/', { params });
+    return res.data;
+  },
+  getInquiry: async (id: string) => {
+    const res = await axiosInstance.get(`/admin/project-inquiries/${id}/`);
+    return res.data;
+  },
+  updateInquiry: async (id: string, data: { status?: string; admin_note?: string; assigned_admin?: string | null }) => {
+    const res = await axiosInstance.patch(`/admin/project-inquiries/${id}/`, data);
     return res.data;
   },
   getCalculationHistory: async () => {

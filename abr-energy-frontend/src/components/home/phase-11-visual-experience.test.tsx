@@ -391,7 +391,7 @@ describe('Phase 11 — remaining homepage sections', () => {
 });
 
 describe('Phase 11 — homepage assembly', () => {
-  it('10. follows CMS section ordering instead of a hardcoded order', () => {
+  it('10. follows CMS section ordering except featured+categories pinned below hero (Phase 12.11)', () => {
     mocks.homepageData = payload({
       sections: [
         section('contact', 5),
@@ -404,14 +404,17 @@ describe('Phase 11 — homepage assembly', () => {
         section('articles', 70),
       ],
       featured_products: [product()],
+      categories: [{ id: 'cat-1', title: 'پکیج‌های خورشیدی', slug: 'solar-packages', parent: null, children: [], sort_order: 0, is_active: true, is_featured: false }],
     });
     const { container } = render(<HomepageClient />);
     const order = Array.from(container.querySelectorAll('[data-section]')).map((el) =>
       el.getAttribute('data-section'),
     );
-    expect(order[0]).toBe('contact');
-    expect(order.indexOf('featured')).toBeGreaterThan(0);
-    expect(order[order.length - 1]).toBe('hero');
+    // Phase 12.11 required hierarchy: hero → featured → categories, rest CMS order.
+    expect(order[0]).toBe('hero');
+    expect(order[1]).toBe('featured');
+    expect(order[2]).toBe('categories');
+    expect(order.indexOf('featured')).toBeLessThan(order.indexOf('categories'));
   });
 
   it('21. never renders fake fallback content when the CMS is empty', () => {

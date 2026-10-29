@@ -1,0 +1,95 @@
+{
+  "phase": "12.28",
+  "audit_date": "2026-10-29",
+  "audited_sha": "e2e533ab376d1196e7399189e1b33489f95efd41",
+  "verdict": "CONDITIONAL PASS",
+  "counts": {
+    "P0": 0,
+    "P1": 2,
+    "P2": 3,
+    "P3": 2,
+    "total": 7,
+    "fixed": 5,
+    "verified_false_positive": 1,
+    "documented_prerequisites": 1
+  },
+  "findings": [
+    {
+      "id": "FINDING-1228-01",
+      "severity": "P1",
+      "area": "Frontend Type Safety",
+      "title": "TypeScript compilation failure in FeaturedProductsSection (TS2339)",
+      "description": "Property 'slug' does not exist on type '{ id: string; title: string; }'. Running `npm run typecheck` failed with TS2339 on line 415.",
+      "status": "VERIFIED FIXED",
+      "evidence": "tsc --noEmit exited with code 1 before fix; exited with code 0 after fix.",
+      "remediation": "Updated key to `key={option.id || option.title}` in FeaturedProductsSection.tsx.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-02",
+      "severity": "P1",
+      "area": "Backend Authorization & RBAC",
+      "title": "Overly broad permission class on ActivityLogListView",
+      "description": "ActivityLogListView used `permission_classes = [IsAdminUser | IsStaffOrAnalyst]`, which inadvertently allowed content_manager, product_manager, support_manager, and engineer to read system security audit logs.",
+      "status": "VERIFIED FIXED",
+      "evidence": "test_activity_log_restricted_to_super_admin_website_admin_analyst returned 200 for content_manager before fix; returns 403 after fix.",
+      "remediation": "Implemented `IsActivityLogViewer` in apps/users/api/v1/permissions.py, restricting access to super_admin, website_admin, and analyst only.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-03",
+      "severity": "P2",
+      "area": "Frontend Navigation & Admin Alignment",
+      "title": "Activity log navigation entry in admin sidebar omitted analyst role",
+      "description": "The activity log entry in adminNavSections was restricted to `['super_admin', 'website_admin']`, hiding the menu item from read-only analysts despite backend permission and analyst manual claiming access.",
+      "status": "VERIFIED FIXED",
+      "evidence": "admin-permissions.test.ts asserting `canViewAdminItem(activityEntry?.roles, 'analyst')` passes.",
+      "remediation": "Added 'analyst' to `roles` array for `/admin/activity-log` in `src/config/navigation.ts`.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-04",
+      "severity": "P2",
+      "area": "SEO & Crawl Safety",
+      "title": "Authentication routes lacked page-level noindex meta tag fallback",
+      "description": "Auth routes (/fa/login, /fa/register, /fa/forgot-password) relied exclusively on robots.txt disallow rules without explicit HTML meta robots noindex fallback.",
+      "status": "VERIFIED FIXED",
+      "evidence": "Exported `metadata: Metadata = { robots: { index: false, follow: false } }` in `src/app/[locale]/(auth)/layout.tsx`.",
+      "remediation": "Added server-side metadata export with `robots: { index: false, follow: false }` to AuthLayout.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-05",
+      "severity": "P2",
+      "area": "Operational Documentation",
+      "title": "Customer role operational manual missing from admin-guides directory",
+      "description": "The `docs/admin-guides/` directory contained manuals for the 8 staff roles but lacked a comprehensive guide for the Customer role (`customer`).",
+      "status": "VERIFIED FIXED",
+      "evidence": "Created `docs/admin-guides/customer.md` and updated `docs/admin-guides/README.md`.",
+      "remediation": "Authored Persian operational manual covering customer portal (/dashboard), profile, calculations, notifications, public tools, and security boundaries.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-06",
+      "severity": "P3",
+      "area": "Deployment Runbook Accuracy",
+      "title": "Runbook claimed standalone output mode without next.config.ts configuration",
+      "description": "The deployment guide specified running Next.js via standalone output, but `output: 'standalone'` is not enabled in next.config.ts; standard Next.js server output is used.",
+      "status": "DOCUMENTED & RUNBOOK ALIGNED",
+      "evidence": "next.config.ts inspected; next start -p 3000 verified.",
+      "remediation": "Updated deployment runbook and checklist to document standard `next start` command.",
+      "owner_action_required": false
+    },
+    {
+      "id": "FINDING-1228-07",
+      "severity": "P2",
+      "area": "SEO Structured Data Provenance",
+      "title": "Earlier report snippet contained placeholder phone and retail InStock availability",
+      "description": "Phase 12.27 SEO report snippet included +98-21-88888888 and availability: InStock as illustrative examples. Independent codebase audit confirmed actual code does not output fake data.",
+      "status": "VERIFIED FALSE IN CODE / SAFEGUARD CONFIRMED",
+      "evidence": "ProductJsonLd in product-detail-client.tsx only emits offers if price is numeric; availability is never invented; Organization JSON-LD is not hardcoded.",
+      "remediation": "Documented in SEO audit report that production JSON-LD adheres strictly to real business data provenance.",
+      "owner_action_required": false
+    }
+  ]
+}

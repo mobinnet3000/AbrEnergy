@@ -1,11 +1,26 @@
 from decouple import config, Csv
+from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
 import os
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config("SECRET_KEY", default="insecure-dev-key-change-in-production")
+# Phase 12.13 — the clearly-labelled insecure default used for local dev only.
+# `production.py` refuses to boot while it is still in effect.
+DEFAULT_INSECURE_SECRET = "insecure-dev-key-change-in-production"
+
+SECRET_KEY = config("SECRET_KEY", default=DEFAULT_INSECURE_SECRET)
+
+
+def assert_production_secret(secret_key):
+    """Fail fast when production would run with the insecure dev secret."""
+    if not secret_key or secret_key == DEFAULT_INSECURE_SECRET:
+        raise ImproperlyConfigured(
+            "SECRET_KEY is missing or still the insecure development default. "
+            "Set a strong, unique SECRET_KEY in the production environment."
+        )
+
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 
@@ -27,7 +42,6 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "django_filters",
     "corsheaders",
-    "ckeditor",
     "versatileimagefield",
     # Apps
     "apps.users",
@@ -131,6 +145,13 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    # Phase 12.14 — the deployment reaches Django through exactly one trusted
+    # reverse proxy (nginx, docker-compose.prod.yml). Without this, DRF's
+    # SimpleRateThrottle either keys anonymous requests on the proxy IP (all
+    # users share one 100/hour bucket) or trusts a client-supplied
+    # X-Forwarded-For prefix outright. `NUM_PROXIES=1` makes it read the
+    # client IP that nginx appended. Override per topology.
+    "NUM_PROXIES": config("NUM_PROXIES", default=1, cast=int),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
@@ -149,6 +170,9 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth_anon": "10/minute",
+        "auth_user": "30/minute",
+        "inquiry_anon": "5/minute",
     },
     "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
     "DATETIME_FORMAT": "%Y-%m-%d %H:%M:%S",
@@ -218,17 +242,6 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "Asia/Tehran"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-
-# CKEditor
-CKEDITOR_CONFIGS = {
-    "default": {
-        "toolbar": "full",
-        "height": 400,
-        "width": "100%",
-        "extraPlugins": ",".join(["codesnippet", "image2", "uploadimage"]),
-        "removePlugins": "exportpdf",
-    },
-}
 
 # VersatileImageField
 VERSATILEIMAGEFIELD_SETTINGS = {

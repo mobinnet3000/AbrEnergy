@@ -13,6 +13,19 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "role", "is_active", "created_at", "updated_at"]
 
 
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=UserRole.choices, required=False)
+    is_active = serializers.BooleanField(required=False)
+
+    class Meta:
+        model = User
+        fields = [
+            "id", "email", "phone_number", "full_name", "role",
+            "bio", "is_active", "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "email", "created_at", "updated_at"]
+
+
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -21,7 +34,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
-    password_confirm = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
@@ -31,9 +44,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if attrs["password"] != attrs["password_confirm"]:
+        confirm = attrs.pop("password_confirm", None)
+        if confirm is not None and attrs["password"] != confirm:
             raise serializers.ValidationError({"password_confirm": "Passwords do not match"})
-        attrs.pop("password_confirm")
         return attrs
 
     def create(self, validated_data):

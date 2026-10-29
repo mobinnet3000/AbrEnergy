@@ -6,7 +6,7 @@ import { ArrowLeft, Phone } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useLocale } from '@/i18n';
 import { usePublicProduct, usePublicProductCategories } from '@/hooks/use-api';
-import { PageLoading } from '@/components/shared';
+import { InternalPageShell, PageLoading } from '@/components/shared';
 import { ErrorState, NotFoundState } from '@/components/shared/states';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -74,53 +74,76 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
   const product = (isPreview ? previewProduct : (data as ProductDetail | undefined)) as ProductDetail | undefined;
 
   const { data: categoriesData } = usePublicProductCategories();
-  const categoryIndex = useMemo(() => {
-    const map = new Map<string, { title: string; slug: string }>();
-    for (const { category: node } of flattenCategoryTree(
-      Array.isArray(categoriesData) ? categoriesData : (categoriesData?.results ?? []),
-    )) {
-      map.set(node.id, { title: node.title, slug: node.slug });
-    }
+  const categoryTree = useMemo(
+    () => (Array.isArray(categoriesData) ? categoriesData : (categoriesData?.results ?? [])),
+    [categoriesData],
+  );
+  const flat = useMemo(() => flattenCategoryTree(categoryTree), [categoryTree]);
+  const byId = useMemo(() => {
+    const map = new Map<string, import('@/types').ProductCategory>();
+    for (const { category: node } of flat) map.set(node.id, node);
     return map;
-  }, [categoriesData]);
-  const categoryRef = product?.category ? categoryIndex.get(product.category) : undefined;
-  const categoryTitle = categoryRef?.title;
-  const categorySlug = categoryRef?.slug;
+  }, [flat]);
+
+  const activeCategory = product?.category ? byId.get(product.category) : undefined;
+  const categoryTitle = activeCategory?.title;
+  const categorySlug = activeCategory?.slug;
+
+  const categoryCrumbs = useMemo(() => {
+    if (!activeCategory) return [];
+    const chain: { label: string; href: string }[] = [];
+    let current: import('@/types').ProductCategory | undefined = activeCategory;
+    const guard = new Set<string>();
+    while (current && !guard.has(current.id)) {
+      guard.add(current.id);
+      chain.unshift({ label: current.title, href: `/products/category/${current.slug}` });
+      current = current.parent ? byId.get(current.parent) : undefined;
+    }
+    return chain;
+  }, [activeCategory, byId]);
 
   if (isLoading) {
     return (
-      <div className="bg-black min-h-screen pt-28 md:pt-36">
-        <div className="container-page">
+      <InternalPageShell>
+        <div className="container-page py-16">
           <PageLoading />
         </div>
-      </div>
+      </InternalPageShell>
     );
   }
 
   if (isError || !product) {
-    const gone = statusOf(error) === 404;
+    const status = statusOf(error);
+    const gone = status === 404 || (!isError && !product);
+    const is429 = status === 429;
     return (
-      <div className="bg-black min-h-screen pt-28 md:pt-36">
-        <div className="container-page">
+      <InternalPageShell>
+        <div className="container-page py-16">
           {gone ? (
             <NotFoundState title={t('products.product_not_found')} message={t('products.product_gone_hint')} />
           ) : (
             <ErrorState
-              title={t('common.error')}
-              message={t('products.load_failed')}
+              title={is429 ? (t('common.rate_limit_title') || 'محدودیت درخواست') : t('common.error')}
+              message={is429 ? (t('common.rate_limit_hint') || 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.') : t('products.load_failed')}
               action={{ label: t('products.retry'), onClick: () => refetch() }}
             />
           )}
-          <div className="flex justify-center pb-20">
+          <div className="flex flex-wrap justify-center gap-3 pb-20">
+            <Link
+              href="/products/category"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              {t('products.categories_label')}
+            </Link>
             <Link
               href="/products"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.08] px-4 py-2.5 text-sm text-white/70 transition hover:border-white/[0.16] hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground transition hover:bg-muted"
             >
               {t('products.back_to_products')}
             </Link>
           </div>
         </div>
-      </div>
+      </InternalPageShell>
     );
   }
 
@@ -128,21 +151,18 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
   const featuresHtml = sanitizeHtml(product.features ?? '');
 
   return (
-    <div className="bg-black min-h-screen">
+    <InternalPageShell>
       <ProductJsonLd product={product} />
       {/* Hero */}
-      <section className="relative pt-28 pb-10 md:pt-36 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/15 via-transparent to-black" />
-        <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px]" />
+      <section className="relative overflow-hidden pb-8 pt-6 sm:pb-10 sm:pt-8">
         <div className="container-page relative z-10 flex flex-col gap-8">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <ProductBreadcrumbs
               trail={[
                 { label: t('products.home_crumb'), href: '/' },
                 { label: t('products.title'), href: '/products' },
-                ...(categoryTitle && categorySlug
-                  ? [{ label: categoryTitle, href: `/products/category/${categorySlug}` }]
-                  : []),
+                { label: t('products.categories_crumb'), href: '/products/category' },
+                ...categoryCrumbs,
                 { label: product.title },
               ]}
             />
@@ -160,48 +180,48 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
               className="flex flex-col gap-4"
             >
               {product.is_featured && (
-                <span className="inline-flex w-fit items-center rounded-full bg-amber-500/15 border border-amber-500/25 px-3 py-1 text-xs font-medium text-amber-300">
+                <span className="inline-flex w-fit items-center rounded-full bg-amber-500/15 border border-amber-500/25 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
                   {t('products.featured_badge')}
                 </span>
               )}
-              <h1 className="font-heading text-3xl font-bold text-white md:text-5xl">{product.title}</h1>
+              <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground md:text-5xl">{product.title}</h1>
               {product.short_description && (
-                <p className="text-base leading-8 text-white/50">{product.short_description}</p>
+                <p className="text-base leading-8 text-muted-foreground">{product.short_description}</p>
               )}
               <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <dt className="text-white/40">{t('products.sku_label')}:</dt>
-                  <dd className="font-medium text-white/80" dir="ltr">{product.sku}</dd>
+                  <dt className="text-muted-foreground">{t('products.sku_label')}:</dt>
+                  <dd className="font-medium text-foreground" dir="ltr">{product.sku}</dd>
                 </div>
                 {categoryTitle && (
                   <div className="flex items-center gap-2">
-                    <dt className="text-white/40">{t('products.category_label')}:</dt>
+                    <dt className="text-muted-foreground">{t('products.category_label')}:</dt>
                     <dd>
                       {categorySlug ? (
-                        <Link href={`/products/category/${categorySlug}`} className="font-medium text-emerald-400 hover:text-emerald-300">
+                        <Link href={`/products/category/${categorySlug}`} className="font-medium text-primary hover:underline">
                           {categoryTitle}
                         </Link>
                       ) : (
-                        <span className="font-medium text-white/80">{categoryTitle}</span>
+                        <span className="font-medium text-foreground">{categoryTitle}</span>
                       )}
                     </dd>
                   </div>
                 )}
               </dl>
-              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 backdrop-blur-sm">
-                <ProductPrice price={product.price} size="lg" />
+              <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs dark:border-white/10 dark:bg-card/70">
+                <ProductPrice price={product.price} size="lg" tone="light" />
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/15 transition hover:bg-emerald-400 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-emerald-300"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/15 transition hover:bg-brand-strong active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   {t('products.cta_consult')}
-                  <ArrowLeft className="h-4 w-4" aria-hidden />
+                  <ArrowLeft className="h-4 w-4 rtl:rotate-0 rotate-180" aria-hidden />
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/[0.1] px-5 py-3 text-sm font-medium text-white/80 transition hover:border-white/[0.2] hover:text-white focus-visible:outline-2 focus-visible:outline-emerald-500"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background px-5 py-3 text-sm font-medium text-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
                 >
                   <Phone className="h-4 w-4" aria-hidden />
                   {t('products.cta_contact')}
@@ -213,25 +233,25 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
       </section>
 
       {/* Content */}
-      <section className="pb-28 md:pb-36">
+      <section className="pb-20 sm:pb-28 md:pb-36">
         <div className="container-page flex flex-col gap-10">
           {(descriptionHtml || featuresHtml) && (
             <ScrollReveal variant="slide-up">
               <div className="grid gap-6 lg:grid-cols-2">
                 {descriptionHtml && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm">
-                    <h2 className="font-heading mb-3 text-xl font-bold text-white">{t('products.description_title')}</h2>
+                  <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs dark:border-white/10 dark:bg-card/70">
+                    <h2 className="font-heading mb-3 text-xl font-bold text-foreground">{t('products.description_title')}</h2>
                     <div
-                      className="prose-invert max-w-none text-sm leading-8 text-white/60"
+                      className="prose prose-neutral dark:prose-invert max-w-none text-sm leading-8 text-muted-foreground"
                       dangerouslySetInnerHTML={{ __html: descriptionHtml }}
                     />
                   </div>
                 )}
                 {featuresHtml && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 backdrop-blur-sm">
-                    <h2 className="font-heading mb-3 text-xl font-bold text-white">{t('products.features_title')}</h2>
+                  <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xs dark:border-white/10 dark:bg-card/70">
+                    <h2 className="font-heading mb-3 text-xl font-bold text-foreground">{t('products.features_title')}</h2>
                     <div
-                      className="prose-invert max-w-none text-sm leading-8 text-white/60"
+                      className="prose prose-neutral dark:prose-invert max-w-none text-sm leading-8 text-muted-foreground"
                       dangerouslySetInnerHTML={{ __html: featuresHtml }}
                     />
                   </div>
@@ -255,19 +275,19 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
 
           {/* CTA */}
           <ScrollReveal variant="scale">
-            <div className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-l from-emerald-950/40 via-transparent to-transparent p-8 text-center md:p-12">
-              <h2 className="font-heading text-2xl font-bold text-white md:text-3xl">{t('products.cta_title')}</h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/50">{t('products.cta_desc')}</p>
+            <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/60 p-8 text-center shadow-xs md:p-12 dark:border-white/10 dark:bg-card/40">
+              <h2 className="font-heading text-2xl font-bold text-foreground md:text-3xl">{t('products.cta_title')}</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{t('products.cta_desc')}</p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/15 transition hover:bg-emerald-400 active:scale-[0.97]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/15 transition hover:bg-brand-strong active:scale-[0.98]"
                 >
                   {t('products.cta_consult')}
                 </Link>
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/[0.1] px-6 py-3 text-sm font-medium text-white/80 transition hover:border-white/[0.2] hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-xl border border-border/80 bg-background px-6 py-3 text-sm font-medium text-foreground transition hover:bg-muted"
                 >
                   {t('products.all_products')}
                 </Link>
@@ -276,6 +296,6 @@ export function ProductDetailClient({ slug, previewProduct }: { slug: string; pr
           </ScrollReveal>
         </div>
       </section>
-    </div>
+    </InternalPageShell>
   );
 }

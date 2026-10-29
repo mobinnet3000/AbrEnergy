@@ -90,12 +90,13 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     content = serializers.SerializerMethodField()
     meta_title = serializers.SerializerMethodField()
     meta_description = serializers.SerializerMethodField()
+    translations = serializers.SerializerMethodField()
 
     class Meta:
         model = Article
         fields = [
             "id", "title", "slug", "short_description", "content",
-            "cover_image", "cover_image_url", "category",
+            "translations", "cover_image", "cover_image_url", "category",
             "author_name", "tags", "images",
             "status", "publish_date", "view_count", "is_featured",
             "meta_title", "meta_description",
@@ -139,6 +140,28 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         lang = self.context.get("language", "fa")
         t = obj.get_translation(lang)
         return t.meta_description if t else ""
+
+    def get_translations(self, obj):
+        """Expose every stored locale only to authenticated requests.
+
+        Public detail responses keep their existing language-specific shape;
+        the edit screens need all translations to avoid replacing non-active
+        locales with blanks when they save.
+        """
+        request = self.context.get("request")
+        if request is None or not request.user.is_authenticated:
+            return {}
+        return {
+            t.language: {
+                "title": t.title,
+                "slug": t.slug,
+                "short_description": t.short_description,
+                "content": t.content,
+                "meta_title": t.meta_title,
+                "meta_description": t.meta_description,
+            }
+            for t in obj.translations.all()
+        }
 
 
 class ArticleWriteSerializer(serializers.ModelSerializer):

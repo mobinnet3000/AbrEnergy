@@ -5,7 +5,7 @@ app_name = "articles"
 
 urlpatterns = [
     path("", article.ArticleListView.as_view(), name="article-list"),
-    path("<slug:slug>/", article.ArticleDetailView.as_view(), name="article-detail"),
+    path("<str:slug>/", article.ArticleDetailView.as_view(), name="article-detail"),
 ]
 
 admin_patterns = [

@@ -47,3 +47,8 @@ yarn-error.log*
 
 abr-energy-frontend/frontend.err
 abr-energy-frontend/next-dev.log
+
+node_modules/
+scratch/
+abr-energy-frontend/.next-build*
+abr-energy-frontend/.next*

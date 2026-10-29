@@ -69,16 +69,21 @@ function wrapper() {
 const serviceDetail = {
   id: 'svc-1',
   icon: 'solar',
-  category: '',
+  category: null,
   order: 0,
   status: 'active',
   is_featured: false,
   features: ['warranty'],
-  title_fa: 'خدمت موجود',
-  short_description_fa: 'خلاصه',
-  description_fa: 'شرح',
-  title_ar: '', short_description_ar: '', description_ar: '',
-  title_en: '', short_description_en: '', description_en: '',
+  translations: {
+    fa: {
+      title: 'خدمت موجود',
+      slug: 'existing-service',
+      short_description: 'خلاصه',
+      description: 'شرح',
+      meta_title: '',
+      meta_description: '',
+    },
+  },
 };
 
 beforeEach(() => {
@@ -159,6 +164,20 @@ describe('Service new — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.create_service' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/services'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = postMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      category: null,
+      features: [],
+      order: 0,
+      is_featured: false,
+      status: 'active',
+      translations: {
+        fa: expect.objectContaining({ title: 'خدمت تازه' }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('title_fa');
+    expect(typeof payload.features).toBe('object');
   });
 });
 
@@ -216,5 +235,23 @@ describe('Service edit — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.save_changes' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/services'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = patchMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      category: null,
+      features: ['warranty'],
+      order: 0,
+      is_featured: false,
+      status: 'active',
+      translations: {
+        fa: expect.objectContaining({
+          title: 'خدمت ویراسته',
+          slug: 'existing-service',
+          short_description: 'خلاصه',
+          description: 'شرح',
+        }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('title_fa');
   });
 });

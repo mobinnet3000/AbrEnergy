@@ -93,6 +93,7 @@ describe('buildCatalogEntries', () => {
     });
     const urls = entries.map((e) => e.url);
     expect(urls).toContain('http://localhost:3000/fa/products');
+    expect(urls).toContain('http://localhost:3000/fa/products/category');
     expect(urls).toContain('http://localhost:3000/fa/products/panel-550');
     expect(urls).toContain('http://localhost:3000/fa/products/category/packages');
     expect(urls.some((u) => u.includes('draft-1'))).toBe(false);

@@ -1,6 +1,6 @@
 /* ===== AbrEnergy Design System ===== */
-/* Fonts: Lexend (headings), Source Sans 3 (body) */
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+/* Fonts: Vazirmatn (Persian UI), Lexend (Latin headings), Source Sans 3 (Latin body) */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -12,8 +12,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
-  --font-heading: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Vazirmatn', 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Vazirmatn', 'Lexend', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -23,6 +23,9 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -66,6 +69,9 @@
   /* Brand - Solar Green + Energy Amber */
   --primary: #059669;
   --primary-foreground: #FFFFFF;
+  --brand: #059669;
+  --brand-strong: #047857;
+  --brand-soft: #ECFDF5;
   --secondary: #2563EB;
   --secondary-foreground: #FFFFFF;
 
@@ -117,6 +123,9 @@
   --popover-foreground: #F8FAFC;
   --primary: #10B981;
   --primary-foreground: #0F172A;
+  --brand: #10B981;
+  --brand-strong: #34D399;
+  --brand-soft: rgba(16, 185, 129, 0.12);
   --secondary: #60A5FA;
   --secondary-foreground: #0F172A;
   --accent: #F59E0B;
@@ -156,13 +165,14 @@
   html {
     @apply scroll-smooth;
   }
-  /* Typography hierarchy */
+  /* Typography hierarchy — Persian-first scale (Vazirmatn), generous
+     line-height for joined script. Letter-spacing untouched. */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply font-semibold leading-tight;
+    @apply font-bold leading-[1.4];
   }
-  h1 { @apply text-3xl md:text-4xl lg:text-5xl; }
-  h2 { @apply text-2xl md:text-3xl; }
+  h1 { @apply text-4xl md:text-5xl lg:text-6xl; }
+  h2 { @apply text-2xl md:text-3xl lg:text-4xl; }
   h3 { @apply text-xl md:text-2xl; }
   h4 { @apply text-lg md:text-xl; }
 
@@ -218,7 +228,9 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
@@ -226,13 +238,48 @@
 /* ===== Layout Helpers ===== */
 @layer utilities {
   .container-page {
-    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-w-0;
+  }
+  /* Fixed site header: 3.5rem mobile / 4rem md (see Header). Internal shells
+     that do not paint a full-bleed hero reserve that space explicitly. */
+  .site-header-offset {
+    padding-top: 3.5rem;
+  }
+  @media (min-width: 768px) {
+    .site-header-offset {
+      padding-top: 4rem;
+    }
   }
   .section-padding {
     @apply py-12 md:py-16 lg:py-20;
   }
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Internal public page shell — lightweight solar-energy inspired background treatment */
+  .internal-page-shell {
+    @apply bg-background text-foreground min-h-screen relative flex flex-col;
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(5, 150, 105, 0.05), transparent 70%),
+      radial-gradient(ellipse 60% 30% at 85% 10%, rgba(217, 119, 6, 0.03), transparent 60%);
+  }
+  .dark .internal-page-shell {
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(16, 185, 129, 0.10), transparent 70%),
+      radial-gradient(ellipse 60% 30% at 85% 10%, rgba(245, 158, 11, 0.05), transparent 60%);
+  }
+  .internal-horizon-line {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(5, 150, 105, 0.3), rgba(217, 119, 6, 0.25), transparent);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .dark .internal-horizon-line {
+    background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.4), rgba(245, 158, 11, 0.3), transparent);
   }
 }
 
@@ -328,11 +375,11 @@
    deliberately untouched — it would break Persian joined script. */
 .hero-slogan-display {
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.7;
   text-wrap: balance;
   filter:
-    drop-shadow(0 0 28px rgba(52, 211, 153, 0.22))
-    drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55));
+    drop-shadow(0 0 24px rgba(5, 150, 105, 0.14))
+    drop-shadow(0 1px 8px rgba(15, 23, 42, 0.12));
 }
 
 /* ===== Phase 12 — hero / product stage composition ===== */
@@ -344,6 +391,11 @@
     radial-gradient(ellipse 75% 60% at 50% 60%, rgba(16, 185, 129, 0.10), transparent 70%);
   filter: blur(10px);
 }
+.dark .hero-stage-glow {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(251, 191, 36, 0.14), transparent 70%),
+    radial-gradient(ellipse 75% 60% at 50% 60%, rgba(16, 185, 129, 0.16), transparent 70%);
+}
 .hero-stage-panel img {
   filter: saturate(1.05) contrast(1.02);
 }
@@ -354,16 +406,23 @@
 }
 
 /* ===== Phase 12.1 — Reference-B light editorial showcase ===== */
-/* Explicit light surfaces (both themes): white frames, thin dark borders,
-   strong Persian typography, green brand accents, restrained red promo. */
-.showcase-light .hero-slogan-display {
-  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.6));
+/* Light editorial surfaces in light mode; deep charcoal + green glow in
+   dark mode. No JS theme branching — pure `.dark` adaptation. */
+.dark .hero-slogan-display {
+  filter:
+    drop-shadow(0 0 28px rgba(52, 211, 153, 0.22))
+    drop-shadow(0 2px 14px rgba(0, 0, 0, 0.55));
 }
 .showcase-stage-glow {
   background:
     radial-gradient(ellipse 60% 45% at 50% 38%, rgba(251, 191, 36, 0.22), transparent 70%),
     radial-gradient(ellipse 75% 60% at 50% 60%, rgba(5, 150, 105, 0.12), transparent 70%);
   filter: blur(8px);
+}
+.dark .showcase-stage-glow {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(251, 191, 36, 0.14), transparent 70%),
+    radial-gradient(ellipse 75% 60% at 50% 60%, rgba(16, 185, 129, 0.16), transparent 70%);
 }
 
 /* ===== Phase 12.1 — Reference-A dense product rail ===== */
@@ -376,15 +435,4 @@
 .product-rail-dense article h3 {
   font-size: 0.8125rem;
   line-height: 1.6;
-}
-
-/* ===== Reduced Motion ===== */
-@media (prefers-reduced-motion: reduce) {
-  .mouse-ripple,
-  .noise-overlay::after {
-    display: none;
-  }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-  }
 }

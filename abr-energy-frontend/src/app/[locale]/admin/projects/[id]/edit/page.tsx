@@ -12,12 +12,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared';
+import { EntityCategorySelect } from '@/components/admin/entity-category-select';
 import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import {
+  PROJECT_TRANSLATION_FIELDS,
+  buildProjectPayload,
+  contentTranslationsFromDetail,
+  createTranslationMap,
+  normalizeProjectStatus,
+  relationId,
+  translationLocalesFromDetail,
+  type ContentLocale,
+  type ProjectFormValues,
+} from '@/lib/cms-form-contracts';
+import { contentSaveErrorMessage } from '@/lib/cms-error-toast';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
-const locales = [
+const locales: { value: ContentLocale; label: string }[] = [
   { value: 'fa', label: 'فارسی' },
   { value: 'ar', label: 'العربية' },
   { value: 'en', label: 'English' },
@@ -31,11 +44,22 @@ const projectTypes = [
 ];
 
 const statuses = [
-  { value: 'planned', label: 'Planned' },
+  { value: 'planning', label: 'Planning' },
   { value: 'in_progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' },
   { value: 'on_hold', label: 'On Hold' },
+  { value: 'cancelled', label: 'Cancelled' },
 ];
+
+function createInitialForm(): ProjectFormValues {
+  return {
+    project_type: 'on_grid', capacity: '', location: '', status: 'planning', start_date: '', end_date: '',
+    service_category: '', is_featured: false, completion_percentage: 0,
+    translations: createTranslationMap(PROJECT_TRANSLATION_FIELDS),
+  };
+}
+
+const initialForm = createInitialForm();
 
 export default function AdminProjectEditPage() {
   const { t } = useLocale();
@@ -52,26 +76,20 @@ export default function AdminProjectEditPage() {
     enabled: !!id,
   });
 
-  const initialForm = {
-    project_type: 'on_grid', capacity: '', location: '', status: 'planned', start_date: '', end_date: '',
-    title_fa: '', description_fa: '',
-    title_ar: '', description_ar: '',
-    title_en: '', description_en: '',
-  };
-
-  const [edits, setEdits] = useState<Partial<typeof initialForm>>({});
-  const form = useMemo(() => {
+  const [edits, setEdits] = useState<Partial<ProjectFormValues>>({});
+  const form = useMemo<ProjectFormValues>(() => {
     if (!data) return initialForm;
     return {
       project_type: data.project_type || 'on_grid',
       capacity: data.capacity ?? '',
       location: data.location || '',
-      status: data.status || 'planned',
+      status: normalizeProjectStatus(data.status),
       start_date: data.start_date ? data.start_date.slice(0, 10) : '',
       end_date: data.end_date ? data.end_date.slice(0, 10) : '',
-      title_fa: data.title_fa || '', description_fa: data.description_fa || '',
-      title_ar: data.title_ar || '', description_ar: data.description_ar || '',
-      title_en: data.title_en || '', description_en: data.description_en || '',
+      service_category: relationId(data.service_category),
+      is_featured: data.is_featured || false,
+      completion_percentage: data.completion_percentage ?? 0,
+      translations: contentTranslationsFromDetail(data, PROJECT_TRANSLATION_FIELDS),
       ...edits,
     };
   }, [data, edits]);
@@ -85,18 +103,34 @@ export default function AdminProjectEditPage() {
   const guard = useDirtyNavigationGuard({ isDirty });
   const backHref = '/admin/projects';
 
-  useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_projects')); }, [error, t]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
+
+  const updateTranslation = (locale: ContentLocale, field: string, value: string) => {
+    setEdits((prev) => {
+      const current = prev.translations ?? form.translations;
+      return {
+        ...prev,
+        translations: {
+          ...current,
+          [locale]: { ...current[locale], [field]: value },
+        },
+      };
+    });
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axiosInstance.patch(`/admin/projects/${id}/`, form);
-      toast.success('Project updated');
+      await axiosInstance.patch(
+        `/admin/projects/${id}/`,
+        buildProjectPayload(form, translationLocalesFromDetail(data)),
+      );
+      toast.success(t('admin.project_updated'));
       router.push('/admin/projects');
-    } catch {
-      toast.error('Failed to update project');
+    } catch (error) {
+      toast.error(contentSaveErrorMessage(t('admin.project_save_failed'), error));
     } finally {
       setSaving(false);
     }
@@ -134,12 +168,16 @@ export default function AdminProjectEditPage() {
                 {locales.map((l) => (
                   <TabsContent key={l.value} value={l.value} className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Title ({l.label})</label>
-                      <Input value={form[`title_${l.value}` as keyof typeof form] as string} onChange={(e) => update(`title_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.title_label')} ({l.label})</label>
+                      <Input value={form.translations[l.value].title} onChange={(e) => updateTranslation(l.value, 'title', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Description ({l.label})</label>
-                      <Textarea className="min-h-32" value={form[`description_${l.value}` as keyof typeof form] as string} onChange={(e) => update(`description_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.slug')} ({l.label})</label>
+                      <Input value={form.translations[l.value].slug} onChange={(e) => updateTranslation(l.value, 'slug', e.target.value)} dir={l.value === 'en' ? 'ltr' : 'rtl'} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">{t('admin.description_label')} ({l.label})</label>
+                      <Textarea className="min-h-32" value={form.translations[l.value].description} onChange={(e) => updateTranslation(l.value, 'description', e.target.value)} />
                     </div>
                   </TabsContent>
                 ))}
@@ -177,6 +215,14 @@ export default function AdminProjectEditPage() {
                     {statuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">{t('admin.service_category')}</label>
+                <EntityCategorySelect kind="service" value={form.service_category} onChange={(v) => update('service_category', v)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">{t('admin.completion_percentage')}</label>
+                <Input type="number" min={0} max={100} value={form.completion_percentage} onChange={(e) => update('completion_percentage', e.target.value)} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.start_date')}</label>

@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
 from apps.products.models import (
@@ -130,6 +130,60 @@ class DocumentSerializer(serializers.ModelSerializer):
             return obj.media_file.file.url if obj.media_file_id else ""
         except Exception:
             return ""
+
+
+class PublicDocumentSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+    file_size = serializers.SerializerMethodField()
+    original_name = serializers.SerializerMethodField()
+    product_title = serializers.SerializerMethodField()
+    product_slug = serializers.SerializerMethodField()
+    category_title = serializers.SerializerMethodField()
+    category_slug = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProductDocument
+        fields = [
+            "id", "title", "doc_type", "description", "url",
+            "file_size", "original_name", "product_title",
+            "product_slug", "category_title", "category_slug",
+            "created_at",
+        ]
+
+    def get_url(self, obj):
+        try:
+            return obj.media_file.file.url if obj.media_file_id else ""
+        except Exception:
+            return ""
+
+    def get_file_size(self, obj):
+        return obj.media_file.file_size if obj.media_file_id else 0
+
+    def get_original_name(self, obj):
+        return obj.media_file.original_name if obj.media_file_id else ""
+
+    def get_product_title(self, obj):
+        if not obj.product_id:
+            return ""
+        t = obj.product.get_translation(_lang(self.context)) or obj.product.get_translation("fa")
+        return t.title if t else obj.product.sku
+
+    def get_product_slug(self, obj):
+        if not obj.product_id:
+            return ""
+        t = obj.product.get_translation(_lang(self.context)) or obj.product.get_translation("fa")
+        return t.slug if t else ""
+
+    def get_category_title(self, obj):
+        if not obj.product or not obj.product.category_id:
+            return ""
+        t = obj.product.category.get_translation(_lang(self.context)) or obj.product.category.get_translation("fa")
+        return t.title if t else obj.product.category.slug
+
+    def get_category_slug(self, obj):
+        if not obj.product or not obj.product.category:
+            return ""
+        return obj.product.category.slug
 
 
 class SpecSerializer(serializers.ModelSerializer):
@@ -370,6 +424,38 @@ class ProductWriteSerializer(serializers.ModelSerializer):
             "price_data", "images_data", "documents_data", "specs_data",
             "attributes_data", "relations_data",
         ]
+        # Phase 12.11 — SKU uniqueness is validated explicitly in `validate_sku`
+        # (friendly, field-scoped message) instead of the auto-generated
+        # UniqueValidator, so the 400 response is predictable. The DB unique
+        # constraint stays as the final safety net.
+        extra_kwargs = {"sku": {"validators": []}}
+
+    _SKU_DUPLICATE = "این کد SKU قبلاً برای محصول دیگری ثبت شده است."
+
+    def validate_sku(self, value):
+        """Reject a SKU already used by a *different* product.
+
+        Editing a product without changing its own SKU stays valid. Empty
+        values keep the model's current rules (required, non-blank). Comparison
+        is an exact match against the same column the DB constrains.
+        """
+        qs = Product.objects.filter(sku=value)
+        if self.instance is not None:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(self._SKU_DUPLICATE)
+        return value
+
+    def _sku_conflict(self, sku):
+        return serializers.ValidationError({"sku": [self._SKU_DUPLICATE]})
+
+    def _is_sku_conflict(self, sku, exclude_pk=None):
+        if not sku:
+            return False
+        qs = Product.objects.filter(sku=sku)
+        if exclude_pk is not None:
+            qs = qs.exclude(pk=exclude_pk)
+        return qs.exists()
 
     _NESTED_KEYS = ("price_data", "images_data", "documents_data", "specs_data", "attributes_data", "relations_data")
 
@@ -421,7 +507,17 @@ class ProductWriteSerializer(serializers.ModelSerializer):
         translations = validated_data.pop("translations", {})
         nested = {k: validated_data.pop(k, None) for k in self._NESTED_KEYS}
         nested = {k: v for k, v in nested.items() if v is not None}
-        product = Product.objects.create(**validated_data)
+        # Phase 12.11 — a concurrent insert can slip past `validate_sku` and
+        # hit the DB unique constraint. The savepoint keeps the surrounding
+        # transaction usable so we can re-check and return a proper 400 on the
+        # SKU field instead of a 500. Non-SKU integrity errors are re-raised.
+        try:
+            with transaction.atomic():
+                product = Product.objects.create(**validated_data)
+        except IntegrityError as exc:
+            if self._is_sku_conflict(validated_data.get("sku")):
+                raise self._sku_conflict(validated_data["sku"]) from exc
+            raise
         for lang_code, fields in translations.items():
             ProductTranslation.objects.create(product=product, language=lang_code, **fields)
         self._save_nested(product, nested)
@@ -432,7 +528,13 @@ class ProductWriteSerializer(serializers.ModelSerializer):
         nested = {k: validated_data.pop(k, None) for k in self._NESTED_KEYS}
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        instance.save()
+        try:
+            with transaction.atomic():
+                instance.save()
+        except IntegrityError as exc:
+            if self._is_sku_conflict(instance.sku, exclude_pk=instance.pk):
+                raise self._sku_conflict(instance.sku) from exc
+            raise
         for lang_code, fields in translations.items():
             ProductTranslation.objects.update_or_create(product=instance, language=lang_code, defaults=fields)
         for k, v in nested.items():

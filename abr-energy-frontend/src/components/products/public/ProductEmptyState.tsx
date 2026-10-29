@@ -7,13 +7,13 @@ interface ProductEmptyStateProps {
   action?: { label: string; onClick: () => void };
 }
 
-/** Catalog empty state with Persian defaults (API returned zero results). */
+/** Catalog empty state with Persian defaults (API returned zero results, theme-aware). */
 export function ProductEmptyState({ action }: ProductEmptyStateProps) {
   const { t } = useLocale();
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+    <div className="rounded-2xl border border-border/80 bg-card/60 shadow-xs dark:border-white/10 dark:bg-card/40">
       <div className="flex justify-center pt-10" aria-hidden>
-        <PackageSearch className="h-12 w-12 text-white/15" />
+        <PackageSearch className="h-12 w-12 text-muted-foreground/30" />
       </div>
       <EmptyState
         title={t('products.not_found')}

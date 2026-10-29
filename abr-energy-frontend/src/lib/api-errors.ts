@@ -33,6 +33,7 @@ export type NormalizedErrorKind =
   | 'permission'
   | 'network'
   | 'server'
+  | 'rate_limit'
   | 'unknown';
 
 export interface NormalizedApiError {
@@ -274,6 +275,17 @@ export function normalizeApiError(err: unknown): NormalizedApiError {
       if (body !== undefined) flatten(extractErrorsNode(body), '', 0, state);
       else if (message !== '' && !AXIOS_DEFAULT_MESSAGE.test(message)) pushDetail(state, message);
       return { kind: 'permission', status, fieldErrors: state.fieldErrors, detailMessages: state.detailMessages };
+    }
+    if (status === 429) {
+      const state: FlattenState = { fieldErrors: [], detailMessages: [], seen: new Set(), visited: 0 };
+      const data = isRecord(err) ? (err as Record<string, unknown>).response : undefined;
+      const body = isRecord(data) ? (data as Record<string, unknown>).data : undefined;
+      if (body !== undefined) flatten(extractErrorsNode(body), '', 0, state);
+      else if (message !== '' && !AXIOS_DEFAULT_MESSAGE.test(message)) pushDetail(state, message);
+      if (state.detailMessages.length === 0) {
+        state.detailMessages.push('تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی صبر کنید.');
+      }
+      return { kind: 'rate_limit', status, fieldErrors: state.fieldErrors, detailMessages: state.detailMessages };
     }
     if (status !== undefined && status >= 500) {
       return { kind: 'server', status, fieldErrors: [], detailMessages: [] };

@@ -22,6 +22,7 @@ export function sortGalleryImages(images: ProductImageItem[]): ProductImageItem[
 /**
  * Accessible product gallery: main image + thumbnails + prev/next +
  * keyboard navigation (arrow keys flip in RTL) + mobile swipe affordance.
+ * Fully theme-aware.
  */
 export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
   const { t, isRTL } = useLocale();
@@ -65,8 +66,8 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
 
   if (count === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-        <Sun className="h-16 w-16 text-white/10" aria-hidden />
+      <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-border/80 bg-card shadow-xs dark:border-white/10 dark:bg-card/70">
+        <Sun className="h-16 w-16 text-muted-foreground/30" aria-hidden />
         <span className="sr-only">{productTitle}</span>
       </div>
     );
@@ -82,7 +83,7 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
       aria-label={t('products.gallery_label')}
       onKeyDown={onKeyDown}
     >
-      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs dark:border-white/10 dark:bg-neutral-900">
         {/* Phase 5.2: narrow next/image adoption (gallery hero only). fill +
             priority preserve the 4:3 aspect, object-cover, and eager (LCP)
             loading of the previous <img loading="eager">. */}
@@ -103,7 +104,7 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
               type="button"
               onClick={goPrev}
               aria-label={t('products.prev_image')}
-              className="absolute top-1/2 -translate-y-1/2 start-3 rounded-full border border-white/10 bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-emerald-500"
+              className="absolute top-1/2 -translate-y-1/2 start-3 rounded-full border border-border bg-background/80 p-2.5 text-foreground backdrop-blur-md transition hover:bg-background focus-visible:outline-2 focus-visible:outline-primary"
             >
               <ChevronLeft className={cn('h-5 w-5', isRTL && 'rotate-180')} aria-hidden />
             </button>
@@ -111,11 +112,11 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
               type="button"
               onClick={goNext}
               aria-label={t('products.next_image')}
-              className="absolute top-1/2 -translate-y-1/2 end-3 rounded-full border border-white/10 bg-black/60 p-2.5 text-white backdrop-blur-md transition hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-emerald-500"
+              className="absolute top-1/2 -translate-y-1/2 end-3 rounded-full border border-border bg-background/80 p-2.5 text-foreground backdrop-blur-md transition hover:bg-background focus-visible:outline-2 focus-visible:outline-primary"
             >
               <ChevronRight className={cn('h-5 w-5', isRTL && 'rotate-180')} aria-hidden />
             </button>
-            <p className="absolute bottom-3 end-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] text-white/70 backdrop-blur-md" dir="ltr" aria-live="polite">
+            <p className="absolute bottom-3 end-3 rounded-full bg-background/80 px-2.5 py-1 text-[11px] text-foreground border border-border backdrop-blur-md" dir="ltr" aria-live="polite">
               {activeIndex + 1} / {count}
             </p>
           </>
@@ -134,17 +135,17 @@ export function ProductGallery({ images, productTitle }: ProductGalleryProps) {
               onClick={() => goTo(i)}
               className={cn(
                 'relative aspect-square overflow-hidden rounded-xl border transition-all duration-300',
-                'focus-visible:outline-2 focus-visible:outline-emerald-500',
+                'focus-visible:outline-2 focus-visible:outline-primary',
                 i === activeIndex
-                  ? 'border-emerald-500/60 ring-2 ring-emerald-500/30'
-                  : 'border-white/[0.06] opacity-60 hover:opacity-100',
+                  ? 'border-primary ring-2 ring-primary/30 opacity-100'
+                  : 'border-border/80 opacity-60 hover:opacity-100 hover:border-primary/40 dark:border-white/10',
               )}
             >
               <Image
                 src={resolveMediaUrl(img.url)}
-                alt=""
+                alt={img.alt_text || `${productTitle} thumbnail ${i + 1}`}
                 fill
-                sizes="(max-width: 640px) 20vw, 15vw"
+                sizes="(max-width: 640px) 20vw, 10vw"
                 className="object-cover"
               />
             </button>

@@ -28,11 +28,30 @@ function mediaRemotePatterns(): NonNullable<NonNullable<NextConfig["images"]>["r
 }
 
 const nextConfig: NextConfig = {
+  // Isolated dist dir when NEXT_DIST_DIR is set, so `next build`/`next start`
+  // never share `.next` with a running `next dev` (vendor-chunk failure).
+  // Unset = default `.next`, zero behavior change.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
+  devIndicators: false,
   eslint: {
     ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: mediaRemotePatterns(),
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:locale/admin/project-inquiries/:id*',
+        destination: '/:locale/admin/inquiries/:id*',
+        permanent: false,
+      },
+      {
+        source: '/admin/project-inquiries/:id*',
+        destination: '/admin/inquiries/:id*',
+        permanent: false,
+      },
+    ];
   },
 };
 

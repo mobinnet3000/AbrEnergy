@@ -5,6 +5,7 @@ app_name = "core-dashboard"
 
 urlpatterns = [
     path("stats/", site.dashboard_stats, name="dashboard-stats"),
+    path("overview/", site.dashboard_overview, name="dashboard-overview"),
     path("recent-contacts/", site.recent_contacts, name="recent-contacts"),
     path("recent-inquiries/", site.recent_inquiries, name="recent-inquiries"),
 ]

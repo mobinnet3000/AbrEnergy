@@ -1,17 +1,23 @@
 'use client';
-import { useMemo, useState } from 'react';
-import Image from 'next/image';
+import { useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { AxiosError } from 'axios';
 import { useLocale } from '@/i18n';
-import { usePublicProductCategories, usePublicProductCategory, usePublicProducts } from '@/hooks/use-api';
-import { resolveMediaUrl } from '@/lib/media-url';
-import { CardLoading, PageLoading } from '@/components/shared';
+import {
+  usePublicProductCategories,
+  usePublicProductCategory,
+  usePublicProducts,
+} from '@/hooks/use-api';
+import { CardLoading, InternalPageShell, PageLoading } from '@/components/shared';
 import { ErrorState, NotFoundState } from '@/components/shared/states';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
 import { sanitizeHtml } from '@/lib/sanitize';
+import { resolveMediaUrl } from '@/lib/media-url';
+import { parseCatalogPage } from '@/lib/catalog-query';
 import {
   ProductBreadcrumbs,
   ProductCategoryNavigation,
@@ -32,17 +38,24 @@ function statusOf(error: unknown): number | undefined {
   return (error as AxiosError)?.response?.status;
 }
 
-export function CategoryClient({ slug, previewCategory }: { slug: string; previewCategory?: import('@/types').ProductCategoryDetail | null }) {
+export function CategoryClient({
+  slug,
+  previewCategory,
+}: {
+  slug: string;
+  previewCategory?: import('@/types').ProductCategoryDetail | null;
+}) {
   const { t } = useLocale();
-  // Page state lives here; the route renders <CategoryClient key={slug}>
-  // so navigating between categories remounts and resets pagination.
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = parseCatalogPage(searchParams.get('page'));
 
-  // Phase 8.2 — saved-state preview: when `previewCategory` is provided the
-  // public category fetch is disabled and the SAME rendering below consumes
-  // the token-gated preview payload (public CategorySerializer — no admin
-  // fields). The product grid keeps its normal public filtering. The normal
-  // public path (`previewCategory` undefined) is untouched.
+  const goToPage = (nextPage: number) => {
+    const query = nextPage > 1 ? `?page=${nextPage}` : '';
+    router.push(`${pathname}${query}`);
+  };
+
   const isPreview = previewCategory !== undefined;
   const {
     data: fetchedCategory,
@@ -54,7 +67,7 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
   const category = (isPreview ? previewCategory : fetchedCategory) as typeof fetchedCategory;
 
   const { data: treeData } = usePublicProductCategories();
-  const tree: ProductCategory[] = useMemo(
+  const tree = useMemo(
     () => (Array.isArray(treeData) ? treeData : (treeData?.results ?? [])),
     [treeData],
   );
@@ -113,55 +126,62 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
 
   if (categoryLoading) {
     return (
-      <div className="bg-black min-h-screen pt-28 md:pt-36">
-        <div className="container-page">
+      <InternalPageShell>
+        <div className="container-page py-16">
           <PageLoading />
         </div>
-      </div>
+      </InternalPageShell>
     );
   }
 
   if (categoryError || !category) {
-    const gone = statusOf(categoryErr) === 404;
+    const status = statusOf(categoryErr);
+    const gone = status === 404 || (!categoryError && !category);
+    const is429 = status === 429;
     return (
-      <div className="bg-black min-h-screen pt-28 md:pt-36">
-        <div className="container-page">
+      <InternalPageShell>
+        <div className="container-page py-16">
           {gone ? (
             <NotFoundState title={t('products.category_not_found')} message={t('products.product_gone_hint')} />
           ) : (
             <ErrorState
-              title={t('common.error')}
-              message={t('products.load_failed')}
+              title={is429 ? (t('common.rate_limit_title') || 'محدودیت درخواست') : t('common.error')}
+              message={is429 ? (t('common.rate_limit_hint') || 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.') : t('products.load_failed')}
               action={{ label: t('products.retry'), onClick: () => refetchCategory() }}
             />
           )}
-          <div className="flex justify-center pb-20">
+          <div className="flex flex-wrap justify-center gap-3 pb-20">
+            <Link
+              href="/products/category"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              {t('products.categories_label')}
+            </Link>
             <Link
               href="/products"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/[0.08] px-4 py-2.5 text-sm text-white/70 transition hover:border-white/[0.16] hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground transition hover:bg-muted"
             >
               {t('products.back_to_products')}
             </Link>
           </div>
         </div>
-      </div>
+      </InternalPageShell>
     );
   }
 
   const contentHtml = sanitizeHtml(category.content ?? '');
 
   return (
-    <div className="bg-black min-h-screen">
+    <InternalPageShell>
       {/* Header */}
-      <section className="relative pt-28 pb-10 md:pt-36 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/15 via-transparent to-black" />
-        <div className="absolute top-1/4 left-1/3 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px]" />
+      <section className="relative overflow-hidden pb-8 pt-6 sm:pb-10 sm:pt-8">
         <div className="container-page relative z-10 flex flex-col gap-6">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <ProductBreadcrumbs
               trail={[
                 { label: t('products.home_crumb'), href: '/' },
                 { label: t('products.title'), href: '/products' },
+                { label: t('products.categories_crumb'), href: '/products/category' },
                 ...parentCrumbs,
                 { label: category.title },
               ]}
@@ -171,19 +191,19 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_320px]">
             <div>
               <motion.h1
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-                className="font-heading text-4xl font-bold text-white md:text-6xl"
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground"
               >
                 {category.title}
               </motion.h1>
               {category.description && (
                 <motion.p
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="mt-4 max-w-2xl text-base leading-8 text-white/45"
+                  transition={{ duration: 0.6, delay: 0.15 }}
+                  className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground"
                 >
                   {category.description}
                 </motion.p>
@@ -194,10 +214,8 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.15 }}
-                className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/[0.06]"
+                className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs dark:border-white/10"
               >
-                {/* Phase 5.2: narrow next/image adoption (category cover).
-                    fill + priority preserve aspect, object-cover, eager load. */}
                 <Image
                   src={resolveMediaUrl(category.cover_image_url)}
                   alt={category.title}
@@ -212,7 +230,7 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
 
           {contentHtml && (
             <div
-              className="max-w-3xl text-sm leading-8 text-white/55"
+              className="max-w-3xl text-sm leading-relaxed text-foreground/80 prose prose-neutral dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           )}
@@ -224,21 +242,21 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
         <section className="pb-8 md:pb-10" aria-label={t('products.children_title')}>
           <div className="container-page flex flex-col gap-4">
             <ScrollReveal variant="slide-up">
-              <h2 className="font-heading text-xl font-bold text-white md:text-2xl">
+              <h2 className="font-heading text-xl font-bold text-foreground md:text-2xl">
                 {t('products.children_title')}
               </h2>
             </ScrollReveal>
             <ScrollReveal variant="slide-up" delay={0.05}>
-              <ProductCategoryNavigation categories={children} activeSlug={slug} />
+              <ProductCategoryNavigation categories={children} activeSlug={slug} tone="light" />
             </ScrollReveal>
           </div>
         </section>
       )}
 
       {/* Products in this category */}
-      <section className="pb-28 md:pb-36" aria-label={t('products.products_in_category')}>
+      <section className="pb-20 sm:pb-28 md:pb-36" aria-label={t('products.products_in_category')}>
         <div className="container-page flex flex-col gap-6">
-          <h2 className="font-heading text-xl font-bold text-white md:text-2xl">
+          <h2 className="font-heading text-xl font-bold text-foreground md:text-2xl">
             {t('products.products_in_category')}
           </h2>
           {productsLoading ? (
@@ -253,30 +271,30 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
             <ProductEmptyState />
           ) : (
             <>
-              <p className="text-sm text-white/40" role="status" aria-live="polite">
+              <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
                 {faDigits(count)} {t('products.results_count')}
               </p>
-              <ProductGrid products={products} categoryTitles={categoryTitles} />
+              <ProductGrid products={products} categoryTitles={categoryTitles} tone="light" />
               {totalPages > 1 && (
-                <nav className="mt-4 flex items-center justify-center gap-2" aria-label={t('products.page_of')}>
+                <nav className="mt-6 flex items-center justify-center gap-2" aria-label={t('products.page_of')}>
                   <button
                     type="button"
                     disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    onClick={() => goToPage(Math.max(1, page - 1))}
                     aria-label={t('common.previous')}
-                    className="rounded-xl border border-white/[0.08] p-2.5 text-white/60 transition enabled:hover:border-white/[0.16] enabled:hover:text-white disabled:opacity-30"
+                    className="rounded-xl border border-border bg-card p-2.5 text-foreground transition enabled:hover:bg-muted disabled:opacity-30"
                   >
                     <ChevronRight className="h-4 w-4" aria-hidden />
                   </button>
-                  <span className="px-3 text-sm text-white/50" aria-current="page">
+                  <span className="px-3 text-sm text-muted-foreground" aria-current="page">
                     {t('products.page_of')} {faDigits(page)} / {faDigits(totalPages)}
                   </span>
                   <button
                     type="button"
                     disabled={page >= totalPages}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
                     aria-label={t('common.next')}
-                    className="rounded-xl border border-white/[0.08] p-2.5 text-white/60 transition enabled:hover:border-white/[0.16] enabled:hover:text-white disabled:opacity-30"
+                    className="rounded-xl border border-border bg-card p-2.5 text-foreground transition enabled:hover:bg-muted disabled:opacity-30"
                   >
                     <ChevronLeft className="h-4 w-4" aria-hidden />
                   </button>
@@ -286,6 +304,6 @@ export function CategoryClient({ slug, previewCategory }: { slug: string; previe
           )}
         </div>
       </section>
-    </div>
+    </InternalPageShell>
   );
 }

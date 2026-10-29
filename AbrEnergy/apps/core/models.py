@@ -7,13 +7,26 @@ from apps.users.choices import UserRole
 class SiteSettings(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     company_name = models.CharField(max_length=255, default="ابر انرژی")
-    company_name_en = models.CharField(max_length=255, default="AbrEnergy")
+    company_name_en = models.CharField(max_length=255, default="AbarEnergy")
+    company_name_ar = models.CharField(max_length=255, blank=True, default="أبر إنيرجي")
     logo = VersatileImageField(upload_to="company/logo/", blank=True, null=True)
     favicon = VersatileImageField(upload_to="company/favicon/", blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, default="")
     phone_number_2 = models.CharField(max_length=20, blank=True, default="")
     email = models.EmailField(blank=True, default="")
+
+    # Physical company address fields — localized for FA, EN, AR
     address = models.TextField(blank=True, default="")
+    address_en = models.TextField(blank=True, default="")
+    address_ar = models.TextField(blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
+    city_en = models.CharField(max_length=100, blank=True, default="")
+    city_ar = models.CharField(max_length=100, blank=True, default="")
+    province = models.CharField(max_length=100, blank=True, default="")
+    province_en = models.CharField(max_length=100, blank=True, default="")
+    province_ar = models.CharField(max_length=100, blank=True, default="")
+    postal_code = models.CharField(max_length=30, blank=True, default="")
+    map_url = models.URLField(max_length=1000, blank=True, default="")
 
     instagram = models.URLField(blank=True, default="")
     telegram = models.URLField(blank=True, default="")
@@ -98,3 +111,47 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action} - {self.model_name}"
+
+
+class SeoKeyword(models.Model):
+    INTENT_CHOICES = [
+        ("informational", "Informational"),
+        ("navigational", "Navigational"),
+        ("commercial", "Commercial"),
+        ("transactional", "Transactional"),
+    ]
+    PRIORITY_CHOICES = [
+        ("high", "High"),
+        ("medium", "Medium"),
+        ("low", "Low"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    keyword = models.CharField(max_length=255, db_index=True)
+    locale = models.CharField(max_length=10, default="fa", db_index=True)
+    target_country = models.CharField(max_length=100, default="IR")
+    target_page = models.CharField(max_length=255, default="/")
+    search_intent = models.CharField(max_length=20, choices=INTENT_CHOICES, default="informational")
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default="medium")
+    current_rank = models.IntegerField(null=True, blank=True)
+    best_rank = models.IntegerField(null=True, blank=True)
+    clicks = models.IntegerField(default=0)
+    impressions = models.IntegerField(default=0)
+    ctr = models.FloatField(default=0.0)
+    average_position = models.FloatField(default=0.0)
+    last_measured_at = models.DateTimeField(null=True, blank=True)
+    rank_history = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "SEO Keyword"
+        verbose_name_plural = "SEO Keywords"
+        ordering = ["-priority", "current_rank", "-updated_at"]
+        indexes = [
+            models.Index(fields=["locale", "priority"]),
+            models.Index(fields=["keyword", "locale"]),
+        ]
+
+    def __str__(self):
+        return f"{self.keyword} ({self.locale})"

@@ -1,6 +1,9 @@
 from django.urls import path, include
+from apps.core.api.v1.views import site
 
 urlpatterns = [
+    # Phase 12.15 — unauthenticated readiness probe (no sensitive details).
+    path("health/", site.health, name="health"),
     # Auth & Users (public)
     path("auth/", include("apps.users.api.v1.urls.auth_urls")),
     path("users/", include("apps.users.api.v1.urls.user_urls")),
@@ -46,6 +49,7 @@ urlpatterns = [
     path("admin/product-categories/", include("apps.products.api.v1.urls.admin_category_urls")),
     path("admin/calculator/history/", include("apps.calculator.api.v1.urls.admin_urls")),
     path("admin/site-config/", include("apps.core.api.v1.urls.admin_site_urls")),
+    path("admin/seo/", include("apps.core.api.v1.urls.seo_urls")),
     path("admin/homepage/", include("apps.homepage.api.v1.urls.admin_urls")),
     path("admin/", include("apps.users.api.v1.urls.admin_urls")),
 ]

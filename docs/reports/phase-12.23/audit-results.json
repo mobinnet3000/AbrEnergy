@@ -1,0 +1,2332 @@
+[
+  {
+    "name": "home",
+    "path": "/fa",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 14,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 336,
+              "width": 144
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 352,
+              "width": 112
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "showcase-stage-glow pointer-events-none absolute",
+              "right": 328,
+              "width": 336
+            }
+          ]
+        },
+        "screenshot": "home-320.png",
+        "bytes": 311452
+      },
+      "375": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 14,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 394,
+              "width": 169
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 413,
+              "width": 131
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "showcase-stage-glow pointer-events-none absolute",
+              "right": 383,
+              "width": 391
+            }
+          ]
+        },
+        "screenshot": "home-375.png",
+        "bytes": 363396
+      },
+      "768": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 10,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 782,
+              "width": 346
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 877,
+              "width": 269
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "group relative flex",
+              "right": 774,
+              "width": 720
+            }
+          ]
+        },
+        "screenshot": "home-768.png",
+        "bytes": 356784
+      },
+      "1024": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 4,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 1049,
+              "width": 461
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 1161,
+              "width": 358
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-20 -right-20",
+              "right": 1071,
+              "width": 160
+            }
+          ]
+        },
+        "screenshot": "home-1024.png",
+        "bytes": 548148
+      },
+      "1280": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 4,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 1320,
+              "width": 576
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 1439,
+              "width": 448
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-20 -right-20",
+              "right": 1327,
+              "width": 160
+            }
+          ]
+        },
+        "screenshot": "home-1280.png",
+        "bytes": 677176
+      },
+      "1440": {
+        "metrics": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طلوعآفتاب،ازخانهشماست"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 3,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute -bottom-[15%]",
+              "right": 1488,
+              "width": 648
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "mesh-blob absolute top-[30%]",
+              "right": 1616,
+              "width": 504
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "home-1440.png",
+        "bytes": 691244
+      }
+    }
+  },
+  {
+    "name": "calculator",
+    "path": "/fa/calculator",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-320.png",
+        "bytes": 108968
+      },
+      "375": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-375.png",
+        "bytes": 114588
+      },
+      "768": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-768.png",
+        "bytes": 166268
+      },
+      "1024": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-1024.png",
+        "bytes": 200748
+      },
+      "1280": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-1280.png",
+        "bytes": 217560
+      },
+      "1440": {
+        "metrics": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محاسبه‌گر نیروگاه خورشیدی آفگرید"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "calculator-1440.png",
+        "bytes": 224272
+      }
+    }
+  },
+  {
+    "name": "contact",
+    "path": "/fa/contact",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-320.png",
+        "bytes": 121784
+      },
+      "375": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-375.png",
+        "bytes": 139300
+      },
+      "768": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-768.png",
+        "bytes": 220364
+      },
+      "1024": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-1024.png",
+        "bytes": 263624
+      },
+      "1280": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-1280.png",
+        "bytes": 291972
+      },
+      "1440": {
+        "metrics": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "تماس با ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "contact-1440.png",
+        "bytes": 311108
+      }
+    }
+  },
+  {
+    "name": "about",
+    "path": "/fa/about",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 362,
+          "scrollWidth": 362,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 8,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "",
+              "right": 402,
+              "width": 282
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "grid md:grid-cols-2 gap-8",
+              "right": 402,
+              "width": 282
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "md:order-2",
+              "right": 402,
+              "width": 282
+            }
+          ]
+        },
+        "screenshot": "about-320.png",
+        "bytes": 129832
+      },
+      "375": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 417,
+          "scrollWidth": 417,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 8,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "",
+              "right": 456,
+              "width": 336
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "grid md:grid-cols-2 gap-8",
+              "right": 456,
+              "width": 336
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "md:order-2",
+              "right": 456,
+              "width": 336
+            }
+          ]
+        },
+        "screenshot": "about-375.png",
+        "bytes": 147968
+      },
+      "768": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 797,
+          "hasOverflow": true,
+          "overflowDelta": 29,
+          "overflowCount": 4,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "",
+              "right": 797,
+              "width": 706
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "grid md:grid-cols-2 gap-8",
+              "right": 797,
+              "width": 706
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "aspect-[4/3] rounded-2xl border",
+              "right": 797,
+              "width": 321
+            }
+          ]
+        },
+        "screenshot": "about-768.png",
+        "bytes": 326260
+      },
+      "1024": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1042,
+          "hasOverflow": true,
+          "overflowDelta": 18,
+          "overflowCount": 4,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "",
+              "right": 1042,
+              "width": 941
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "grid md:grid-cols-2 gap-8",
+              "right": 1042,
+              "width": 941
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "aspect-[4/3] rounded-2xl border",
+              "right": 1042,
+              "width": 439
+            }
+          ]
+        },
+        "screenshot": "about-1024.png",
+        "bytes": 400812
+      },
+      "1280": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1296,
+          "hasOverflow": true,
+          "overflowDelta": 16,
+          "overflowCount": 4,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "",
+              "right": 1296,
+              "width": 1192
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "grid md:grid-cols-2 gap-8",
+              "right": 1296,
+              "width": 1192
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "aspect-[4/3] rounded-2xl border",
+              "right": 1296,
+              "width": 564
+            }
+          ]
+        },
+        "screenshot": "about-1280.png",
+        "bytes": 628752
+      },
+      "1440": {
+        "metrics": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مهندسی گذار انرژی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "about-1440.png",
+        "bytes": 717812
+      }
+    }
+  },
+  {
+    "name": "products",
+    "path": "/fa/products",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-320.png",
+        "bytes": 150532
+      },
+      "375": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-375.png",
+        "bytes": 165348
+      },
+      "768": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-768.png",
+        "bytes": 303232
+      },
+      "1024": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-1024.png",
+        "bytes": 365716
+      },
+      "1280": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-1280.png",
+        "bytes": 430068
+      },
+      "1440": {
+        "metrics": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-1440.png",
+        "bytes": 472180
+      }
+    }
+  },
+  {
+    "name": "products-category",
+    "path": "/fa/products/category",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-320.png",
+        "bytes": 150992
+      },
+      "375": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-375.png",
+        "bytes": 158108
+      },
+      "768": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-768.png",
+        "bytes": 279580
+      },
+      "1024": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-1024.png",
+        "bytes": 346960
+      },
+      "1280": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-1280.png",
+        "bytes": 360188
+      },
+      "1440": {
+        "metrics": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دسته‌بندی‌های محصولات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-1440.png",
+        "bytes": 375220
+      }
+    }
+  },
+  {
+    "name": "products-detail",
+    "path": "/fa/products/%D9%85%D8%AD%D8%B5%D9%88%D9%84-%D9%86%D9%85%D9%88%D9%86%D9%87-%D8%A7%D8%AF%D9%85%DB%8C%D9%86-%D9%86%D9%85%D9%88%D9%86%D9%87",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-320.png",
+        "bytes": 149528
+      },
+      "375": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-375.png",
+        "bytes": 157716
+      },
+      "768": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-768.png",
+        "bytes": 259848
+      },
+      "1024": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1042,
+              "width": 1024
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-1024.png",
+        "bytes": 278228
+      },
+      "1280": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-1280.png",
+        "bytes": 324796
+      },
+      "1440": {
+        "metrics": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "محصول نمونه ادمین [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-detail-1440.png",
+        "bytes": 339104
+      }
+    }
+  },
+  {
+    "name": "articles",
+    "path": "/fa/articles",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-320.png",
+        "bytes": 101644
+      },
+      "375": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-375.png",
+        "bytes": 113896
+      },
+      "768": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-768.png",
+        "bytes": 159212
+      },
+      "1024": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-1024.png",
+        "bytes": 197008
+      },
+      "1280": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-1280.png",
+        "bytes": 227356
+      },
+      "1440": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "مقالات"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1465,
+              "width": 1440
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-1440.png",
+        "bytes": 242124
+      }
+    }
+  },
+  {
+    "name": "articles-detail",
+    "path": "/fa/articles/%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B4%D8%AA-%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D9%86%D9%85%D9%88%D9%86%D9%87",
+    "viewports": {
+      "320": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 320,
+          "scrollWidth": 320,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 480,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-320.png",
+        "bytes": 81572
+      },
+      "375": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-375.png",
+        "bytes": 87664
+      },
+      "768": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 775,
+              "width": 768
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-768.png",
+        "bytes": 130040
+      },
+      "1024": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1024,
+          "scrollWidth": 1024,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1184,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-1024.png",
+        "bytes": 157868
+      },
+      "1280": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-1280.png",
+        "bytes": 168072
+      },
+      "1440": {
+        "metrics": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نگهداشت نیروگاه [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1440,
+          "scrollWidth": 1440,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1449,
+              "width": 1440
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1600,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "articles-detail-1440.png",
+        "bytes": 177300
+      }
+    }
+  },
+  {
+    "name": "services",
+    "path": "/fa/services",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "خدمات ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-375.png",
+        "bytes": 125504
+      },
+      "768": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "خدمات ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-768.png",
+        "bytes": 202284
+      },
+      "1280": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "خدمات ما"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-1280.png",
+        "bytes": 250716
+      }
+    }
+  },
+  {
+    "name": "services-detail",
+    "path": "/fa/services/%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C-%D9%88-%D9%86%D8%B5%D8%A8-%D9%86%D9%85%D9%88%D9%86%D9%87",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طراحی و نصب [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-detail-375.png",
+        "bytes": 171572
+      },
+      "768": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طراحی و نصب [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-detail-768.png",
+        "bytes": 250644
+      },
+      "1280": {
+        "metrics": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "طراحی و نصب [نمونه]"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "services-detail-1280.png",
+        "bytes": 313152
+      }
+    }
+  },
+  {
+    "name": "projects",
+    "path": "/fa/projects",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پروژه‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 387,
+              "width": 375
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-375.png",
+        "bytes": 104860
+      },
+      "768": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پروژه‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-768.png",
+        "bytes": 193852
+      },
+      "1280": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پروژه‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1331,
+              "width": 1280
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-1280.png",
+        "bytes": 235560
+      }
+    }
+  },
+  {
+    "name": "projects-detail",
+    "path": "/fa/projects/%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D8%AA%D8%AC%D8%A7%D8%B1%DB%8C-%DB%B5%DB%B0-%DA%A9%DB%8C%D9%84%D9%88%D9%88%D8%A7%D8%AA-%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نیروگاه تجاری ۵۰ کیلووات - شیراز"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 383,
+              "width": 375
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-detail-375.png",
+        "bytes": 126512
+      },
+      "768": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نیروگاه تجاری ۵۰ کیلووات - شیراز"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-detail-768.png",
+        "bytes": 194568
+      },
+      "1280": {
+        "metrics": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "نیروگاه تجاری ۵۰ کیلووات - شیراز"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1296,
+              "width": 1280
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "projects-detail-1280.png",
+        "bytes": 250320
+      }
+    }
+  },
+  {
+    "name": "products-category-detail",
+    "path": "/fa/products/category/%D9%BE%DA%A9%DB%8C%D8%AC%D9%87%D8%A7%DB%8C-%D8%AE%D9%88%D8%B1%D8%B4%DB%8C%D8%AF%DB%8C",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پکیج‌های خورشیدی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 384,
+              "width": 375
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-detail-375.png",
+        "bytes": 90684
+      },
+      "768": {
+        "metrics": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پکیج‌های خورشیدی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-detail-768.png",
+        "bytes": 141824
+      },
+      "1280": {
+        "metrics": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "پکیج‌های خورشیدی"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "products-category-detail-1280.png",
+        "bytes": 182828
+      }
+    }
+  },
+  {
+    "name": "gallery",
+    "path": "/fa/gallery",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "گالری"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "gallery-375.png",
+        "bytes": 74976
+      },
+      "768": {
+        "metrics": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "گالری"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "gallery-768.png",
+        "bytes": 115492
+      },
+      "1280": {
+        "metrics": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "گالری"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "gallery-1280.png",
+        "bytes": 146144
+      }
+    }
+  },
+  {
+    "name": "downloads",
+    "path": "/fa/downloads",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دانلودها و کاتالوگ‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 535,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "downloads-375.png",
+        "bytes": 95744
+      },
+      "768": {
+        "metrics": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دانلودها و کاتالوگ‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 1,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 928,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "downloads-768.png",
+        "bytes": 138836
+      },
+      "1280": {
+        "metrics": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Titles": [
+            "دانلودها و کاتالوگ‌ها"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 2,
+          "sampleOverflow": [
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute inset-0 bg-gradient-to-r",
+              "right": 1293,
+              "width": 1280
+            },
+            {
+              "tag": "div",
+              "id": "",
+              "className": "absolute -top-40 -right-40",
+              "right": 1440,
+              "width": 500
+            }
+          ]
+        },
+        "screenshot": "downloads-1280.png",
+        "bytes": 174056
+      }
+    }
+  },
+  {
+    "name": "not-found",
+    "path": "/fa/audit-nonexistent-404-check",
+    "viewports": {
+      "375": {
+        "metrics": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Titles": [
+            "404"
+          ],
+          "dir": "rtl",
+          "innerWidth": 375,
+          "scrollWidth": 375,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 0,
+          "sampleOverflow": []
+        },
+        "screenshot": "not-found-375.png",
+        "bytes": 10768
+      },
+      "768": {
+        "metrics": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Titles": [
+            "404"
+          ],
+          "dir": "rtl",
+          "innerWidth": 768,
+          "scrollWidth": 768,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 0,
+          "sampleOverflow": []
+        },
+        "screenshot": "not-found-768.png",
+        "bytes": 12332
+      },
+      "1280": {
+        "metrics": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Titles": [
+            "404"
+          ],
+          "dir": "rtl",
+          "innerWidth": 1280,
+          "scrollWidth": 1280,
+          "hasOverflow": false,
+          "overflowDelta": 0,
+          "overflowCount": 0,
+          "sampleOverflow": []
+        },
+        "screenshot": "not-found-1280.png",
+        "bytes": 14180
+      }
+    }
+  }
+]

@@ -9,5 +9,6 @@ urlpatterns = [
     # Static resolve route MUST precede <str:slug> so "resolve" is never
     # captured as a product slug.
     path("resolve/", products.ProductSlugResolveView.as_view(), name="product-slug-resolve"),
+    path("documents/", products.PublicDocumentListView.as_view(), name="product-documents-list"),
     path("<str:slug>/", products.ProductDetailView.as_view(), name="product-detail"),
 ]

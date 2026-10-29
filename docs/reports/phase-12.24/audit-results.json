@@ -1,0 +1,767 @@
+{
+  "timestamp": "2026-10-27T09:28:02.265Z",
+  "routes": [
+    {
+      "name": "Home",
+      "path": "/fa",
+      "viewports": {
+        "375": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طلوع\nآفتاب،\nاز\nخانه\nشماست",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa",
+          "hasError": false,
+          "screenshot": "home-375.png"
+        },
+        "768": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طلوع\nآفتاب،\nاز\nخانه\nشماست",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa",
+          "hasError": false,
+          "screenshot": "home-768.png"
+        },
+        "1280": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طلوع\nآفتاب،\nاز\nخانه\nشماست",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa",
+          "hasError": false,
+          "screenshot": "home-1280.png"
+        }
+      }
+    },
+    {
+      "name": "About",
+      "path": "/fa/about",
+      "viewports": {
+        "375": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/about",
+          "hasError": false,
+          "screenshot": "about-375.png"
+        },
+        "768": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/about",
+          "hasError": false,
+          "screenshot": "about-768.png"
+        },
+        "1280": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/about",
+          "hasError": false,
+          "screenshot": "about-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Products Catalog",
+      "path": "/fa/products",
+      "viewports": {
+        "375": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products",
+          "hasError": false,
+          "screenshot": "products-375.png"
+        },
+        "768": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products",
+          "hasError": false,
+          "screenshot": "products-768.png"
+        },
+        "1280": {
+          "title": "محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products",
+          "hasError": false,
+          "screenshot": "products-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Product Category Index",
+      "path": "/fa/products/category",
+      "viewports": {
+        "375": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products/category",
+          "hasError": false,
+          "screenshot": "products-category-375.png"
+        },
+        "768": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products/category",
+          "hasError": false,
+          "screenshot": "products-category-768.png"
+        },
+        "1280": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/products/category",
+          "hasError": false,
+          "screenshot": "products-category-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Product Category Detail",
+      "path": "/fa/products/category/%D9%BE%DA%A9%DB%8C%D8%AC%D9%87%D8%A7%DB%8C-%D8%AE%D9%88%D8%B1%D8%B4%DB%8C%D8%AF%DB%8C",
+      "viewports": {
+        "375": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج‌های خورشیدی",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-category-detail-375.png"
+        },
+        "768": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج‌های خورشیدی",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-category-detail-768.png"
+        },
+        "1280": {
+          "title": "دسته‌بندی محصولات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج‌های خورشیدی",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-category-detail-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Product Detail",
+      "path": "/fa/products/%D9%BE%DA%A9%DB%8C%D8%AC-%D8%AE%D9%88%D8%B1%D8%B4%DB%8C%D8%AF%DB%8C-%D8%A2%D9%BE%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86%DB%8C-%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "viewports": {
+        "375": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج خورشیدی آپارتمانی [نمونه]",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-detail-375.png"
+        },
+        "768": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج خورشیدی آپارتمانی [نمونه]",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-detail-768.png"
+        },
+        "1280": {
+          "title": "محصول | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پکیج خورشیدی آپارتمانی [نمونه]",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "products-detail-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Services Index",
+      "path": "/fa/services",
+      "viewports": {
+        "375": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services",
+          "hasError": false,
+          "screenshot": "services-375.png"
+        },
+        "768": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services",
+          "hasError": false,
+          "screenshot": "services-768.png"
+        },
+        "1280": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services",
+          "hasError": false,
+          "screenshot": "services-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Services Detail",
+      "path": "/fa/services/%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C-%D9%88-%D9%86%D8%B5%D8%A8-%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "viewports": {
+        "375": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طراحی و نصب [نمونه]",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services/%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C-%D9%88-%D9%86%D8%B5%D8%A8-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "services-detail-375.png"
+        },
+        "768": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طراحی و نصب [نمونه]",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services/%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C-%D9%88-%D9%86%D8%B5%D8%A8-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "services-detail-768.png"
+        },
+        "1280": {
+          "title": "خدمات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "طراحی و نصب [نمونه]",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/services/%D8%B7%D8%B1%D8%A7%D8%AD%DB%8C-%D9%88-%D9%86%D8%B5%D8%A8-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "services-detail-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Projects Index",
+      "path": "/fa/projects",
+      "viewports": {
+        "375": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects",
+          "hasError": false,
+          "screenshot": "projects-375.png"
+        },
+        "768": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects",
+          "hasError": false,
+          "screenshot": "projects-768.png"
+        },
+        "1280": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects",
+          "hasError": false,
+          "screenshot": "projects-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Projects Detail",
+      "path": "/fa/projects/%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D8%AA%D8%AC%D8%A7%D8%B1%DB%8C-%DB%B5%DB%B0-%DA%A9%DB%8C%D9%84%D9%88%D9%88%D8%A7%D8%AA-%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2",
+      "viewports": {
+        "375": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نیروگاه تجاری ۵۰ کیلووات - شیراز",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects/%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D8%AA%D8%AC%D8%A7%D8%B1%DB%8C-%DB%B5%DB%B0-%DA%A9%DB%8C%D9%84%D9%88%D9%88%D8%A7%D8%AA-%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2",
+          "hasError": false,
+          "screenshot": "projects-detail-375.png"
+        },
+        "768": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نیروگاه تجاری ۵۰ کیلووات - شیراز",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects/%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D8%AA%D8%AC%D8%A7%D8%B1%DB%8C-%DB%B5%DB%B0-%DA%A9%DB%8C%D9%84%D9%88%D9%88%D8%A7%D8%AA-%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2",
+          "hasError": false,
+          "screenshot": "projects-detail-768.png"
+        },
+        "1280": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نیروگاه تجاری ۵۰ کیلووات - شیراز",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/projects/%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D8%AA%D8%AC%D8%A7%D8%B1%DB%8C-%DB%B5%DB%B0-%DA%A9%DB%8C%D9%84%D9%88%D9%88%D8%A7%D8%AA-%D8%B4%DB%8C%D8%B1%D8%A7%D8%B2",
+          "hasError": false,
+          "screenshot": "projects-detail-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Articles Index",
+      "path": "/fa/articles",
+      "viewports": {
+        "375": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles",
+          "hasError": false,
+          "screenshot": "articles-375.png"
+        },
+        "768": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles",
+          "hasError": false,
+          "screenshot": "articles-768.png"
+        },
+        "1280": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles",
+          "hasError": false,
+          "screenshot": "articles-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Articles Detail",
+      "path": "/fa/articles/%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B4%D8%AA-%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D9%86%D9%85%D9%88%D9%86%D9%87",
+      "viewports": {
+        "375": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نگهداشت نیروگاه [نمونه]",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles/%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B4%D8%AA-%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "articles-detail-375.png"
+        },
+        "768": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نگهداشت نیروگاه [نمونه]",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles/%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B4%D8%AA-%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "articles-detail-768.png"
+        },
+        "1280": {
+          "title": "مقالات | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "نگهداشت نیروگاه [نمونه]",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/articles/%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B4%D8%AA-%D9%86%DB%8C%D8%B1%D9%88%DA%AF%D8%A7%D9%87-%D9%86%D9%85%D9%88%D9%86%D9%87",
+          "hasError": false,
+          "screenshot": "articles-detail-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Gallery",
+      "path": "/fa/gallery",
+      "viewports": {
+        "375": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/gallery",
+          "hasError": false,
+          "screenshot": "gallery-375.png"
+        },
+        "768": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/gallery",
+          "hasError": false,
+          "screenshot": "gallery-768.png"
+        },
+        "1280": {
+          "title": "گالری | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/gallery",
+          "hasError": false,
+          "screenshot": "gallery-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Downloads",
+      "path": "/fa/downloads",
+      "viewports": {
+        "375": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/downloads",
+          "hasError": false,
+          "screenshot": "downloads-375.png"
+        },
+        "768": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/downloads",
+          "hasError": false,
+          "screenshot": "downloads-768.png"
+        },
+        "1280": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/downloads",
+          "hasError": false,
+          "screenshot": "downloads-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Calculator",
+      "path": "/fa/calculator",
+      "viewports": {
+        "375": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/calculator",
+          "hasError": false,
+          "screenshot": "calculator-375.png"
+        },
+        "768": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/calculator",
+          "hasError": false,
+          "screenshot": "calculator-768.png"
+        },
+        "1280": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/calculator",
+          "hasError": false,
+          "screenshot": "calculator-1280.png"
+        }
+      }
+    },
+    {
+      "name": "Contact",
+      "path": "/fa/contact",
+      "viewports": {
+        "375": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/contact",
+          "hasError": false,
+          "screenshot": "contact-375.png"
+        },
+        "768": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/contact",
+          "hasError": false,
+          "screenshot": "contact-768.png"
+        },
+        "1280": {
+          "title": "تماس با ما | ابر انرژی",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "http://localhost:3000/fa/contact",
+          "hasError": false,
+          "screenshot": "contact-1280.png"
+        }
+      }
+    },
+    {
+      "name": "404 Route",
+      "path": "/fa/audit-intentional-404-check",
+      "viewports": {
+        "375": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 375,
+          "clientWidth": 375,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "not-found-375.png"
+        },
+        "768": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 768,
+          "clientWidth": 768,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "not-found-768.png"
+        },
+        "1280": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 1280,
+          "clientWidth": 1280,
+          "hasOverflow": false,
+          "canonical": "",
+          "hasError": false,
+          "screenshot": "not-found-1280.png"
+        }
+      }
+    }
+  ],
+  "journeys": {
+    "calculator": {
+      "defaults": {
+        "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+        "dailyDefault": "30",
+        "cityDefault": "Tehran",
+        "resultsVisible": false
+      },
+      "afterSubmit": {
+        "resultsVisible": true,
+        "cardCount": 6,
+        "cardTexts": [
+          "13: : تعداد پنل‌های مورد نیاز",
+          "7.15: : ظرفیت پنل (کیلووات)",
+          "694.4: : ظرفیت باتری (آمپر ساعت)",
+          "8.82: : توان اینورتر (کیلووات)",
+          "۳۴۴٬۵۰۴٬۹۰۲: : هزینه تقریبی",
+          "39.3: : بازگشت سرمایه (سال)"
+        ]
+      },
+      "directApiVerification": {
+        "status": 200,
+        "historyId": "159e7db4-4060-47a9-9459-631e8df49c77",
+        "panel_count": 19,
+        "estimated_cost": 508559955,
+        "roi_years": 38.7
+      },
+      "success": true
+    },
+    "contact": {
+      "emptyValidation": {
+        "errorCount": 4,
+        "errors": [
+          "لطفاً نام و نام خانوادگی را وارد کنید",
+          "لطفاً یک ایمیل معتبر وارد کنید",
+          "لطفاً شماره تماس معتبر وارد کنید",
+          "متن پیام باید حداقل ۵ نویسه باشد"
+        ]
+      },
+      "submitFeedback": {
+        "successToast": false,
+        "toastText": ""
+      },
+      "testMarker": "[Phase 12.24 Audit Test 1793093507955]"
+    },
+    "catalogSearch": {
+      "title": "محصولات | ابر انرژی",
+      "itemCount": 0,
+      "url": "http://localhost:3000/fa/products?search=%D9%BE%D9%86%D9%84"
+    },
+    "downloads": {
+      "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+      "h1": "دانلودها و کاتالوگ‌ها",
+      "docCards": 0,
+      "emptyState": false
+    },
+    "persistedContact": {
+      "persisted": false
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "AbarEnergy | Professional Solar Energy Solutions",
+      "heading": "پنل مدیریت",
+      "statsPresent": 34
+    },
+    "contacts": {
+      "title": "AbarEnergy | Professional Solar Energy Solutions",
+      "rowCount": 0,
+      "hasTable": false
+    },
+    "notifications": {
+      "title": "AbarEnergy | Professional Solar Energy Solutions",
+      "hasList": true
+    },
+    "users": {
+      "title": "AbarEnergy | Professional Solar Energy Solutions",
+      "hasUsersList": true
+    },
+    "settings": {
+      "title": "AbarEnergy | Professional Solar Energy Solutions",
+      "hasSettingsForm": true
+    },
+    "siteConfig": {
+      "status": 200,
+      "company_name": "ابر انرژی",
+      "phone": "09941713503",
+      "email": "iliajj64@gmail.com"
+    }
+  },
+  "security": {
+    "unauthAdminStatus": 401,
+    "publicDocumentsEndpoint": {
+      "status": 200,
+      "count": 0
+    }
+  },
+  "defects": [],
+  "summary": {}
+}

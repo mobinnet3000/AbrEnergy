@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
 import { RichTextEditor } from '@/components/shared/rich-text-editor';
@@ -19,10 +18,22 @@ import { MediaUpload } from '@/components/shared/media-upload';
 import { ChooseMediaButton } from '@/components/shared/media-picker-dialog';
 import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { EntityCategorySelect } from '@/components/admin/entity-category-select';
+import {
+  ARTICLE_TRANSLATION_FIELDS,
+  buildArticlePayload,
+  contentTranslationsFromDetail,
+  createTranslationMap,
+  relationId,
+  translationLocalesFromDetail,
+  type ContentLocale,
+  type TranslationMap,
+} from '@/lib/cms-form-contracts';
+import { contentSaveErrorMessage } from '@/lib/cms-error-toast';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
-const locales = [
+const locales: { value: ContentLocale; label: string }[] = [
   { value: 'fa', label: 'فارسی' },
   { value: 'ar', label: 'العربية' },
   { value: 'en', label: 'English' },
@@ -38,9 +49,7 @@ interface FormData {
   // rendering via `cover_image_url`; `''` serializes as null on save).
   cover_image: string;
   tags: string;
-  title_fa: string; short_description_fa: string; content_fa: string;
-  title_ar: string; short_description_ar: string; content_ar: string;
-  title_en: string; short_description_en: string; content_en: string;
+  translations: TranslationMap;
 }
 
 export default function AdminArticleEditPage() {
@@ -58,30 +67,26 @@ export default function AdminArticleEditPage() {
     enabled: !!id,
   });
 
-  const initialForm: FormData = {
+  const [initialForm] = useState<FormData>(() => ({
     status: 'draft', category: '', is_featured: false, publish_date: '', cover_image_url: '', cover_image: '', tags: '',
-    title_fa: '', short_description_fa: '', content_fa: '',
-    title_ar: '', short_description_ar: '', content_ar: '',
-    title_en: '', short_description_en: '', content_en: '',
-  };
+    translations: createTranslationMap(ARTICLE_TRANSLATION_FIELDS),
+  }));
 
   const [edits, setEdits] = useState<Partial<FormData>>({});
   const form = useMemo<FormData>(() => {
     if (!data) return initialForm;
     return {
       status: data.status || 'draft',
-      category: data.category || '',
+      category: relationId(data.category),
       is_featured: data.is_featured || false,
       publish_date: data.publish_date ? data.publish_date.slice(0, 10) : '',
       cover_image_url: data.cover_image_url || '',
       cover_image: data.cover_image || '',
       tags: Array.isArray(data.tags) ? data.tags.map((t: { id?: string; title?: string }) => t.title || t).join(', ') : '',
-      title_fa: data.title_fa || '', short_description_fa: data.short_description_fa || '', content_fa: data.content_fa || '',
-      title_ar: data.title_ar || '', short_description_ar: data.short_description_ar || '', content_ar: data.content_ar || '',
-      title_en: data.title_en || '', short_description_en: data.short_description_en || '', content_en: data.content_en || '',
+      translations: contentTranslationsFromDetail(data, ARTICLE_TRANSLATION_FIELDS),
       ...edits,
     };
-  }, [data, edits]);
+  }, [data, edits, initialForm]);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -93,34 +98,48 @@ export default function AdminArticleEditPage() {
   const guard = useDirtyNavigationGuard({ isDirty });
   const backHref = '/admin/articles';
 
-  useEffect(() => { if (error) toast.error(t('admin.failed_load_articles')); }, [error]);
+  useEffect(() => { if (error) toast.error(t('admin.failed_load_articles')); }, [error, t]);
 
   const update = (field: string, value: unknown) => setEdits((prev) => ({ ...prev, [field]: value }));
+
+  const updateTranslation = (locale: ContentLocale, field: string, value: string) => {
+    setEdits((prev) => {
+      const current = prev.translations ?? form.translations;
+      return {
+        ...prev,
+        translations: {
+          ...current,
+          [locale]: { ...current[locale], [field]: value },
+        },
+      };
+    });
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Phase 9.5 — `cover_image: ''` would fail UUID validation; a cleared
-      // cover serializes as null (nullable FK). All other fields unchanged.
-      await axiosInstance.patch(`/admin/articles/${id}/`, { ...form, cover_image: form.cover_image || null });
-      toast.success('Article updated');
+      await axiosInstance.patch(
+        `/admin/articles/${id}/`,
+        buildArticlePayload(form, translationLocalesFromDetail(data)),
+      );
+      toast.success(t('admin.article_updated'));
       router.push('/admin/articles');
-    } catch {
-      toast.error('Failed to update article');
+    } catch (error) {
+      toast.error(contentSaveErrorMessage(t('admin.article_save_failed'), error));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this article?')) return;
+    if (!confirm(t('admin.delete_article_confirm'))) return;
     setDeleting(true);
     try {
       await axiosInstance.delete(`/admin/articles/${id}/`);
-      toast.success('Article deleted');
+      toast.success(t('admin.article_deleted'));
       router.push('/admin/articles');
-    } catch {
-      toast.error('Failed to delete article');
+    } catch (error) {
+      toast.error(contentSaveErrorMessage(t('admin.article_delete_failed'), error));
     } finally {
       setDeleting(false);
     }
@@ -164,18 +183,22 @@ export default function AdminArticleEditPage() {
                 {locales.map((l) => (
                   <TabsContent key={l.value} value={l.value} className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Title ({l.label})</label>
-                      <Input value={form[`title_${l.value}` as keyof FormData] as string} onChange={(e) => update(`title_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.title_label')} ({l.label})</label>
+                      <Input value={form.translations[l.value].title} onChange={(e) => updateTranslation(l.value, 'title', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Short Description ({l.label})</label>
-                      <Textarea value={form[`short_description_${l.value}` as keyof FormData] as string} onChange={(e) => update(`short_description_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.slug')} ({l.label})</label>
+                      <Input value={form.translations[l.value].slug} onChange={(e) => updateTranslation(l.value, 'slug', e.target.value)} dir={l.value === 'en' ? 'ltr' : 'rtl'} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Content ({l.label})</label>
+                      <label className="text-sm font-medium mb-1 block">{t('admin.short_description')} ({l.label})</label>
+                      <Textarea value={form.translations[l.value].short_description} onChange={(e) => updateTranslation(l.value, 'short_description', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">{t('admin.content')} ({l.label})</label>
                       <RichTextEditor
-                        content={form[`content_${l.value}` as keyof FormData] as string}
-                        onChange={(html) => update(`content_${l.value}`, html)}
+                        content={form.translations[l.value].content}
+                        onChange={(html) => updateTranslation(l.value, 'content', html)}
                         dir={l.value === 'en' ? 'ltr' : 'rtl'}
                         placeholder="Write article content..."
                       />
@@ -204,10 +227,10 @@ export default function AdminArticleEditPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.category')}</label>
-                <CategorySelect value={form.category} onChange={(v) => v && update('category', v)} />
+                <EntityCategorySelect kind="article" value={form.category} onChange={(v) => update('category', v)} />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">Tags (comma separated)</label>
+                <label className="text-sm font-medium mb-1 block">{t('admin.tags')} (comma separated)</label>
                 <Input value={form.tags} onChange={(e) => update('tags', e.target.value)} />
               </div>
               <div>
@@ -254,24 +277,5 @@ export default function AdminArticleEditPage() {
         variant="default"
       />
     </div>
-  );
-}
-
-function CategorySelect({ value, onChange }: { value: string; onChange: (v: string | null) => void }) {
-  const { data } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const res = await axiosInstance.get('/categories/');
-      return res.data?.results ?? [];
-    },
-  });
-  const cats = Array.isArray(data) ? data : [];
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full"><SelectValue placeholder="Select category" /></SelectTrigger>
-      <SelectContent>
-        {cats.map((c: { id: string; title: string }) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
-      </SelectContent>
-    </Select>
   );
 }

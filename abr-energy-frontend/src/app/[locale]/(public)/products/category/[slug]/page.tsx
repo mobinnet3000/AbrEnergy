@@ -1,10 +1,12 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import {
-  fetchPublicProductCategory,
+  fetchPublicProductCategoryWithStatus,
   productCategoryMetadata,
   resolvePublicProductCategorySlug,
 } from '@/lib/product-metadata';
+import { InternalPageShell, PageLoading } from '@/components/shared';
 import { CategoryClient } from './category-client';
 
 interface CategoryPageProps {
@@ -16,17 +18,32 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return productCategoryMetadata(slug);
 }
 
+function CategoryFallback() {
+  return (
+    <InternalPageShell>
+      <div className="container-page py-16">
+        <PageLoading />
+      </div>
+    </InternalPageShell>
+  );
+}
+
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { locale = 'fa', slug } = await params;
-  // Phase 5.2 — slug-history redirect (same contract as product detail:
-  // redirect only on history hit with a different canonical slug).
-  const category = await fetchPublicProductCategory(slug);
-  if (!category) {
+  // Phase 12.25 — Only consult slug history on genuine 404 Not Found.
+  // Throttled (429) or transient 5xx responses must never trigger history
+  // resolution fetches, preventing retry amplification.
+  const { data: category, status } = await fetchPublicProductCategoryWithStatus(slug);
+  if (!category && status === 404) {
     const canonical = await resolvePublicProductCategorySlug(slug);
     if (canonical && canonical !== slug) {
       permanentRedirect(`/${locale}/products/category/${canonical}`);
     }
   }
   // Remount per category so pagination never leaks between categories.
-  return <CategoryClient key={slug} slug={slug} />;
+  return (
+    <Suspense fallback={<CategoryFallback />}>
+      <CategoryClient key={slug} slug={slug} />
+    </Suspense>
+  );
 }

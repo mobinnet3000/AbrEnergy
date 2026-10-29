@@ -11,6 +11,7 @@ from apps.products.api.v1.serializers.products import (
     CategorySerializer,
     CategoryTreeSerializer,
     CategoryWriteSerializer,
+    PublicDocumentSerializer,
     ProductDetailSerializer,
     ProductListSerializer,
     ProductWriteSerializer,
@@ -20,10 +21,11 @@ from apps.products.models import (
     ProductAttributeDefinition,
     ProductAttributeValue,
     ProductCategory,
+    ProductDocument,
     ProductImage,
     RelatedProduct,
 )
-from apps.users.api.v1.permissions import IsContentManager
+from apps.users.api.v1.permissions import IsContentManager, IsProductManager
 
 
 def _lang(request):
@@ -186,7 +188,7 @@ class CategorySlugResolveView(_LangContextMixin, generics.GenericAPIView):
 
 
 class AdminCategoryListView(_LangContextMixin, generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["is_active", "is_featured", "parent"]
     search_fields = ["translations__title", "slug"]
@@ -204,7 +206,7 @@ class AdminCategoryListView(_LangContextMixin, generics.ListCreateAPIView):
 
 
 class AdminCategoryDetailView(_LangContextMixin, generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
 
     def get_serializer_class(self):
         return CategoryWriteSerializer if self.request.method in ("PUT", "PATCH") else CategorySerializer
@@ -214,7 +216,7 @@ class AdminCategoryDetailView(_LangContextMixin, generics.RetrieveUpdateDestroyA
 
 
 class AdminProductListView(_LangContextMixin, generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "status", "visibility", "is_active", "is_featured"]
     search_fields = ["translations__title", "sku"]
@@ -231,7 +233,7 @@ class AdminProductListView(_LangContextMixin, generics.ListCreateAPIView):
 
 
 class AdminProductDetailView(_LangContextMixin, generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
 
     def get_serializer_class(self):
         return ProductWriteSerializer if self.request.method in ("PUT", "PATCH") else AdminProductDetailSerializer
@@ -244,7 +246,7 @@ class AdminProductDetailView(_LangContextMixin, generics.RetrieveUpdateDestroyAP
 
 
 class AdminAttributeDefinitionView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
     serializer_class = AttributeDefinitionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "is_active", "data_type"]
@@ -269,7 +271,7 @@ class AdminProductDuplicateView(_LangContextMixin, generics.GenericAPIView):
     straight to its edit page.
     """
 
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
     serializer_class = AdminProductDetailSerializer
 
     def post(self, request, pk):
@@ -306,7 +308,7 @@ class AdminCategoryDuplicateView(_LangContextMixin, generics.GenericAPIView):
     Returns 201 with the admin category detail of the NEW resource.
     """
 
-    permission_classes = [permissions.IsAuthenticated, IsContentManager]
+    permission_classes = [permissions.IsAuthenticated, IsProductManager]
     serializer_class = CategorySerializer
 
     def post(self, request, pk):
@@ -409,3 +411,27 @@ class CategoryPreviewView(_LangContextMixin, generics.GenericAPIView):
         data = self.get_serializer(category).data
         data["preview"] = True
         return _preview_no_store(Response(data))
+
+
+class PublicDocumentListView(_LangContextMixin, generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = PublicDocumentSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "description", "product__translations__title"]
+    filterset_fields = ["doc_type"]
+    ordering_fields = ["sort_order", "created_at"]
+    ordering = ["sort_order", "-created_at"]
+
+    def get_queryset(self):
+        qs = ProductDocument.objects.filter(
+            is_active=True,
+            product__status="published",
+            product__visibility="public",
+            product__is_active=True,
+        ).select_related("product", "product__category", "media_file").prefetch_related(
+            "product__translations", "product__category__translations"
+        )
+        category_slug = self.request.query_params.get("category")
+        if category_slug:
+            qs = qs.filter(product__category__slug=category_slug)
+        return qs

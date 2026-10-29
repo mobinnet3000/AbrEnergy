@@ -7,18 +7,65 @@ export interface NavItem {
   requiresAdmin?: boolean;
   /** Optional: external link */
   external?: boolean;
-  /** Optional: children for future dropdown support */
+  /** Optional: children for dropdown navigation */
   children?: NavItem[];
+  /**
+   * Optional: dynamic children source, resolved from the live public API so
+   * the menu reflects real CMS entities (real titles/slugs) without hardcoding:
+   *  - `product-categories`: product category tree (roots + subcategories)
+   *  - `published-services`: active services → `/services/<slug>` detail pages
+   *  - `published-projects`: projects → `/projects/<slug>` detail pages
+   * When the live list is empty the configured `children` remain as fallback
+   * (built from locale keys + the section index), so links never break.
+   */
+  source?: 'product-categories' | 'published-services' | 'published-projects';
 }
 
 export const navigationConfig: NavItem[] = [
   { href: '/', labelKey: 'nav.home' },
-  { href: '/products', labelKey: 'nav.products' },
-  { href: '/services', labelKey: 'nav.services' },
-  { href: '/projects', labelKey: 'nav.projects' },
-  { href: '/articles', labelKey: 'nav.articles' },
-  { href: '/calculator', labelKey: 'nav.calculator' },
-  { href: '/gallery', labelKey: 'nav.gallery' },
+  { href: '/products', labelKey: 'nav.products', source: 'product-categories' },
+  {
+    href: '/services',
+    labelKey: 'nav.services',
+    source: 'published-services',
+    children: [
+      { href: '/services', labelKey: 'menu.svc_offgrid' },
+      { href: '/services', labelKey: 'menu.svc_ongrid' },
+      { href: '/services', labelKey: 'menu.svc_hybrid' },
+      { href: '/services', labelKey: 'menu.svc_design' },
+      { href: '/services', labelKey: 'menu.svc_inspection' },
+      { href: '/services', labelKey: 'menu.svc_geotech' },
+      { href: '/services', labelKey: 'menu.svc_modular' },
+    ],
+  },
+  {
+    href: '/projects',
+    labelKey: 'nav.projects',
+    source: 'published-projects',
+    children: [
+      { href: '/projects', labelKey: 'menu.prj_offgrid' },
+      { href: '/projects', labelKey: 'menu.prj_ongrid' },
+      { href: '/projects', labelKey: 'menu.prj_hybrid' },
+      { href: '/projects', labelKey: 'menu.prj_modular' },
+    ],
+  },
+  {
+    href: '/articles',
+    labelKey: 'nav.articles',
+  },
+  {
+    href: '/gallery',
+    labelKey: 'nav.gallery',
+  },
+  {
+    href: '/downloads',
+    labelKey: 'nav.downloads',
+    children: [
+      { href: '/downloads?category=solar-packages', labelKey: 'menu.dl_solar' },
+      { href: '/downloads?category=modular-supports', labelKey: 'menu.dl_modular' },
+    ],
+  },
+  { href: '/calculator', labelKey: 'nav.calculator_offgrid' },
   { href: '/contact', labelKey: 'nav.contact' },
 ];
 
@@ -69,6 +116,7 @@ export const adminNavSections: AdminNavSection[] = [
       { href: '/admin/media', labelKey: 'admin.media' },
       { href: '/admin/categories', labelKey: 'admin.categories' },
       { href: '/admin/tags', labelKey: 'admin.tags' },
+      { href: '/admin/seo', labelKey: 'admin.seo_dashboard', roles: ['super_admin', 'website_admin', 'seo_manager', 'content_manager', 'analyst'] },
     ],
   },
   {
@@ -76,14 +124,14 @@ export const adminNavSections: AdminNavSection[] = [
     items: [
       { href: '/admin/contacts', labelKey: 'admin.contacts' },
       { href: '/admin/inquiries', labelKey: 'admin.inquiries' },
-      { href: '/dashboard/notifications', labelKey: 'admin.notifications' },
+      { href: '/admin/notifications', labelKey: 'admin.notifications' },
     ],
   },
   {
     titleKey: 'admin.nav_access',
     items: [
-      { href: '/admin/users', labelKey: 'admin.users', roles: ['super_admin', 'website_admin'] },
-      { href: '/admin/activity-log', labelKey: 'admin.activity_log', roles: ['super_admin', 'website_admin'] },
+      { href: '/admin/users', labelKey: 'admin.users', roles: ['super_admin'] },
+      { href: '/admin/activity-log', labelKey: 'admin.activity_log', roles: ['super_admin', 'website_admin', 'analyst'] },
       { href: '/admin/settings', labelKey: 'admin.settings', roles: ['super_admin'] },
     ],
   },

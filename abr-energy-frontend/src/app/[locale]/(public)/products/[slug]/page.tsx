@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 import {
-  fetchPublicProduct,
+  fetchPublicProductWithStatus,
   productMetadata,
   resolvePublicProductSlug,
 } from '@/lib/product-metadata';
@@ -18,13 +18,11 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { locale = 'fa', slug } = await params;
-  // Phase 5.2 — slug-history redirect: current slugs render normally; only
-  // when the canonical fetch misses do we consult history, and only a
-  // DIFFERENT canonical slug triggers a permanent redirect (loop-safe:
-  // canonical targets always fetch successfully, unknown slugs fall through
-  // to the existing NotFoundState).
-  const product = await fetchPublicProduct(slug);
-  if (!product) {
+  // Phase 12.25 — Only consult slug history on genuine 404 Not Found.
+  // Throttled (429) or transient 5xx responses must never trigger history
+  // resolution fetches, preventing retry amplification.
+  const { data: product, status } = await fetchPublicProductWithStatus(slug);
+  if (!product && status === 404) {
     const canonical = await resolvePublicProductSlug(slug);
     if (canonical && canonical !== slug) {
       permanentRedirect(`/${locale}/products/${canonical}`);

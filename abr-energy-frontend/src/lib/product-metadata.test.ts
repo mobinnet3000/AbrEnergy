@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   buildCatalogMetadata,
+  productCategoriesIndexMetadata,
   productMetadata,
   productsIndexMetadata,
   resolvePublicProductCategorySlug,
@@ -77,6 +78,20 @@ describe('buildCatalogMetadata (translated meta → object SEO → fallback)', (
   it('gives the products index a self-referencing canonical', () => {
     const meta = productsIndexMetadata();
     expect(meta.alternates).toEqual({ canonical: expect.stringContaining('/fa/products') });
+  });
+
+  it('gives the product categories index a self-referencing canonical and localized title', () => {
+    const meta = productCategoriesIndexMetadata();
+    expect(meta.title).toContain('دسته‌بندی‌های محصولات');
+    expect(meta.alternates).toEqual({ canonical: expect.stringContaining('/fa/products/category') });
+  });
+
+  it('strips HTML from fallback and SEO descriptions', () => {
+    const meta = buildCatalogMetadata({
+      fallbackTitle: 'عنوان',
+      fallbackDescription: '<p>توضیح با <strong>تگ‌های HTML</strong> و <a href="/test">لینک</a>.</p>',
+    });
+    expect(meta.description).toBe('توضیح با تگ‌های HTML و لینک.');
   });
 });
 

@@ -25,15 +25,16 @@ describe('CategorySelector', () => {
   it('supports an empty (no category) value', () => {
     render(<CategorySelector categories={cats} value="" onChange={() => undefined} />);
     openSelect();
-    expect(screen.getByText('admin.no_category')).toBeTruthy();
+    expect(screen.getAllByText('admin.no_category').length).toBeGreaterThanOrEqual(1);
   });
 
   it('keeps working when categories change (no hardcoded data)', () => {
     const onChange = vi.fn();
     const { rerender } = render(<CategorySelector categories={[]} value="" onChange={onChange} />);
     openSelect();
-    expect(screen.getByText('admin.no_category')).toBeTruthy();
-    fireEvent.click(screen.getByText('admin.no_category'));
+    const options = screen.getAllByText('admin.no_category');
+    expect(options.length).toBeGreaterThanOrEqual(1);
+    fireEvent.click(options[options.length - 1]);
     expect(onChange).toHaveBeenCalledWith('');
     rerender(<CategorySelector categories={cats} value="c1" onChange={onChange} />);
     expect(screen.getByLabelText('admin.category_field')).toBeTruthy();

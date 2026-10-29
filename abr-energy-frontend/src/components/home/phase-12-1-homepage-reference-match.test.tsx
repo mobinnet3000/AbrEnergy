@@ -5,6 +5,7 @@ import { HeroSection } from './HeroSection';
 import { HomepageShowcase } from './HomepageShowcase';
 import { FeaturedProductsSection } from './FeaturedProductsSection';
 import { HomepageClient } from '@/app/[locale]/(public)/homepage-client';
+import { navigationConfig } from '@/config/navigation';
 
 vi.mock('@/i18n', () => ({
   useLocale: () => ({
@@ -168,7 +169,7 @@ function twoProducts() {
 }
 
 describe('Phase 12.1 — first-viewport reference composition', () => {
-  it('1. slogan H1, nav, stage, instant panel, and category strip share ONE upper hero section', () => {
+  it('1. slogan H1, stage, instant panel share ONE upper hero section (nav lives in global header)', () => {
     mocks.featured = { data: { results: twoProducts() }, isLoading: false };
     mocks.categories = { data: twoCategories(), isLoading: false };
     const { container } = render(<HeroSection />);
@@ -178,25 +179,19 @@ describe('Phase 12.1 — first-viewport reference composition', () => {
     const h1 = hero?.querySelector('h1');
     expect(h1?.textContent?.replace(/\s+/g, '')).toBe('طلوعآفتاب،ازخانهشماست');
     expect(container.querySelectorAll('h1')).toHaveLength(1);
-    expect(within(hero as HTMLElement).getByTestId('showcase-nav')).toBeTruthy();
+    // Phase 12.5 — duplicate homepage nav strip removed; single global header owns navigation.
+    expect(within(hero as HTMLElement).queryByTestId('showcase-nav')).toBeNull();
     expect(within(hero as HTMLElement).getByTestId('hero-showcase')).toBeTruthy();
     expect(within(hero as HTMLElement).getByTestId('instant-offer-panel')).toBeTruthy();
-    expect(within(hero as HTMLElement).getByTestId('showcase-category-rail')).toBeTruthy();
+    // Phase 12.7 — category strip lives in its own section BELOW the hero, not inside the showcase.
+    expect(within(hero as HTMLElement).queryByTestId('showcase-category-rail')).toBeNull();
     // Compact hero: no full-screen giant stage consuming the viewport.
     expect(hero?.className).not.toContain('min-h-screen');
   });
 
-  it('2. showcase nav carries the intended items on real routes only', () => {
-    mocks.featured = { data: { results: [] }, isLoading: false };
-    mocks.categories = { data: [], isLoading: false };
-    render(<HeroSection />);
-    const nav = screen.getByTestId('showcase-nav');
-    const links = within(nav).getAllByRole('link');
-    const hrefs = links.map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['/', '/products', '/services', '/projects', '/gallery', '/calculator', '/contact']);
-    expect(nav.textContent).toContain('دانلودها');
-    expect(nav.textContent).toContain('محاسبه‌گر نیروگاه خورشیدی آفگرید');
-    expect(nav.textContent).toContain('تماس با ما');
+  it('2. global header carries the single navigation on real routes only', () => {
+    // Phase 12.5 — homepage strip removed; contract moved to navigationConfig (see header test).
+    expect(navigationConfig.map((n) => n.href)).toEqual(['/', '/products', '/services', '/projects', '/articles', '/gallery', '/downloads', '/calculator', '/contact']);
   });
 
   it('3. instant-suggestion panel cycles CMS products with prev/next and counter', () => {
@@ -214,36 +209,37 @@ describe('Phase 12.1 — first-viewport reference composition', () => {
     expect(within(panel).getByTestId('instant-offer-title').textContent).toBe('پنل خورشیدی ۵۵۰ وات');
   });
 
-  it('4. category strip uses real ids, marks the active item, and drives the main visual', () => {
+  it('4. showcase stage cycles CMS products; featured + category sections live below hero', () => {
     mocks.featured = { data: { results: twoProducts() }, isLoading: false };
     mocks.categories = { data: twoCategories(), isLoading: false };
-    render(<HeroSection />);
-    const rail = screen.getByTestId('showcase-category-rail');
-    const buttons = within(rail).getAllByRole('button');
-    expect(buttons.map((b) => b.textContent)).toEqual(['پکیج‌های خورشیدی', 'سازه خورشیدی']);
-    // Default active = first root; main visual shows its product.
-    expect(buttons[0].getAttribute('aria-current')).toBe('true');
+    const data = payload({ featured_products: twoProducts(), categories: twoCategories() });
+    const { container } = render(<HomepageClient previewPayload={data as never} />);
+    // Stage shows first CMS product.
     expect(screen.getByTestId('hero-product-title').textContent).toBe('پنل خورشیدی ۵۵۰ وات');
-    // Selecting the second category swaps the main visual (CMS-driven).
-    fireEvent.click(buttons[1]);
-    expect(buttons[1].getAttribute('aria-current')).toBe('true');
-    expect(screen.getByTestId('hero-product-title').textContent).toBe('سازه نگه‌دارنده پنل');
-    // Category CTA follows the active category slug (real routing).
-    expect(screen.getByText('ورود به کاتالوگ').closest('a')?.getAttribute('href')).toBe(
-      '/products/category/solar-structure',
+    // Dedicated categories section (ProductRailSection) sits directly below hero.
+    const sections = Array.from(container.querySelectorAll('[data-section]')).map((el) =>
+      el.getAttribute('data-section'),
     );
+    // Phase 12.11 — featured products come first, then the categories/solutions section.
+    expect(sections[0]).toBe('hero');
+    expect(sections[1]).toBe('featured');
+    expect(sections[2]).toBe('categories');
+    expect(screen.getByTestId('product-rail')).toBeTruthy();
   });
 
-  it('5. category strip supports RTL keyboard navigation', () => {
+  it('5. dedicated category rail navigates to real category routes with RTL keyboard support', () => {
     mocks.featured = { data: { results: twoProducts() }, isLoading: false };
     mocks.categories = { data: twoCategories(), isLoading: false };
-    render(<HeroSection />);
-    const rail = screen.getByTestId('showcase-category-rail');
-    // RTL: ArrowLeft moves toward inline-end = next category.
-    fireEvent.keyDown(rail, { key: 'ArrowLeft' });
-    expect(screen.getByTestId('hero-product-title').textContent).toBe('سازه نگه‌دارنده پنل');
-    fireEvent.keyDown(rail, { key: 'ArrowRight' });
-    expect(screen.getByTestId('hero-product-title').textContent).toBe('پنل خورشیدی ۵۵۰ وات');
+    const data = payload({ featured_products: twoProducts(), categories: twoCategories() });
+    render(<HomepageClient previewPayload={data as never} />);
+    const rail = screen.getByTestId('product-rail');
+    const links = within(rail).getAllByRole('link');
+    const hrefs = links.map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('/products/category/solar-packages');
+    expect(hrefs).toContain('/products/category/solar-structure');
+    // RTL keyboard: arrows move within rail without page overflow.
+    fireEvent.keyDown(rail.querySelector('[role="navigation"]') ?? rail, { key: 'ArrowLeft' });
+    expect(rail.textContent).toContain('پکیج‌های خورشیدی');
   });
 
   it('6. empty CMS renders designed empty states with zero fake content', () => {
@@ -252,7 +248,6 @@ describe('Phase 12.1 — first-viewport reference composition', () => {
     const { container } = render(<HeroSection />);
     expect(screen.getByTestId('hero-showcase-empty')).toBeTruthy();
     expect(screen.queryByTestId('hero-product-title')).toBeNull();
-    expect(screen.queryByTestId('showcase-category-rail')).toBeNull();
     expect(container.textContent).not.toContain('Powering the');
     expect(container.textContent).not.toMatch(/25\s*MW|150\+|98%/);
   });
@@ -268,8 +263,8 @@ describe('Phase 12.1 — first-viewport reference composition', () => {
   });
 });
 
-describe('Phase 12.1 — Reference-A dense product rail', () => {
-  it('8. rail cards are narrow so many products show at once (RTL region preserved)', () => {
+describe('Phase 12.7 — premium product rail', () => {
+  it('8. rail cards are readable premium width (RTL region preserved)', () => {
     const items = [
       product(),
       product({ id: 'p-2', title: 'اینورتر ۵ کیلووات', slug: 'inverter-5k' }),
@@ -284,9 +279,9 @@ describe('Phase 12.1 — Reference-A dense product rail', () => {
     expect(rail.getAttribute('role')).toBe('region');
     const cards = rail.querySelectorAll(':scope > div');
     expect(cards.length).toBe(6);
-    // Narrow Reference-A density (was w-[270px]/320px — only ~3 visible).
-    expect((cards[0] as HTMLElement).className).toContain('w-[168px]');
-    expect((cards[0] as HTMLElement).className).toContain('xl:w-[220px]');
+    // Phase 12.7 premium width: readable cards (~4 visible desktop, 1-2 mobile).
+    expect((cards[0] as HTMLElement).className).toContain('w-[240px]');
+    expect((cards[0] as HTMLElement).className).toContain('xl:w-[300px]');
     expect(container.querySelector('[data-testid="featured-rail"]')).toBeTruthy();
   });
 

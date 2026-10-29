@@ -28,7 +28,10 @@ class ServiceListView(generics.ListCreateAPIView):
         return [permissions.IsAuthenticated(), IsContentManager()]
 
     def get_queryset(self):
-        return Service.objects.select_related("category", "image").prefetch_related("translations").all()
+        qs = Service.objects.select_related("category", "image").prefetch_related("translations").all()
+        if self.request.method == "GET" and not self.request.user.is_authenticated:
+            qs = qs.filter(status="active")
+        return qs
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "status", "is_featured"]
@@ -56,8 +59,13 @@ class ServiceDetailView(TranslatedSlugDetailMixin, generics.RetrieveUpdateDestro
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsContentManager()]
 
-    queryset = Service.objects.select_related("category", "image").prefetch_related("translations").all()
     lookup_field = "slug"
+
+    def get_queryset(self):
+        qs = Service.objects.select_related("category", "image").prefetch_related("translations").all()
+        if self.request.method == "GET" and not self.request.user.is_authenticated:
+            qs = qs.filter(status="active")
+        return qs
 
 
 class ServiceCategoryListView(generics.ListCreateAPIView):

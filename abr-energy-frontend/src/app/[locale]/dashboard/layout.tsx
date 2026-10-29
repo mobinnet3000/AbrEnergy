@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">{t('common.loading')}</div>;
 
   return (
-    <div className="min-h-[80vh] flex flex-col lg:flex-row">
+    <div className="site-header-offset min-h-[80vh] flex flex-col lg:flex-row">
       <aside className="lg:w-64 border-b lg:border-b-0 lg:border-r bg-gray-50 dark:bg-gray-900 p-4 flex flex-col">
         <div className="mb-6">
           <h2 className="font-bold text-lg">{t('dashboard.title')}</h2>

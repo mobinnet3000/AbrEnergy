@@ -446,8 +446,9 @@ describe('Phase 9.5 — consumer integrations', () => {
     await advanceAndFlush(0);
     expect(axiosMock.post).toHaveBeenCalledWith(
       '/admin/articles/',
-      expect.objectContaining({ cover_image: 'img-1', cover_image_url: 'http://x/img-1.png' }),
+      expect.objectContaining({ cover_image: 'img-1', translations: {} }),
     );
+    expect(axiosMock.post.mock.calls[0][1]).not.toHaveProperty('cover_image_url');
   });
 
   it('existing upload controls remain rendered next to every choose trigger', async () => {

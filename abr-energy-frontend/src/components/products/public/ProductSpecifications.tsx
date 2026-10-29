@@ -23,6 +23,7 @@ export function groupPublicSpecs(
 /**
  * Responsive specification display: section cards with label/value rows.
  * Renders backend-supplied rows only — no hardcoded spec fields.
+ * Fully theme-aware.
  */
 export function ProductSpecifications({ specs }: { specs: ProductSpecificationItem[] }) {
   const { t } = useLocale();
@@ -31,29 +32,29 @@ export function ProductSpecifications({ specs }: { specs: ProductSpecificationIt
 
   return (
     <section aria-labelledby="product-specs-heading" className="flex flex-col gap-4">
-      <h2 id="product-specs-heading" className="font-heading text-xl font-bold text-white md:text-2xl">
+      <h2 id="product-specs-heading" className="font-heading text-xl font-bold text-foreground md:text-2xl">
         {t('products.specs_title')}
       </h2>
       {groups.map((group) => (
         <div
           key={group.section || 'general'}
-          className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm"
+          className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xs dark:border-white/10 dark:bg-card/70"
         >
           {group.section && (
-            <h3 className="border-b border-white/[0.06] bg-white/[0.02] px-5 py-3 text-sm font-semibold text-emerald-300">
+            <h3 className="border-b border-border/80 bg-muted/40 px-5 py-3 text-sm font-semibold text-primary dark:border-white/10">
               {group.section}
             </h3>
           )}
-          <dl className="divide-y divide-white/[0.05]">
+          <dl className="divide-y divide-border/60 dark:divide-white/[0.08]">
             {group.rows.map((row) => (
               <div
                 key={row.id}
                 className="grid grid-cols-[1fr] gap-1 px-5 py-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-4"
               >
-                <dt className="text-sm text-white/50">{row.label}</dt>
-                <dd className="text-sm font-medium text-white/90" dir="auto">
+                <dt className="text-sm text-muted-foreground">{row.label}</dt>
+                <dd className="text-sm font-medium text-foreground" dir="auto">
                   {row.value}
-                  {row.unit && <span className="ms-1 text-xs font-normal text-white/40">{row.unit}</span>}
+                  {row.unit && <span className="ms-1 text-xs font-normal text-muted-foreground/80">{row.unit}</span>}
                 </dd>
               </div>
             ))}

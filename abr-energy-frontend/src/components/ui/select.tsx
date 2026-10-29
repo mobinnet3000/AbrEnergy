@@ -2,11 +2,62 @@
 
 import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
-
+import { useLocale } from "@/i18n"
+import { getEnumLabel } from "@/lib/enum-labels"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+interface SelectItemRegistryValue {
+  registerItem: (value: unknown, label: React.ReactNode) => void;
+  getLabel: (value: unknown) => React.ReactNode | undefined;
+  activeValue?: unknown;
+}
+
+const SelectItemRegistryContext = React.createContext<SelectItemRegistryValue>({
+  registerItem: () => {},
+  getLabel: () => undefined,
+})
+
+function Select<Value = string, Multiple extends boolean | undefined = false>({
+  children,
+  value,
+  defaultValue,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  const [registry, setRegistry] = React.useState<Map<string, React.ReactNode>>(new Map())
+
+  const registerItem = React.useCallback((val: unknown, label: React.ReactNode) => {
+    if (val === undefined || val === null) return
+    const key = String(val)
+    setRegistry((prev) => {
+      if (prev.get(key) === label) return prev
+      const next = new Map(prev)
+      next.set(key, label)
+      return next
+    })
+  }, [])
+
+  const getLabel = React.useCallback(
+    (val: unknown) => {
+      if (val === undefined || val === null) return undefined
+      return registry.get(String(val))
+    },
+    [registry]
+  )
+
+  const contextValue = React.useMemo(
+    () => ({ registerItem, getLabel, activeValue: value ?? defaultValue }),
+    [registerItem, getLabel, value, defaultValue]
+  )
+
+  return (
+    <SelectItemRegistryContext.Provider value={contextValue}>
+      <SelectPrimitive.Root value={value} defaultValue={defaultValue} {...(props as SelectPrimitive.Root.Props<Value, Multiple>)}>
+        {children}
+      </SelectPrimitive.Root>
+    </SelectItemRegistryContext.Provider>
+  )
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -18,13 +69,48 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   )
 }
 
-function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+function SelectValue({
+  className,
+  children: childrenProp,
+  placeholder,
+  ...props
+}: SelectPrimitive.Value.Props & {
+  children?: React.ReactNode | ((value: unknown) => React.ReactNode);
+  placeholder?: React.ReactNode;
+}) {
+  const { locale } = useLocale()
+  const { getLabel, activeValue } = React.useContext(SelectItemRegistryContext)
+
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
-      className={cn("flex flex-1 text-left", className)}
+      className={cn("flex flex-1 text-start", className)}
+      placeholder={placeholder}
       {...props}
-    />
+    >
+      {(currentValue: unknown) => {
+        const effectiveVal = currentValue !== undefined ? currentValue : activeValue
+
+        if (typeof childrenProp === "function") {
+          return childrenProp(effectiveVal)
+        }
+        if (childrenProp != null) {
+          return childrenProp
+        }
+        if (effectiveVal !== undefined && effectiveVal !== null && effectiveVal !== "") {
+          // 1. Try registry populated by child SelectItem components
+          const registered = getLabel(effectiveVal)
+          if (registered) return registered
+
+          // 2. Try central authoritative enum label dictionary for active locale
+          const localized = getEnumLabel(effectiveVal, locale)
+          if (localized) return localized
+
+          return String(effectiveVal)
+        }
+        return placeholder ?? null
+      }}
+    </SelectPrimitive.Value>
   )
 }
 
@@ -83,7 +169,10 @@ function SelectContent({
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
-          className={cn("relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95", className )}
+          className={cn(
+            "relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            className
+          )}
           {...props}
         >
           <SelectScrollUpButton />
@@ -111,11 +200,21 @@ function SelectLabel({
 function SelectItem({
   className,
   children,
+  value,
   ...props
 }: SelectPrimitive.Item.Props) {
+  const { registerItem } = React.useContext(SelectItemRegistryContext)
+
+  React.useEffect(() => {
+    if (value !== undefined && value !== null) {
+      registerItem(value, children)
+    }
+  }, [value, children, registerItem])
+
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
+      value={value}
       className={cn(
         "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
@@ -162,8 +261,7 @@ function SelectScrollUpButton({
       )}
       {...props}
     >
-      <ChevronUpIcon
-      />
+      <ChevronUpIcon />
     </SelectPrimitive.ScrollUpArrow>
   )
 }
@@ -181,8 +279,7 @@ function SelectScrollDownButton({
       )}
       {...props}
     >
-      <ChevronDownIcon
-      />
+      <ChevronDownIcon />
     </SelectPrimitive.ScrollDownArrow>
   )
 }

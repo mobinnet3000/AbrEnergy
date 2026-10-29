@@ -75,10 +75,18 @@ const projectDetail = {
   status: 'planned',
   start_date: '',
   end_date: '',
-  title_fa: 'پروژه موجود',
-  description_fa: 'شرح',
-  title_ar: '', description_ar: '',
-  title_en: '', description_en: '',
+  service_category: null,
+  is_featured: false,
+  completion_percentage: 0,
+  translations: {
+    fa: {
+      title: 'پروژه موجود',
+      slug: 'existing-project',
+      description: 'شرح',
+      meta_title: '',
+      meta_description: '',
+    },
+  },
 };
 
 beforeEach(() => {
@@ -156,6 +164,22 @@ describe('Project new — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.create_project' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/projects'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = postMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      project_type: 'on_grid',
+      capacity: null,
+      status: 'planning',
+      start_date: null,
+      end_date: null,
+      service_category: null,
+      is_featured: false,
+      completion_percentage: 0,
+      translations: {
+        fa: expect.objectContaining({ title: 'پروژه تازه' }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('title_fa');
   });
 });
 
@@ -213,5 +237,25 @@ describe('Project edit — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.save_changes' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/projects'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = patchMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      project_type: 'on_grid',
+      capacity: 50,
+      status: 'planning',
+      start_date: null,
+      end_date: null,
+      service_category: null,
+      is_featured: false,
+      completion_percentage: 0,
+      translations: {
+        fa: expect.objectContaining({
+          title: 'پروژه ویراسته',
+          slug: 'existing-project',
+          description: 'شرح',
+        }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('title_fa');
   });
 });

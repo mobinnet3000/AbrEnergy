@@ -5,5 +5,5 @@ app_name = "services"
 
 urlpatterns = [
     path("", service.ServiceListView.as_view(), name="service-list"),
-    path("<slug:slug>/", service.ServiceDetailView.as_view(), name="service-detail"),
+    path("<str:slug>/", service.ServiceDetailView.as_view(), name="service-detail"),
 ]

@@ -97,7 +97,7 @@ export const ROBOT_OPTIONS = ['index_follow', 'noindex_follow', 'index_nofollow'
 export const STATUS_OPTIONS: ProductStatus[] = ['draft', 'published', 'archived'];
 export const VISIBILITY_OPTIONS: ProductVisibility[] = ['public', 'hidden'];
 
-export const DOC_TYPE_OPTIONS = ['catalog', 'datasheet', 'installation', 'spec', 'other'];
+export const DOC_TYPE_OPTIONS = ['catalog', 'datasheet', 'installation_guide', 'spec_sheet', 'other'];
 export const RELATION_TYPE_OPTIONS = ['related', 'similar', 'accessory', 'recommended'];
 
 let keyCounter = 0;

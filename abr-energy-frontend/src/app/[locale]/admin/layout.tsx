@@ -33,6 +33,7 @@ const sectionIcons: Record<string, typeof LayoutDashboard> = {
   '/admin/content/homepage': Home,
   '/admin/activity-log': Activity,
   '/admin/settings': Settings,
+  '/admin/notifications': Bell,
   '/dashboard/notifications': Bell,
 };
 
@@ -119,7 +120,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
-    <div className="flex min-h-[80vh]">
+    <div className="site-header-offset flex min-h-[80vh]">
       {/* Desktop sidebar */}
       <aside className="w-64 border-r bg-sidebar p-4 hidden lg:flex lg:flex-col shrink-0">
         {sidebar}
@@ -127,7 +128,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile sidebar overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 top-14 z-50 lg:hidden md:top-16">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-72 bg-sidebar p-4 shadow-xl animate-fade-in">
             {sidebar}

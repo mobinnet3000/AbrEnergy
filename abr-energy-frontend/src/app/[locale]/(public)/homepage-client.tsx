@@ -9,6 +9,7 @@ import {
 } from '@/components/home';
 import { useHomepage } from '@/hooks/use-api';
 import { homepageSection } from '@/lib/homepage';
+import { useLocale } from '@/i18n';
 import type { HomepagePayload, HomepageSectionKey } from '@/types';
 
 // Pre-CMS section order (matches the Phase 6 assembly). Once the CMS
@@ -16,8 +17,8 @@ import type { HomepagePayload, HomepageSectionKey } from '@/types';
 // driven, not a CMS section) keeps its slot right after categories.
 const FALLBACK_ORDER: HomepageSectionKey[] = [
   'hero',
-  'featured_products',
   'categories',
+  'featured_products',
   'services',
   'calculator',
   'projects',
@@ -41,16 +42,26 @@ function sectionKeyOf(s: { key: string }): HomepageSectionKey | null {
  * omitted, behavior is byte-identical to Phase 7.
  */
 export function HomepageClient({ previewPayload }: { previewPayload?: HomepagePayload | null }) {
-  const { data } = useHomepage({ enabled: !previewPayload });
+  const { data, isLoading } = useHomepage({ enabled: !previewPayload });
   const payload = (previewPayload ?? data) as HomepagePayload | undefined;
+  const isCmsPending = !previewPayload && isLoading;
 
   const orderedKeys: HomepageSectionKey[] = payload?.sections?.length
     ? [...payload.sections]
         .sort((a, b) => a.order - b.order || a.key.localeCompare(b.key))
         .map((s) => sectionKeyOf(s))
         .filter((k): k is HomepageSectionKey => k !== null)
-    : FALLBACK_ORDER;
-  const keys = orderedKeys.length > 0 ? orderedKeys : FALLBACK_ORDER;
+    : [...FALLBACK_ORDER];
+  // Phase 12.11 — required hierarchy: hero (masthead + showcase) first,
+  // featured products DIRECTLY BELOW the showcase, THEN the solutions /
+  // category navigation ("راهکارها، متناسب با نیاز شما"). Remaining
+  // sections keep CMS order.
+  const keys = (() => {
+    const base = (orderedKeys.length > 0 ? orderedKeys : [...FALLBACK_ORDER]).filter(
+      (k) => k !== 'hero' && k !== 'categories' && k !== 'featured_products',
+    );
+    return ['hero', 'featured_products', 'categories', ...base] as HomepageSectionKey[];
+  })();
 
   const renderSection = (key: HomepageSectionKey) => {
     switch (key) {
@@ -66,14 +77,16 @@ export function HomepageClient({ previewPayload }: { previewPayload?: HomepagePa
       case 'featured_products':
         return (
           <FeaturedProductsSection
-            cms={payload ? { items: payload.featured_products, section: homepageSection(payload, key) } : null}
+            cms={payload ? { items: payload.featured_products, section: homepageSection(payload, key) } : (isCmsPending ? { items: null, pending: true, section: null } : null)}
           />
         );
       case 'categories':
+        // Phase 12.11 — About follows the solutions/category section so the
+        // featured rail sits directly above "راهکارها، متناسب با نیاز شما".
         return (
           <Fragment>
             <ProductRailSection
-              cms={payload ? { items: payload.categories, section: homepageSection(payload, key) } : null}
+              cms={payload ? { items: payload.categories, section: homepageSection(payload, key) } : (isCmsPending ? { items: null, pending: true, section: null } : null)}
             />
             <AboutSection />
           </Fragment>
@@ -81,7 +94,7 @@ export function HomepageClient({ previewPayload }: { previewPayload?: HomepagePa
       case 'services':
         return (
           <ServicesSection
-            cms={payload ? { items: payload.services, section: homepageSection(payload, key) } : null}
+            cms={payload ? { items: payload.services, section: homepageSection(payload, key) } : (isCmsPending ? { items: null, pending: true, section: null } : null)}
           />
         );
       case 'calculator':
@@ -89,13 +102,13 @@ export function HomepageClient({ previewPayload }: { previewPayload?: HomepagePa
       case 'projects':
         return (
           <ProjectsSection
-            cms={payload ? { items: payload.projects, section: homepageSection(payload, key) } : null}
+            cms={payload ? { items: payload.projects, section: homepageSection(payload, key) } : (isCmsPending ? { items: null, pending: true, section: null } : null)}
           />
         );
       case 'articles':
         return (
           <ArticlesSection
-            cms={payload ? { items: payload.articles, section: homepageSection(payload, key) } : null}
+            cms={payload ? { items: payload.articles, section: homepageSection(payload, key) } : (isCmsPending ? { items: null, pending: true, section: null } : null)}
           />
         );
       case 'contact':

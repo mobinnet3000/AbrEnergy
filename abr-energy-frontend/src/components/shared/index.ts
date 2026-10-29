@@ -5,3 +5,6 @@ export { EmptyState, ErrorState, SuccessState, NotFoundState } from './states';
 export { RichTextEditor } from './rich-text-editor';
 export { MediaUpload } from './media-upload';
 export { ConfirmDialog } from './confirm-dialog';
+export { BreadcrumbTrail, type Crumb } from './breadcrumb-trail';
+export { InternalPageHeader, type InternalPageHeaderProps } from './internal-page-header';
+export { InternalPageShell, type InternalPageShellProps } from './internal-page-shell';

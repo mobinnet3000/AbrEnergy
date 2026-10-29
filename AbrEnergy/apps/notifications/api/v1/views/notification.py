@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -9,6 +10,9 @@ from apps.notifications.services import get_unread_count, mark_all_read
 class NotificationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = NotificationSerializer
+    filterset_fields = ["is_read", "notification_type"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
@@ -28,7 +32,8 @@ def mark_read(request, pk):
     if not notification:
         return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
     notification.is_read = True
-    notification.save(update_fields=["is_read"])
+    notification.read_at = timezone.now()
+    notification.save(update_fields=["is_read", "read_at"])
     return Response({"detail": "Marked as read"})
 
 

@@ -1,0 +1,1184 @@
+{
+  "timestamp": "2026-10-29T07:00:04.398Z",
+  "routes": [
+    {
+      "name": "Home",
+      "path": "/fa",
+      "viewports": {
+        "320": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-320.png"
+        },
+        "375": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-375.png"
+        },
+        "768": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-768.png"
+        },
+        "1024": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-1024.png"
+        },
+        "1280": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-1280.png"
+        },
+        "1440": {
+          "title": "طلوع آفتاب، از خانه شماست | ابر انرژی",
+          "canonical": "http://localhost:3000/fa",
+          "h1Count": 1,
+          "h1Text": "طلوعآفتاب،ازخانهشماست",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "home-1440.png"
+        }
+      }
+    },
+    {
+      "name": "About",
+      "path": "/fa/about",
+      "viewports": {
+        "320": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-320.png"
+        },
+        "375": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-375.png"
+        },
+        "768": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-768.png"
+        },
+        "1024": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-1024.png"
+        },
+        "1280": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-1280.png"
+        },
+        "1440": {
+          "title": "درباره ابر انرژی | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/about",
+          "h1Count": 1,
+          "h1Text": "مهندسی گذار انرژی",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "about-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Services",
+      "path": "/fa/services",
+      "viewports": {
+        "320": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-320.png"
+        },
+        "375": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-375.png"
+        },
+        "768": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-768.png"
+        },
+        "1024": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-1024.png"
+        },
+        "1280": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-1280.png"
+        },
+        "1440": {
+          "title": "خدمات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/services",
+          "h1Count": 1,
+          "h1Text": "خدمات ما",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "services-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Projects",
+      "path": "/fa/projects",
+      "viewports": {
+        "320": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-320.png"
+        },
+        "375": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-375.png"
+        },
+        "768": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-768.png"
+        },
+        "1024": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-1024.png"
+        },
+        "1280": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-1280.png"
+        },
+        "1440": {
+          "title": "پروژه‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/projects",
+          "h1Count": 1,
+          "h1Text": "پروژه‌ها",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "projects-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Articles",
+      "path": "/fa/articles",
+      "viewports": {
+        "320": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-320.png"
+        },
+        "375": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-375.png"
+        },
+        "768": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-768.png"
+        },
+        "1024": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-1024.png"
+        },
+        "1280": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-1280.png"
+        },
+        "1440": {
+          "title": "مقالات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/articles",
+          "h1Count": 1,
+          "h1Text": "مقالات",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "articles-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Products",
+      "path": "/fa/products",
+      "viewports": {
+        "320": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-320.png"
+        },
+        "375": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-375.png"
+        },
+        "768": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-768.png"
+        },
+        "1024": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-1024.png"
+        },
+        "1280": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-1280.png"
+        },
+        "1440": {
+          "title": "محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products",
+          "h1Count": 1,
+          "h1Text": "محصولات",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "products-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Category_Index",
+      "path": "/fa/products/category",
+      "viewports": {
+        "320": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-320.png"
+        },
+        "375": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-375.png"
+        },
+        "768": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-768.png"
+        },
+        "1024": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-1024.png"
+        },
+        "1280": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-1280.png"
+        },
+        "1440": {
+          "title": "دسته‌بندی‌های محصولات | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/products/category",
+          "h1Count": 1,
+          "h1Text": "دسته‌بندی‌های محصولات",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "category_index-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Gallery",
+      "path": "/fa/gallery",
+      "viewports": {
+        "320": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-320.png"
+        },
+        "375": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-375.png"
+        },
+        "768": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-768.png"
+        },
+        "1024": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-1024.png"
+        },
+        "1280": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-1280.png"
+        },
+        "1440": {
+          "title": "گالری | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/gallery",
+          "h1Count": 1,
+          "h1Text": "گالری",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "gallery-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Downloads",
+      "path": "/fa/downloads",
+      "viewports": {
+        "320": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-320.png"
+        },
+        "375": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-375.png"
+        },
+        "768": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-768.png"
+        },
+        "1024": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-1024.png"
+        },
+        "1280": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-1280.png"
+        },
+        "1440": {
+          "title": "دانلودها و کاتالوگ‌ها | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/downloads",
+          "h1Count": 1,
+          "h1Text": "دانلودها و کاتالوگ‌ها",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "downloads-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Calculator",
+      "path": "/fa/calculator",
+      "viewports": {
+        "320": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-320.png"
+        },
+        "375": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-375.png"
+        },
+        "768": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-768.png"
+        },
+        "1024": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-1024.png"
+        },
+        "1280": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-1280.png"
+        },
+        "1440": {
+          "title": "محاسبه‌گر نیروگاه خورشیدی آفگرید | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/calculator",
+          "h1Count": 1,
+          "h1Text": "محاسبه‌گر نیروگاه خورشیدی آفگرید",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "calculator-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Contact",
+      "path": "/fa/contact",
+      "viewports": {
+        "320": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-320.png"
+        },
+        "375": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-375.png"
+        },
+        "768": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-768.png"
+        },
+        "1024": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-1024.png"
+        },
+        "1280": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-1280.png"
+        },
+        "1440": {
+          "title": "تماس با ما | ابر انرژی",
+          "canonical": "http://localhost:3000/fa/contact",
+          "h1Count": 1,
+          "h1Text": "تماس با ما",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "contact-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "path": "/fa/login",
+      "viewports": {
+        "320": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-320.png"
+        },
+        "375": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-375.png"
+        },
+        "768": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-768.png"
+        },
+        "1024": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-1024.png"
+        },
+        "1280": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-1280.png"
+        },
+        "1440": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "login-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Register",
+      "path": "/fa/register",
+      "viewports": {
+        "320": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-320.png"
+        },
+        "375": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-375.png"
+        },
+        "768": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-768.png"
+        },
+        "1024": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-1024.png"
+        },
+        "1280": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-1280.png"
+        },
+        "1440": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "register-1440.png"
+        }
+      }
+    },
+    {
+      "name": "Forgot_Password",
+      "path": "/fa/forgot-password",
+      "viewports": {
+        "320": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-320.png"
+        },
+        "375": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-375.png"
+        },
+        "768": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 753,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-768.png"
+        },
+        "1024": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1009,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-1024.png"
+        },
+        "1280": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1265,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-1280.png"
+        },
+        "1440": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 0,
+          "h1Text": "",
+          "scrollWidth": 1425,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "forgot_password-1440.png"
+        }
+      }
+    },
+    {
+      "name": "NotFound_404",
+      "path": "/fa/non-existent-page-test-404",
+      "viewports": {
+        "320": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 320,
+          "innerWidth": 320,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-320.png"
+        },
+        "375": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 375,
+          "innerWidth": 375,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-375.png"
+        },
+        "768": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 768,
+          "innerWidth": 768,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-768.png"
+        },
+        "1024": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 1024,
+          "innerWidth": 1024,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-1024.png"
+        },
+        "1280": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 1280,
+          "innerWidth": 1280,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-1280.png"
+        },
+        "1440": {
+          "title": "AbarEnergy | Professional Solar Energy Solutions",
+          "canonical": null,
+          "h1Count": 1,
+          "h1Text": "404",
+          "scrollWidth": 1440,
+          "innerWidth": 1440,
+          "hasOverflow": false,
+          "devIndicatorFound": false,
+          "devIndicatorDetails": "",
+          "screenshot": "notfound_404-1440.png"
+        }
+      }
+    }
+  ],
+  "summary": {
+    "totalRoutes": 15,
+    "totalViewports": 6,
+    "totalChecks": 90,
+    "overflowViolations": 0,
+    "devIndicatorsDetected": 0,
+    "missingCanonicals": 18,
+    "consoleErrors": 0
+  }
+}

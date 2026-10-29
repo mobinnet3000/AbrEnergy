@@ -1,16 +1,31 @@
 'use client';
+
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Sun, Zap, Shield, Clock, BarChart3, Leaf, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Check,
+  Sun,
+  Zap,
+  Shield,
+  Clock,
+  BarChart3,
+  Leaf,
+} from 'lucide-react';
+import type { AxiosError } from 'axios';
 import axiosInstance from '@/api/axios';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useLocale } from '@/i18n';
 import type { Service } from '@/types';
+import { InternalPageShell, PageLoading, BreadcrumbTrail } from '@/components/shared';
+import { ErrorState, NotFoundState } from '@/components/shared/states';
+
+function statusOf(error: unknown): number | undefined {
+  return (error as AxiosError)?.response?.status;
+}
 
 const processSteps = [
   { icon: Sun, title: 'services.step_consultation', desc: 'services.step_consultation_desc' },
@@ -28,76 +43,180 @@ const techAdvantages = [
 export default function ServiceDetailPage() {
   const { t } = useLocale();
   const params = useParams();
-  const slug = params.slug as string;
-  const { data: service, isLoading, error } = useQuery<Service>({
+  const slug = params?.slug as string;
+
+  const {
+    data: service,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<Service>({
     queryKey: ['service', slug],
     queryFn: () => axiosInstance.get(`/services/${slug}/`).then((r) => r.data),
     enabled: !!slug,
   });
 
-  useEffect(() => { if (error) toast.error(t('admin.failed_load_services')); }, [error]);
+  if (isLoading) {
+    return (
+      <InternalPageShell>
+        <div className="container-page py-20">
+          <PageLoading />
+        </div>
+      </InternalPageShell>
+    );
+  }
 
-  if (error) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.failed_load_services')}</div>;
-  if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-400" /></div>;
-  if (!service) return <div className="min-h-screen bg-black flex items-center justify-center text-white/40">{t('admin.service_not_found')}</div>;
+  if (isError || !service) {
+    const status = statusOf(error);
+    const is404 = status === 404 || (!isError && !service);
+    const is429 = status === 429;
+    return (
+      <InternalPageShell>
+        <div className="container-page py-20">
+          {is404 ? (
+            <NotFoundState
+              title={t('services.service_not_found')}
+              message={t('services.service_gone_hint')}
+            />
+          ) : (
+            <ErrorState
+              title={is429 ? (t('common.rate_limit_title') || 'محدودیت درخواست') : t('common.error')}
+              message={is429 ? (t('common.rate_limit_hint') || 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.') : t('admin.failed_load_services')}
+              action={{ label: t('products.retry'), onClick: () => refetch() }}
+            />
+          )}
+          <div className="flex flex-wrap justify-center gap-3 pb-20">
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-semibold text-foreground transition hover:bg-muted"
+            >
+              {t('services.back_to_services')}
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground transition hover:bg-brand-strong"
+            >
+              {t('contact.title')}
+            </Link>
+          </div>
+        </div>
+      </InternalPageShell>
+    );
+  }
+
+  const descriptionHtml = sanitizeHtml(service.description || '');
 
   return (
-    <div className="bg-black text-white">
+    <InternalPageShell>
       {/* ===== HERO ===== */}
-      <section className="relative pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/10 via-transparent to-black" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[150px]" />
+      <section className="relative overflow-hidden pb-12 pt-6 sm:pb-16 sm:pt-8">
         <div className="container-page relative z-10">
-          <Link href="/services" className="inline-flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors mb-8">
-            <ArrowLeft className="h-3 w-3" /> {t('services.back')}
-          </Link>
+          <BreadcrumbTrail
+            trail={[
+              { label: t('common.back_home'), href: '/' },
+              { label: t('home.services_title'), href: '/services' },
+              { label: service.title },
+            ]}
+            className="mb-6"
+          />
+
           <div className="max-w-3xl">
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">
-              {service.category_title || t('services.title')}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+            >
+              {service.category_title || t('services.what_we_do')}
             </motion.p>
-            <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="font-heading text-4xl md:text-6xl font-bold text-white mb-6">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="font-heading mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl"
+            >
               {service.title}
             </motion.h1>
-            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="text-base md:text-lg text-white/35 max-w-2xl leading-relaxed mb-10">
-              {service.short_description}
-            </motion.p>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-              <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-                {t('services.get_quote')} <ArrowRight className="h-4 w-4" />
+            {service.short_description && (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="mb-8 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg"
+              >
+                {service.short_description}
+              </motion.p>
+            )}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/15 transition-all duration-300 hover:bg-brand-strong active:scale-[0.98]"
+              >
+                {t('services.get_quote')}{' '}
+                <ArrowLeft className="h-4 w-4 rtl:rotate-0 rotate-180" />
               </Link>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* ===== DESCRIPTION ===== */}
-      <section className="py-20 md:py-28 border-t border-white/[0.03]">
-        <div className="container-page">
-          <div className="max-w-3xl mx-auto">
-            <ScrollReveal variant="slide-up">
-              <h2 className="font-heading text-3xl font-bold text-white mb-6">{t('services.overview')}</h2>
-              <div className="text-white/35 leading-relaxed text-base" dangerouslySetInnerHTML={{ __html: sanitizeHtml(service.description) }} />
-            </ScrollReveal>
+      {/* ===== COVER IMAGE (IF AVAILABLE) ===== */}
+      {service.image_url && (
+        <section className="container-page pb-12 sm:pb-16">
+          <div className="overflow-hidden rounded-2xl border border-border/80 shadow-xs dark:border-white/10 max-w-4xl">
+            <img
+              src={service.image_url}
+              alt={service.title}
+              className="aspect-[2.2/1] w-full object-cover"
+              loading="eager"
+            />
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* ===== DESCRIPTION ===== */}
+      {descriptionHtml && (
+        <section className="border-t border-border/60 py-16 dark:border-white/[0.06] sm:py-20 md:py-24">
+          <div className="container-page">
+            <div className="mx-auto max-w-3xl">
+              <ScrollReveal variant="slide-up">
+                <h2 className="font-heading mb-6 text-2xl font-bold text-foreground sm:text-3xl">
+                  {t('services.overview')}
+                </h2>
+                <div
+                  className="prose prose-neutral max-w-none text-base leading-relaxed text-muted-foreground dark:prose-invert sm:text-lg"
+                  dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+                />
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ===== FEATURES ===== */}
-      {service.features?.length > 0 && (
-        <section className="py-20 md:py-28 border-t border-white/[0.03]">
+      {Array.isArray(service.features) && service.features.length > 0 && (
+        <section className="border-t border-border/60 py-16 dark:border-white/[0.06] sm:py-20 md:py-24">
           <div className="container-page">
             <ScrollReveal variant="fade">
-              <div className="text-center mb-14">
-                <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.what_you_get')}</p>
-                <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.features')}</h2>
+              <div className="mb-12 text-center sm:mb-14">
+                <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                  {t('services.what_you_get')}
+                </span>
+                <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
+                  {t('services.features')}
+                </h2>
               </div>
             </ScrollReveal>
-            <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
               {service.features.map((f, i) => (
                 <ScrollReveal key={i} variant="slide-up" delay={i * 0.05}>
-                  <div className="flex items-start gap-3 p-5 rounded-xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-sm hover:border-emerald-500/10 transition-all duration-500">
-                    <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span className="text-sm text-white/70">{f}</span>
+                  <div className="flex items-start gap-3 rounded-xl border border-border/80 bg-card p-5 shadow-xs transition-all duration-300 hover:border-primary/40 dark:border-white/10 dark:bg-card/70">
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm font-medium text-foreground">{f}</span>
                   </div>
                 </ScrollReveal>
               ))}
@@ -107,23 +226,31 @@ export default function ServiceDetailPage() {
       )}
 
       {/* ===== PROCESS ===== */}
-      <section className="py-20 md:py-28 border-t border-white/[0.03]">
+      <section className="border-t border-border/60 py-16 dark:border-white/[0.06] sm:py-20 md:py-24">
         <div className="container-page">
           <ScrollReveal variant="fade">
-            <div className="text-center mb-14">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.how_we_work')}</p>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.process')}</h2>
+            <div className="mb-12 text-center sm:mb-14">
+              <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                {t('services.how_we_work')}
+              </span>
+              <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
+                {t('services.process')}
+              </h2>
             </div>
           </ScrollReveal>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-4xl mx-auto">
+          <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {processSteps.map((step, i) => (
               <ScrollReveal key={i} variant="slide-up" delay={i * 0.1}>
-                <div className="relative p-6 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-lg text-center h-full hover:border-emerald-500/10 transition-all duration-500">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="h-5 w-5 text-emerald-400" />
+                <div className="relative flex h-full flex-col items-center rounded-2xl border border-border/80 bg-card p-6 text-center shadow-xs transition-all duration-300 hover:border-primary/40 dark:border-white/10 dark:bg-card/70">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+                    <step.icon className="h-5 w-5 text-primary" />
                   </div>
-                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{t(step.title)}</h3>
-                  <p className="text-xs text-white/35 leading-relaxed">{t(step.desc)}</p>
+                  <h3 className="font-heading mb-2 text-sm font-semibold text-foreground">
+                    {t(step.title)}
+                  </h3>
+                  <p className="flex-1 text-xs text-muted-foreground leading-relaxed">
+                    {t(step.desc)}
+                  </p>
                 </div>
               </ScrollReveal>
             ))}
@@ -132,21 +259,31 @@ export default function ServiceDetailPage() {
       </section>
 
       {/* ===== TECHNICAL ADVANTAGES ===== */}
-      <section className="py-20 md:py-28 border-t border-white/[0.03]">
+      <section className="border-t border-border/60 py-16 dark:border-white/[0.06] sm:py-20 md:py-24">
         <div className="container-page">
           <ScrollReveal variant="fade">
-            <div className="text-center mb-14">
-              <p className="text-xs font-semibold text-emerald-400/60 uppercase tracking-[0.25em] mb-4">{t('services.why_choose_us')}</p>
-              <h2 className="font-heading text-3xl md:text-4xl font-bold text-white">{t('services.technical_advantages')}</h2>
+            <div className="mb-12 text-center sm:mb-14">
+              <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                {t('services.why_choose_us')}
+              </span>
+              <h2 className="font-heading text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
+                {t('services.technical_advantages')}
+              </h2>
             </div>
           </ScrollReveal>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
             {techAdvantages.map((item, i) => (
               <ScrollReveal key={i} variant="slide-up" delay={i * 0.1}>
-                <div className="p-6 rounded-2xl border border-white/[0.04] bg-white/[0.02] backdrop-blur-lg text-center h-full hover:border-emerald-500/10 transition-all duration-500">
-                  <item.icon className="h-8 w-8 text-emerald-400/60 mx-auto mb-4" />
-                  <h3 className="font-heading font-semibold text-sm text-white mb-2">{t(item.title)}</h3>
-                  <p className="text-xs text-white/35 leading-relaxed">{t(item.desc)}</p>
+                <div className="flex h-full flex-col items-center rounded-2xl border border-border/80 bg-card p-6 text-center shadow-xs transition-all duration-300 hover:border-primary/40 dark:border-white/10 dark:bg-card/70 sm:p-8">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+                    <item.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-heading mb-2 text-base font-semibold text-foreground">
+                    {t(item.title)}
+                  </h3>
+                  <p className="flex-1 text-xs text-muted-foreground leading-relaxed">
+                    {t(item.desc)}
+                  </p>
                 </div>
               </ScrollReveal>
             ))}
@@ -155,17 +292,27 @@ export default function ServiceDetailPage() {
       </section>
 
       {/* ===== CTA ===== */}
-      <section className="py-24 md:py-32 border-t border-white/[0.03]">
+      <section className="border-t border-border/60 py-16 dark:border-white/[0.06] sm:py-20 md:py-24">
         <div className="container-page text-center">
           <ScrollReveal variant="scale">
-            <h2 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">{t('services.cta_title')}</h2>
-            <p className="text-white/35 text-sm max-w-lg mx-auto mb-10">{t('services.cta_desc')}</p>
-            <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-400 active:scale-[0.97] transition-all duration-300 shadow-lg shadow-emerald-500/15">
-              {t('contact.title')} <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="mx-auto max-w-3xl rounded-2xl border border-border/80 bg-card/60 p-8 shadow-xs dark:border-white/10 dark:bg-card/40 sm:p-12">
+              <h2 className="font-heading mb-4 text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
+                {t('services.cta_title')}
+              </h2>
+              <p className="mx-auto mb-8 max-w-lg text-sm text-muted-foreground">
+                {t('services.cta_desc')}
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/15 transition-all duration-300 hover:bg-brand-strong active:scale-[0.98]"
+              >
+                {t('contact.title')}{' '}
+                <ArrowLeft className="h-4 w-4 rtl:rotate-0 rotate-180" />
+              </Link>
+            </div>
           </ScrollReveal>
         </div>
       </section>
-    </div>
+    </InternalPageShell>
   );
 }

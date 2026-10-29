@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
@@ -13,12 +12,21 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PageHeader } from '@/components/shared';
+import { EntityCategorySelect } from '@/components/admin/entity-category-select';
 import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import {
+  SERVICE_TRANSLATION_FIELDS,
+  buildServicePayload,
+  createTranslationMap,
+  type ContentLocale,
+  type ServiceFormValues,
+} from '@/lib/cms-form-contracts';
+import { contentSaveErrorMessage } from '@/lib/cms-error-toast';
 import Link from 'next/link';
 import { useLocale } from '@/i18n';
 
-const locales = [
+const locales: { value: ContentLocale; label: string }[] = [
   { value: 'fa', label: 'فارسی' },
   { value: 'ar', label: 'العربية' },
   { value: 'en', label: 'English' },
@@ -29,18 +37,20 @@ const statuses = [
   { value: 'inactive', label: 'Inactive' },
 ];
 
-const emptyServiceForm = {
-  icon: '', category: '', order: 0, status: 'active', is_featured: false, features: '',
-  title_fa: '', short_description_fa: '', description_fa: '',
-  title_ar: '', short_description_ar: '', description_ar: '',
-  title_en: '', short_description_en: '', description_en: '',
-};
+function createEmptyServiceForm(): ServiceFormValues {
+  return {
+    icon: '', category: '', order: 0, status: 'active', is_featured: false, features: '',
+    translations: createTranslationMap(SERVICE_TRANSLATION_FIELDS),
+  };
+}
+
+const emptyServiceForm = createEmptyServiceForm();
 
 export default function AdminServiceNewPage() {
   const { t } = useLocale();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ ...emptyServiceForm });
+  const [form, setForm] = useState<ServiceFormValues>(createEmptyServiceForm);
 
   // Phase 9.2 — dirty navigation guard over the EXISTING form state (no new
   // dirty system): `isDirty` is the initial-vs-current comparison owned by
@@ -52,18 +62,24 @@ export default function AdminServiceNewPage() {
 
   const update = (field: string, value: unknown) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  const updateTranslation = (locale: ContentLocale, field: string, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      translations: {
+        ...prev.translations,
+        [locale]: { ...prev.translations[locale], [field]: value },
+      },
+    }));
+  };
+
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      const payload = {
-        ...form,
-        features: form.features.split(',').map((s: string) => s.trim()).filter(Boolean),
-      };
-      await axiosInstance.post('/admin/services/', payload);
-      toast.success('Service created');
+      await axiosInstance.post('/admin/services/', buildServicePayload(form));
+      toast.success(t('admin.service_created'));
       router.push('/admin/services');
-    } catch {
-      toast.error('Failed to create service');
+    } catch (error) {
+      toast.error(contentSaveErrorMessage(t('admin.service_save_failed'), error));
     } finally {
       setSaving(false);
     }
@@ -97,16 +113,20 @@ export default function AdminServiceNewPage() {
                 {locales.map((l) => (
                   <TabsContent key={l.value} value={l.value} className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Title ({l.label})</label>
-                      <Input value={form[`title_${l.value}` as keyof typeof form] as string} onChange={(e) => update(`title_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.title_label')} ({l.label})</label>
+                      <Input value={form.translations[l.value].title} onChange={(e) => updateTranslation(l.value, 'title', e.target.value)} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Short Description ({l.label})</label>
-                      <Textarea value={form[`short_description_${l.value}` as keyof typeof form] as string} onChange={(e) => update(`short_description_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.slug')} ({l.label})</label>
+                      <Input value={form.translations[l.value].slug} onChange={(e) => updateTranslation(l.value, 'slug', e.target.value)} dir={l.value === 'en' ? 'ltr' : 'rtl'} />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-1 block">Description ({l.label})</label>
-                      <Textarea className="min-h-32" value={form[`description_${l.value}` as keyof typeof form] as string} onChange={(e) => update(`description_${l.value}`, e.target.value)} />
+                      <label className="text-sm font-medium mb-1 block">{t('admin.short_description')} ({l.label})</label>
+                      <Textarea value={form.translations[l.value].short_description} onChange={(e) => updateTranslation(l.value, 'short_description', e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">{t('admin.description_label')} ({l.label})</label>
+                      <Textarea className="min-h-32" value={form.translations[l.value].description} onChange={(e) => updateTranslation(l.value, 'description', e.target.value)} />
                     </div>
                   </TabsContent>
                 ))}
@@ -125,7 +145,7 @@ export default function AdminServiceNewPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.category')}</label>
-                <ServiceCategorySelect value={form.category} onChange={(v) => update('category', v)} />
+                <EntityCategorySelect kind="service" value={form.category} onChange={(v) => update('category', v)} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.order')}</label>
@@ -165,24 +185,5 @@ export default function AdminServiceNewPage() {
         variant="default"
       />
     </div>
-  );
-}
-
-function ServiceCategorySelect({ value, onChange }: { value: string; onChange: (v: string | null) => void }) {
-  const { data } = useQuery({
-    queryKey: ['service-categories'],
-    queryFn: async () => {
-      const res = await axiosInstance.get('/service-categories/');
-      return res.data?.results ?? [];
-    },
-  });
-  const cats = Array.isArray(data) ? data : [];
-  return (
-                <Select value={value} onValueChange={(val) => val && onChange(val)}>
-      <SelectTrigger className="w-full"><SelectValue placeholder="Select category" /></SelectTrigger>
-      <SelectContent>
-        {cats.map((c: { id: string; title: string }) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
-      </SelectContent>
-    </Select>
   );
 }

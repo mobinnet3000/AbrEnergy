@@ -44,7 +44,7 @@ export function NavLinkDesktop({ href, isActive, children, className, scrolled }
   );
 }
 
-export function NavLinkMobile({ href, isActive, children, onClick }: NavLinkProps) {
+export function NavLinkMobile({ href, isActive, children, onClick, className }: NavLinkProps) {
   return (
     <Link
       href={href}
@@ -54,6 +54,7 @@ export function NavLinkMobile({ href, isActive, children, onClick }: NavLinkProp
         isActive
           ? 'bg-primary/10 text-primary'
           : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+        className,
       )}
     >
       {children}

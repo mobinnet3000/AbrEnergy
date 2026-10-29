@@ -27,7 +27,7 @@ services:
   nginx:
     image: nginx:1.25-alpine
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/app/staticfiles
       - media_volume:/app/media
     ports:
@@ -35,6 +35,15 @@ services:
       - "443:443"
     depends_on:
       - django
+    healthcheck:
+      # End-to-end: nginx -> gunicorn -> database. `wget` ships in
+      # nginx:alpine; the check starts after a short grace period so normal
+      # startup (collectstatic/migrate) is not reported as unhealthy.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/api/v1/health/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   django:
     build:
@@ -50,6 +59,9 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
       - DB_PORT=5432
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
     depends_on:
       db:
         condition: service_healthy
@@ -59,6 +71,21 @@ services:
       sh -c "python manage.py collectstatic --noinput &&
              python manage.py migrate --noinput &&
              gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    healthcheck:
+      # Application readiness, not just "process started": the probe returns
+      # 503 until the database connection succeeds. Python is always present
+      # in the image, so no extra binary is required.
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/', timeout=3)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   celery_worker:
     build:
@@ -73,6 +100,9 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
       - DB_PORT=5432
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
     depends_on:
       db:
         condition: service_healthy
@@ -92,6 +122,9 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DB_HOST=db
       - DB_PORT=5432
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/1}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
     depends_on:
       redis:
         condition: service_healthy

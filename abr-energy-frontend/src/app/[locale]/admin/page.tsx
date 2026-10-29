@@ -5,38 +5,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader, TableLoading, EmptyState, ErrorState } from '@/components/shared';
-import { Plus, Home } from 'lucide-react';
+import { Plus, Home, Image as ImageIcon, Settings } from 'lucide-react';
 import {
   useAdminProducts,
-  useAdminProductCategories,
   useAdminArticles,
   useAdminServices,
-  useAdminProjects,
+  useAdminDashboardOverview,
 } from '@/hooks/use-api';
 import { useAuthStore } from '@/stores/auth-store';
-import { canManageProducts, canManageProductCategories, canManageHomepage } from '@/lib/admin-permissions';
+import { canManageProducts, canManageProductCategories, canManageHomepage, canManageSiteSettings } from '@/lib/admin-permissions';
 import { useLocale } from '@/i18n';
 
 // Phase 9.3-B — Admin Dashboard Hub (CMS workflow hub, in place at
-// `/[locale]/admin`). Frontend-only: every number and record below comes
-// from an EXISTING admin list endpoint (`count` / `results` of the standard
-// paginated envelope). No fake statistics, no new backend, no new routes.
+// `/[locale]/admin`). Every number and record comes from the real API; there
+// are no hardcoded statistics and no decorative actions.
 //
-// Request strategy (10 tiny parallel React Query requests on a cold load):
-//   overview  recent-products (page_size 5, doubles as products count)
-//           + recent-articles (page_size 5, doubles as articles count)
-//           + recent-services (page_size 5, doubles as services count)
-//           + categories count (page_size 1) + projects count (page_size 1)
-//   attention 5 × page_size-1 filtered counts (draft/hidden products,
-//             draft/scheduled articles, inactive services)
-//   recent    reuses the 3 overview queries above (zero extra requests)
+// Request strategy (4 requests on a cold load, Phase 12.15):
+//   recent   3 recent lists (products/articles/services, page_size 5,
+//            `-created_at`) — the only list round-trips
+//   counts   1 staff-gated aggregate (`/admin/dashboard/overview/`) for
+//            overview, attention, content-quality, inventory and status bars
 // Deliberately omitted (documented, not faked): inactive categories (tree
 // fetch semantics — a navigation shortcut would add no value beyond the
 // overview card) and projects in Recent Items (the backend declares NO
 // `ordering_fields` for projects, so no supported recency ordering exists).
 // The pre-existing `/admin/dashboard/stats/` aggregate is intentionally NOT
 // consumed here: it is `IsSuperAdmin`-only (content/website managers get
-// 403), while the list endpoints above are readable by every manager role.
+// 403), while the new overview endpoint is readable by every manager role.
+//
+// Phase 12.15 adds three real-data sections backed by that aggregate:
+// content-quality (products missing image/document/SEO title, articles
+// missing a cover), media/documents inventory, and publication-status bars.
+// All values are server-side database COUNTs — no demo labels, no hardcoded
+// marketing numbers, no client-side fabrication.
 
 type Row = Record<string, unknown>;
 
@@ -45,18 +46,8 @@ interface Paged {
   results?: Row[];
 }
 
-// Trustworthy total ONLY: the server-computed `count` field. Never
-// `results.length` (page_size truncates it) — this is why the category card
-// shows the real total, not "100".
-function getCount(data: unknown): number | null {
-  if (!data || typeof data !== 'object') return null;
-  const d = data as Paged;
-  if (typeof d.count === 'number') return d.count;
-  if (Array.isArray(d.results)) return d.results.length;
-  if (Array.isArray(data)) return (data as Row[]).length;
-  return null;
-}
-
+// Trustworthy totals now come from the server aggregate; this helper remains
+// for the recent lists (`results` only).
 function getRows(data: unknown): Row[] {
   if (!data || typeof data !== 'object') return [];
   const d = data as Paged;
@@ -102,6 +93,75 @@ function MetricCard({ metric }: { metric: Metric }) {
         <Link href={metric.href} className="mt-2 inline-block text-sm text-primary hover:underline">
           {t('common.view_all')}
         </Link>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface StatusSegment {
+  label: string;
+  value: number;
+  barClass: string;
+}
+
+// Phase 12.15 — publication-status breakdown. Every segment is a real
+// server-side COUNT from `/admin/dashboard/overview/`; the bar width is a
+// proportion of those exact counts. Zero-content shows an honest empty
+// message rather than an empty bar.
+function StatusBreakdown({
+  label,
+  segments,
+  isLoading,
+  error,
+  onRetry,
+}: {
+  label: string;
+  segments: StatusSegment[];
+  isLoading: boolean;
+  error: unknown;
+  onRetry: () => void;
+}) {
+  const { t } = useLocale();
+  const total = segments.reduce((sum, s) => sum + s.value, 0);
+  const st = statusOf(error);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{label}</CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        {isLoading ? (
+          <TableLoading rows={2} />
+        ) : error ? (
+          <ErrorState
+            title={label}
+            message={t(st === 403 ? 'admin.permission_denied' : 'admin.server_connection_failed')}
+            action={{ label: t('admin.try_again'), onClick: onRetry }}
+          />
+        ) : total === 0 ? (
+          <p className="text-sm text-muted-foreground">{t('admin.show_none')}</p>
+        ) : (
+          <>
+            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted" role="img" aria-label={label}>
+              {segments.map((s) =>
+                s.value > 0 ? (
+                  <div key={s.label} className={s.barClass} style={{ width: `${(s.value / total) * 100}%` }} />
+                ) : null
+              )}
+            </div>
+            <ul className="mt-3 space-y-1 text-sm">
+              {segments.map((s) => (
+                <li key={s.label} className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <span className={`h-2.5 w-2.5 rounded-full ${s.barClass}`} aria-hidden="true" />
+                    {s.label}
+                  </span>
+                  <span className="font-medium">{s.value}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </CardContent>
     </Card>
   );
@@ -221,27 +281,63 @@ export default function AdminDashboardPage() {
   // create buttons render ungated); the backend stays authoritative, so the
   // existing manager helper shapes this UI. No new permission introduced.
   const canWriteContent = canManageProductCategories(role);
+  const canWriteSettings = canManageSiteSettings(role);
 
-  // Overview + recent share these three queries (page_size 5): `count`
-  // feeds the overview card, `results` feeds the recent group.
+  // Phase 12.15 — the three recent lists are the ONLY list requests. All
+  // counts (overview, attention, inventory, status bars) come from ONE
+  // server-side aggregate, so the dashboard issues 4 requests total instead
+  // of the previous 10 list-count round-trips.
   const productsRecent = useAdminProducts({ page: '1', page_size: '5', ordering: '-created_at' });
   const articlesRecent = useAdminArticles({ page: '1', page_size: '5', ordering: '-created_at' });
   const servicesRecent = useAdminServices({ page: '1', page_size: '5', ordering: '-created_at' });
   // Supported orderings (audited): products sort_order/created_at,
   // articles publish_date/created_at/view_count, services order/created_at.
-  // Projects declares NO `ordering_fields` — it is counted here but never
-  // ordered, and is omitted from Recent Items (documented above).
-  const categoriesCount = useAdminProductCategories({ page: '1', page_size: '1' });
-  const projectsCount = useAdminProjects({ page: '1', page_size: '1' });
+  // Projects declares NO `ordering_fields`, so it never appears in Recent
+  // Items — only in the aggregate count/status below.
 
-  // Needs Attention: one page_size-1 filtered count per card, using ONLY
-  // filters the backend views actually declare (audited in 9.2/9.3-A and
-  // re-verified here). Each card deep-links to the exact 9.3-A filtered URL.
-  const draftProducts = useAdminProducts({ status: 'draft', page: '1', page_size: '1' });
-  const hiddenProducts = useAdminProducts({ visibility: 'hidden', page: '1', page_size: '1' });
-  const draftArticles = useAdminArticles({ status: 'draft', page: '1', page_size: '1' });
-  const scheduledArticles = useAdminArticles({ status: 'scheduled', page: '1', page_size: '1' });
-  const inactiveServices = useAdminServices({ status: 'inactive', page: '1', page_size: '1' });
+  // One aggregate for every count. These are plain database COUNTs, readable
+  // by every manager role (`IsContentManager`). Missing rows render as "—"
+  // + retry per card rather than a fabricated zero.
+  const overviewQuery = useAdminDashboardOverview();
+  const ov = overviewQuery.data;
+  const ovLoading = overviewQuery.isLoading;
+  const ovError = overviewQuery.error;
+  const ovRetry = () => { void overviewQuery.refetch(); };
+  const ovMetric = (label: string, href: string, value: number | undefined): Metric => ({
+    label,
+    href,
+    count: value ?? null,
+    isLoading: ovLoading,
+    error: ovError,
+    onRetry: ovRetry,
+  });
+
+  const contentQuality: Metric[] = [
+    ovMetric(t('admin.without_image'), '/admin/products', ov?.products.without_image),
+    ovMetric(t('admin.without_document'), '/admin/products', ov?.products.without_document),
+    ovMetric(t('admin.without_seo_title'), '/admin/products', ov?.products.without_seo_title),
+    ovMetric(t('admin.articles_without_cover'), '/admin/articles', ov?.articles.without_cover),
+  ];
+
+  const mediaDocuments: Metric[] = [
+    ovMetric(t('admin.media_total'), '/admin/media', ov?.media.total),
+    ovMetric(t('admin.media_images_count'), '/admin/media', ov?.media.images),
+    ovMetric(t('admin.media_documents_count'), '/admin/media', ov?.media.documents),
+    ovMetric(t('admin.gallery_images_count'), '/admin/gallery', ov?.gallery.images),
+    ovMetric(t('admin.product_documents_count'), '/admin/products', ov?.documents.total),
+  ];
+
+  const productStatus: StatusSegment[] = [
+    { label: t('admin.status_published'), value: ov?.products.published ?? 0, barClass: 'bg-green-500' },
+    { label: t('admin.status_draft'), value: ov?.products.draft ?? 0, barClass: 'bg-amber-500' },
+    { label: t('admin.status_archived'), value: ov?.products.archived ?? 0, barClass: 'bg-slate-400' },
+  ];
+
+  const articleStatus: StatusSegment[] = [
+    { label: t('admin.status_published'), value: ov?.articles.published ?? 0, barClass: 'bg-green-500' },
+    { label: t('admin.status_draft'), value: ov?.articles.draft ?? 0, barClass: 'bg-amber-500' },
+    { label: t('admin.scheduled'), value: ov?.articles.scheduled ?? 0, barClass: 'bg-sky-500' },
+  ];
 
   const quickActions = [
     canWriteProducts && { label: t('admin.create_product'), href: '/admin/products/new', icon: Plus },
@@ -250,22 +346,26 @@ export default function AdminDashboardPage() {
     canWriteContent && { label: t('admin.create_service'), href: '/admin/services/new', icon: Plus },
     canWriteContent && { label: t('admin.create_project'), href: '/admin/projects/new', icon: Plus },
     canStudio && { label: t('admin.homepage_studio'), href: '/admin/content/homepage', icon: Home },
+    canWriteContent && { label: t('admin.media'), href: '/admin/media', icon: ImageIcon },
+    canWriteSettings && { label: t('admin.site_settings'), href: '/admin/settings', icon: Settings },
   ].filter((a): a is { label: string; href: string; icon: typeof Plus } => a !== false);
 
   const overview: Metric[] = [
-    { label: t('admin.products'), href: '/admin/products', count: getCount(productsRecent.data), isLoading: productsRecent.isLoading, error: productsRecent.error, onRetry: () => { void productsRecent.refetch(); } },
-    { label: t('admin.product_categories'), href: '/admin/products/categories', count: getCount(categoriesCount.data), isLoading: categoriesCount.isLoading, error: categoriesCount.error, onRetry: () => { void categoriesCount.refetch(); } },
-    { label: t('admin.articles'), href: '/admin/articles', count: getCount(articlesRecent.data), isLoading: articlesRecent.isLoading, error: articlesRecent.error, onRetry: () => { void articlesRecent.refetch(); } },
-    { label: t('admin.services'), href: '/admin/services', count: getCount(servicesRecent.data), isLoading: servicesRecent.isLoading, error: servicesRecent.error, onRetry: () => { void servicesRecent.refetch(); } },
-    { label: t('admin.projects'), href: '/admin/projects', count: getCount(projectsCount.data), isLoading: projectsCount.isLoading, error: projectsCount.error, onRetry: () => { void projectsCount.refetch(); } },
+    ovMetric(t('admin.products'), '/admin/products', ov?.products.total),
+    ovMetric(t('admin.product_categories'), '/admin/products/categories', ov?.product_categories.total),
+    ovMetric(t('admin.articles'), '/admin/articles', ov?.articles.total),
+    ovMetric(t('admin.services'), '/admin/services', ov?.services.total),
+    ovMetric(t('admin.projects'), '/admin/projects', ov?.projects.total),
   ];
 
+  // Deep links keep the exact 9.3-A filtered URLs; only the counts moved to
+  // the aggregate, so each card still lands on the right filtered list.
   const attention: Metric[] = [
-    { label: `${t('admin.products')} · ${t('admin.status_draft')}`, href: '/admin/products?status=draft', count: getCount(draftProducts.data), isLoading: draftProducts.isLoading, error: draftProducts.error, onRetry: () => { void draftProducts.refetch(); } },
-    { label: `${t('admin.products')} · ${t('admin.visibility_hidden')}`, href: '/admin/products?visibility=hidden', count: getCount(hiddenProducts.data), isLoading: hiddenProducts.isLoading, error: hiddenProducts.error, onRetry: () => { void hiddenProducts.refetch(); } },
-    { label: `${t('admin.articles')} · ${t('admin.draft')}`, href: '/admin/articles?status=draft', count: getCount(draftArticles.data), isLoading: draftArticles.isLoading, error: draftArticles.error, onRetry: () => { void draftArticles.refetch(); } },
-    { label: `${t('admin.articles')} · ${t('admin.scheduled')}`, href: '/admin/articles?status=scheduled', count: getCount(scheduledArticles.data), isLoading: scheduledArticles.isLoading, error: scheduledArticles.error, onRetry: () => { void scheduledArticles.refetch(); } },
-    { label: `${t('admin.services')} · ${t('admin.inactive')}`, href: '/admin/services?status=inactive', count: getCount(inactiveServices.data), isLoading: inactiveServices.isLoading, error: inactiveServices.error, onRetry: () => { void inactiveServices.refetch(); } },
+    ovMetric(`${t('admin.products')} · ${t('admin.status_draft')}`, '/admin/products?status=draft', ov?.products.draft),
+    ovMetric(`${t('admin.products')} · ${t('admin.visibility_hidden')}`, '/admin/products?visibility=hidden', ov?.products.hidden),
+    ovMetric(`${t('admin.articles')} · ${t('admin.draft')}`, '/admin/articles?status=draft', ov?.articles.draft),
+    ovMetric(`${t('admin.articles')} · ${t('admin.scheduled')}`, '/admin/articles?status=scheduled', ov?.articles.scheduled),
+    ovMetric(`${t('admin.services')} · ${t('admin.inactive')}`, '/admin/services?status=inactive', ov?.services.inactive),
   ];
 
   return (
@@ -300,6 +400,44 @@ export default function AdminDashboardPage() {
           {attention.map((m) => (
             <MetricCard key={m.href + m.label} metric={m} />
           ))}
+        </div>
+      </section>
+
+      <section aria-label={t('admin.content_quality')} className="mb-8">
+        <h2 className="text-xl font-bold mb-4">{t('admin.content_quality')}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {contentQuality.map((m) => (
+            <MetricCard key={m.label + m.href} metric={m} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-label={t('admin.media_documents')} className="mb-8">
+        <h2 className="text-xl font-bold mb-4">{t('admin.media_documents')}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          {mediaDocuments.map((m) => (
+            <MetricCard key={m.label + m.href} metric={m} />
+          ))}
+        </div>
+      </section>
+
+      <section aria-label={t('admin.publication_status')} className="mb-8">
+        <h2 className="text-xl font-bold mb-4">{t('admin.publication_status')}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <StatusBreakdown
+            label={t('admin.products')}
+            segments={productStatus}
+            isLoading={ovLoading}
+            error={ovError}
+            onRetry={ovRetry}
+          />
+          <StatusBreakdown
+            label={t('admin.articles')}
+            segments={articleStatus}
+            isLoading={ovLoading}
+            error={ovError}
+            onRetry={ovRetry}
+          />
         </div>
       </section>
 

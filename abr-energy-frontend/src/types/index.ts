@@ -1,4 +1,13 @@
-export type UserRole = 'super_admin' | 'website_admin' | 'content_manager' | 'engineer' | 'customer';
+export type UserRole =
+  | 'super_admin'
+  | 'website_admin'
+  | 'content_manager'
+  | 'product_manager'
+  | 'support_manager'
+  | 'seo_manager'
+  | 'engineer'
+  | 'analyst'
+  | 'customer';
 
 export interface User {
   id: string;
@@ -39,12 +48,23 @@ export interface LoginInput {
 export interface SiteSettings {
   company_name: string;
   company_name_en: string;
+  company_name_ar?: string;
   logo: string | null;
   favicon: string | null;
   phone_number: string;
   phone_number_2: string;
   email: string;
   address: string;
+  address_en?: string;
+  address_ar?: string;
+  city?: string;
+  city_en?: string;
+  city_ar?: string;
+  province?: string;
+  province_en?: string;
+  province_ar?: string;
+  postal_code?: string;
+  map_url?: string;
   instagram: string;
   telegram: string;
   linkedin: string;
@@ -59,6 +79,77 @@ export interface SiteSettings {
   default_meta_description: string;
   footer_text: string;
   site_url: string;
+}
+
+export interface SeoKeyword {
+  id: string;
+  keyword: string;
+  locale: string;
+  target_country: string;
+  target_page: string;
+  search_intent: 'informational' | 'navigational' | 'commercial' | 'transactional';
+  priority: 'high' | 'medium' | 'low';
+  current_rank?: number | null;
+  best_rank?: number | null;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  average_position: number;
+  last_measured_at?: string | null;
+  rank_history?: Array<{ date: string; rank: number }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeoOverviewData {
+  overview: {
+    total_public_pages: number;
+    total_indexable_pages: number;
+    pages_missing_metadata: number;
+    articles_missing_metadata: number;
+    products_missing_metadata: number;
+    sitemap_status: string;
+    sitemap_url: string;
+    robots_status: string;
+    robots_url: string;
+    structured_data_types: string[];
+    last_audited_at: string;
+  };
+  health_score: {
+    score: number;
+    max_score: number;
+    grade: string;
+    deductions: Array<{
+      issue: string;
+      penalty: number;
+      priority: string;
+      fix: string;
+    }>;
+  };
+  gsc_integration: {
+    is_connected: boolean;
+    status: string;
+    provider: string;
+    message: string;
+    required_scopes: string[];
+    setup_guide_url: string;
+  };
+  ga4_integration: {
+    is_connected: boolean;
+    status: string;
+    provider: string;
+    message: string;
+    required_scopes: string[];
+  };
+  geo_ai_readiness: {
+    structured_data_compliant: boolean;
+    organization_schema_present: boolean;
+    author_transparency: boolean;
+    canonical_urls_enforced: boolean;
+    hreflang_alternates_present: boolean;
+    ai_crawler_accessible: boolean;
+    citations_check: string;
+  };
 }
 
 export interface Article {
@@ -235,6 +326,21 @@ export interface GalleryCategory {
   description: string;
   order: number;
   is_active: boolean;
+}
+
+export interface PublicDocument {
+  id: string;
+  title: string;
+  doc_type: string;
+  description?: string;
+  url: string;
+  file_size: number;
+  original_name?: string;
+  product_title?: string;
+  product_slug?: string;
+  category_title?: string;
+  category_slug?: string;
+  created_at: string;
 }
 
 export interface GalleryImage {

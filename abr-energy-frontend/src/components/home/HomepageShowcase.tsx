@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -10,72 +10,27 @@ import { ProductPrice } from '@/components/products/public/ProductPrice';
 import type { HomepageVisual, ProductCategory, ProductListItem } from '@/types';
 
 /**
- * Phase 12.1 — Reference-B homepage showcase composition.
- *
- * Light editorial first-viewport workspace rendered inside the hero section:
- *
- *   [ MAIN VISUAL FRAME (right in RTL) ] [ INSTANT-SUGGESTION PANEL (left) ]
- *   [ CATEGORY / VISUAL NAVIGATION STRIP — below the main frame          ]
- *
- * Everything is CMS-driven with hook fallbacks resolved by the caller:
- * - `products`: featured products (title / image / price / detail CTA).
- * - `categories`: real category tree (ids, titles, slugs, order).
- * - `visuals`: HomepageVisual media composed around the main frame.
- *
- * No fake products, prices, or images are ever invented. Category → visual
- * mapping resolves the first featured product in the selected category
- * (the public category list carries no cover of its own); when nothing
- * matches, a designed empty state preserves the composition.
- *
- * Testid contract (shared with the Phase-12 hero stage so existing
- * assertions keep passing): `hero-showcase`, `hero-product-title`,
- * `hero-showcase-empty`, `hero-floating-visual`.
+ * Phase 12.7 — dominant showcase: main stage + instant panel only.
+ * Category navigation lives in its own section DIRECTLY BELOW the hero
+ * (ProductRailSection), not inside the showcase — no duplication.
+ * `categories` prop kept for API compatibility, ignored.
  */
 export function HomepageShowcase({
   products,
-  categories,
   visuals,
 }: {
   products: ProductListItem[];
-  categories: ProductCategory[];
+  categories?: ProductCategory[];
   visuals?: HomepageVisual[] | null;
 }) {
   const { t, isRTL } = useLocale();
   const prefersReduced = useReducedMotion();
-  const stripRef = useRef<HTMLDivElement>(null);
   const instantTouchX = useRef<number | null>(null);
 
-  const roots = useMemo(() => {
-    const list = categories.some((c) => !c.parent)
-      ? categories.filter((c) => !c.parent)
-      : categories;
-    return [...list].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  }, [categories]);
-
-  // Selected category (real id, null = overview). Defaults to the first
-  // root so the strip always has an active state when taxonomy exists.
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const activeCategoryId = selectedId ?? roots[0]?.id ?? null;
-  const activeCategory = roots.find((c) => c.id === activeCategoryId) ?? null;
-
-  // Main visual: first featured product in the selected category, else the
-  // first featured product overall (CMS order). Never fabricated.
-  const scoped = useMemo(
-    () =>
-      activeCategoryId
-        ? products.filter((p) => p.category === activeCategoryId)
-        : [],
-    [products, activeCategoryId],
-  );
-  const stageList = scoped.length > 0 ? scoped : products;
+  const stageList = products;
   const [stageIndex, setStageIndex] = useState(0);
   const stageSafe = stageList.length === 0 ? 0 : Math.min(Math.max(stageIndex, 0), stageList.length - 1);
   const stage = stageList.length === 0 ? null : stageList[stageSafe];
-
-  const selectCategory = useCallback((id: string | null) => {
-    setSelectedId(id);
-    setStageIndex(0);
-  }, []);
 
   const goStage = useCallback(
     (index: number) => {
@@ -97,28 +52,11 @@ export function HomepageShowcase({
     [products.length],
   );
 
-  const onStripKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (roots.length === 0) return;
-      const current = Math.max(
-        0,
-        roots.findIndex((c) => c.id === activeCategoryId),
-      );
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        selectCategory(roots[(current + (isRTL ? 1 : roots.length - 1)) % roots.length]?.id ?? null);
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        selectCategory(roots[(current + (isRTL ? roots.length - 1 : 1)) % roots.length]?.id ?? null);
-      }
-    },
-    [roots, activeCategoryId, selectCategory, isRTL],
-  );
-
   const floating = (visuals ?? []).filter((v) => v.image_url?.trim()).slice(0, 2);
 
-  const stageBody = stage && stage.cover_image_url?.trim() ? (
-    <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
+  const stageBody = stage ? (
+    stage.cover_image_url?.trim() ? (
+    <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 lg:aspect-[16/9] xl:aspect-[21/11] dark:bg-neutral-900">
       <Image
         key={stage.id}
         src={resolveMediaUrl(stage.cover_image_url)}
@@ -140,12 +78,12 @@ export function HomepageShowcase({
           {stageSafe + 1} / {stageList.length}
         </p>
       )}
-      <div className="absolute inset-x-3 bottom-3 rounded-xl border border-white/15 bg-black/55 p-3 backdrop-blur-md sm:p-4">
-        <p data-testid="hero-product-title" className="font-heading text-base font-bold leading-7 text-white sm:text-lg">
+      <div className="absolute inset-x-3 bottom-3 rounded-xl border border-white/15 bg-black/55 p-3 backdrop-blur-md sm:p-4 lg:inset-x-5 lg:bottom-5 lg:p-5">
+        <p data-testid="hero-product-title" className="font-heading text-lg font-bold leading-8 text-white sm:text-xl lg:text-2xl lg:leading-10">
           {stage.title}
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <ProductPrice price={stage.price} size="sm" />
+          <ProductPrice price={stage.price} size="md" />
           <Link
             href={`/products/${stage.slug}`}
             aria-label={`${stage.title} — ${t('products.view_details')}`}
@@ -157,6 +95,39 @@ export function HomepageShowcase({
         </div>
       </div>
     </div>
+    ) : (
+    /* Phase 12.4 — designed fallback for real products without cover
+       imagery (incl. dev-preview fixtures): solar gradient panel with
+       product info, never a blank/broken frame. */
+    <div data-testid="hero-showcase-fallback" className="relative flex aspect-[16/10] w-full flex-col justify-end overflow-hidden bg-gradient-to-bl from-emerald-800 via-neutral-900 to-amber-900 p-5 text-start sm:p-6 lg:aspect-[16/9] lg:p-8 xl:aspect-[21/11] dark:from-emerald-950 dark:via-neutral-900 dark:to-amber-950">
+      <div aria-hidden className="absolute inset-0">
+        <div className="absolute end-1/4 top-1/4 h-32 w-32 rounded-full bg-amber-400/30 blur-3xl" />
+        <div className="absolute bottom-0 start-0 h-40 w-40 rounded-full bg-emerald-500/20 blur-3xl" />
+      </div>
+      <Sun className="absolute end-6 top-6 h-14 w-14 text-amber-400/60" aria-hidden />
+      {stageList.length > 1 && (
+        <p dir="auto" className="absolute start-4 top-4 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white">
+          {stageSafe + 1} / {stageList.length}
+        </p>
+      )}
+      <div className="relative">
+        <p data-testid="hero-product-title" className="font-heading text-lg font-bold leading-8 text-white sm:text-xl lg:text-2xl lg:leading-10">
+          {stage.title}
+        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <ProductPrice price={stage.price} size="md" />
+          <Link
+            href={`/products/${stage.slug}`}
+            aria-label={`${stage.title} — ${t('products.view_details')}`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-emerald-700"
+          >
+            {t('products.view_details')}
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
+      </div>
+    </div>
+    )
   ) : null;
 
   const stageInner = prefersReduced ? (
@@ -174,7 +145,7 @@ export function HomepageShowcase({
 
   return (
     <div data-testid="homepage-showcase">
-      <div className="grid items-stretch gap-4 lg:grid-cols-[1.65fr_0.85fr] lg:gap-5">
+      <div className="grid items-stretch gap-4 md:grid-cols-2 lg:grid-cols-[2.1fr_0.9fr] lg:gap-6">
         {/* MAIN VISUAL FRAME (first in DOM = right in RTL) */}
         <div className="relative min-w-0">
           <div
@@ -183,7 +154,7 @@ export function HomepageShowcase({
           />
           <div
             data-testid="hero-showcase"
-            className="relative overflow-hidden rounded-2xl border-2 border-neutral-900/80 bg-white shadow-[0_24px_70px_-28px_rgba(0,0,0,0.45)]"
+            className="relative overflow-hidden rounded-2xl border-2 border-neutral-900/80 bg-white shadow-[0_24px_70px_-28px_rgba(0,0,0,0.45)] dark:border-white/20 dark:bg-neutral-900 dark:shadow-[0_24px_70px_-28px_rgba(0,0,0,0.8)]"
           >
             {stageBody ? (
               stageInner
@@ -197,11 +168,11 @@ export function HomepageShowcase({
                   <span className="absolute inset-x-1 top-1/2 h-px -translate-y-1/2 bg-gradient-to-l from-transparent via-amber-500/80 to-transparent" />
                   <Sun className="relative h-10 w-10 text-amber-500" />
                 </span>
-                <span aria-hidden className="h-px w-36 bg-neutral-900/15" />
-                <p className="max-w-xs text-sm leading-7 text-neutral-500">{t('home.featured_subtitle')}</p>
+                <span aria-hidden className="h-px w-36 bg-neutral-900/15 dark:bg-white/15" />
+                <p className="max-w-xs text-sm leading-7 text-neutral-500 dark:text-neutral-400">{t('home.empty_showcase_hint')}</p>
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 rounded-xl border-2 border-neutral-900/80 bg-white px-5 py-2.5 text-sm font-bold text-neutral-900 transition hover:bg-neutral-900 hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-neutral-900/80 bg-white px-5 py-2.5 text-sm font-bold text-neutral-900 transition hover:bg-neutral-900 hover:text-white dark:border-white/30 dark:bg-transparent dark:text-white dark:hover:bg-white dark:hover:text-neutral-900"
                 >
                   {t('home.featured_cta')}
                   <ArrowLeft className="h-4 w-4" aria-hidden />
@@ -219,7 +190,7 @@ export function HomepageShowcase({
               data-testid="hero-floating-visual"
               className={`absolute hidden w-24 md:block ${i === 0 ? '-end-5 -top-7 rotate-3' : '-start-6 -bottom-7 -rotate-3'}`}
             >
-              <div className="overflow-hidden rounded-xl border-2 border-neutral-900/70 bg-white shadow-lg">
+              <div className="overflow-hidden rounded-xl border-2 border-neutral-900/70 bg-white shadow-lg dark:border-white/20 dark:bg-neutral-900">
                 <Image
                   src={resolveMediaUrl(v.image_url) || v.image_url}
                   alt=""
@@ -232,68 +203,24 @@ export function HomepageShowcase({
             </div>
           ))}
 
-          {/* CATEGORY / VISUAL NAVIGATION STRIP — below the main frame. */}
-          {roots.length > 0 && (
-            <div className="mt-3">
-              <div
-                ref={stripRef}
-                role="navigation"
-                aria-label={t('home.categories_title')}
-                data-testid="showcase-category-rail"
-                onKeyDown={onStripKeyDown}
-                className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 snap-x"
-              >
-                {roots.map((cat) => {
-                  const isActive = cat.id === activeCategoryId;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => selectCategory(cat.id)}
-                      aria-current={isActive ? true : undefined}
-                      aria-pressed={isActive}
-                      data-active={isActive}
-                      className={`shrink-0 snap-start rounded-xl border-2 px-4 py-2 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-emerald-600 ${
-                        isActive
-                          ? 'border-neutral-900 bg-neutral-900 text-white shadow-md'
-                          : 'border-neutral-900/25 bg-white text-neutral-700 hover:border-neutral-900/60 hover:text-neutral-900'
-                      }`}
-                    >
-                      {cat.title}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-2 flex items-center justify-between gap-3">
-                <p className="min-w-0 truncate text-xs text-neutral-500" aria-live="polite">
-                  {activeCategory ? activeCategory.title : ''}
-                </p>
-                <Link
-                  href={activeCategory ? `/products/category/${activeCategory.slug}` : '/products'}
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-900/25 px-3 py-1.5 text-xs font-bold text-neutral-800 transition hover:border-neutral-900 hover:bg-neutral-900 hover:text-white focus-visible:outline-2 focus-visible:outline-emerald-600"
-                >
-                  {t('home.categories_cta')}
-                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* INSTANT-SUGGESTION PANEL (left in RTL, subordinate to the stage) */}
         <aside
           aria-labelledby="instant-offer-heading"
           data-testid="instant-offer-panel"
-          className="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border-2 border-neutral-900/80 bg-white shadow-[0_24px_70px_-28px_rgba(0,0,0,0.45)]"
+          className="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border-2 border-neutral-900/80 bg-white shadow-[0_24px_70px_-28px_rgba(0,0,0,0.45)] dark:border-white/20 dark:bg-neutral-900"
         >
-          <div className="flex items-center justify-between gap-2 border-b-2 border-neutral-900/80 bg-neutral-900 px-4 py-2.5">
+          <div className="flex items-center justify-between gap-2 border-b-2 border-neutral-900/80 bg-neutral-900 px-4 py-2.5 dark:border-white/20 dark:bg-neutral-800">
             <h2 id="instant-offer-heading" className="font-heading text-sm font-extrabold text-white">
               {t('home.instant_offer')}
             </h2>
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-bold text-white">
-              <Zap className="h-3 w-3" aria-hidden />
-              {t('products.discount_badge')}
-            </span>
+            {instant?.price?.state === 'discounted' && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                <Zap className="h-3 w-3" aria-hidden />
+                {t('products.discount_badge')}
+              </span>
+            )}
           </div>
 
           {instant ? (
@@ -313,7 +240,7 @@ export function HomepageShowcase({
                 goInstant(instantSafe + (forward ? 1 : -1));
               }}
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                 {instant.cover_image_url?.trim() ? (
                   <Image
                     key={instant.id}
@@ -331,14 +258,14 @@ export function HomepageShowcase({
                 )}
               </div>
               <div className="flex flex-1 flex-col gap-2 p-4">
-                <p data-testid="instant-offer-title" className="font-heading text-base font-extrabold leading-7 text-neutral-900 line-clamp-2">
+                <p data-testid="instant-offer-title" className="font-heading text-base font-extrabold leading-7 text-neutral-900 line-clamp-2 dark:text-white">
                   {instant.title}
                 </p>
                 {instant.short_description && (
-                  <p className="text-xs leading-6 text-neutral-500 line-clamp-2">{instant.short_description}</p>
+                  <p className="text-xs leading-6 text-neutral-500 line-clamp-2 dark:text-neutral-400">{instant.short_description}</p>
                 )}
                 <div className="mt-auto pt-2">
-                  <ProductPrice price={instant.price} size="sm" />
+                  <ProductPrice price={instant.price} size="sm" tone="light" />
                   <div className="mt-3 flex items-center justify-between gap-2">
                     <Link
                       href={`/products/${instant.slug}`}
@@ -354,7 +281,7 @@ export function HomepageShowcase({
                           type="button"
                           onClick={() => goInstant(instantSafe - 1)}
                           aria-label={`${t('common.previous')} — ${t('home.instant_offer')}`}
-                          className="rounded-full border border-neutral-900/20 p-2 text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600"
+                          className="rounded-full border border-neutral-900/20 p-2 text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600 dark:border-white/20 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
                         >
                           {isRTL ? <ChevronRight className="h-4 w-4" aria-hidden /> : <ChevronLeft className="h-4 w-4" aria-hidden />}
                         </button>
@@ -362,7 +289,7 @@ export function HomepageShowcase({
                           type="button"
                           onClick={() => goInstant(instantSafe + 1)}
                           aria-label={`${t('common.next')} — ${t('home.instant_offer')}`}
-                          className="rounded-full border border-neutral-900/20 p-2 text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600"
+                          className="rounded-full border border-neutral-900/20 p-2 text-neutral-600 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600 dark:border-white/20 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
                         >
                           {isRTL ? <ChevronLeft className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
                         </button>
@@ -379,11 +306,11 @@ export function HomepageShowcase({
             </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-              <Search className="h-8 w-8 text-neutral-300" aria-hidden />
-              <p className="text-sm leading-7 text-neutral-500">{t('home.featured_subtitle')}</p>
+              <Search className="h-8 w-8 text-neutral-300 dark:text-neutral-600" aria-hidden />
+              <p className="text-sm leading-7 text-neutral-500 dark:text-neutral-400">{t('home.empty_showcase_hint')}</p>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 rounded-lg border border-neutral-900/25 px-4 py-2 text-sm font-bold text-neutral-800 transition hover:border-neutral-900 hover:bg-neutral-900 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-lg border border-neutral-900/25 px-4 py-2 text-sm font-bold text-neutral-800 transition hover:border-neutral-900 hover:bg-neutral-900 hover:text-white dark:border-white/25 dark:text-neutral-200 dark:hover:bg-white dark:hover:text-neutral-900"
               >
                 {t('home.featured_cta')}
                 <ArrowLeft className="h-4 w-4" aria-hidden />
@@ -400,7 +327,7 @@ export function HomepageShowcase({
             type="button"
             onClick={() => goStage(stageSafe - 1)}
             aria-label={`${t('common.previous')} — ${t('home.featured_title')}`}
-            className="rounded-full border-2 border-neutral-900/25 bg-white p-2 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600"
+            className="rounded-full border-2 border-neutral-900/25 bg-white p-2 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600 dark:border-white/25 dark:bg-transparent dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
           >
             {isRTL ? <ChevronRight className="h-4 w-4" aria-hidden /> : <ChevronLeft className="h-4 w-4" aria-hidden />}
           </button>
@@ -408,7 +335,7 @@ export function HomepageShowcase({
             type="button"
             onClick={() => goStage(stageSafe + 1)}
             aria-label={`${t('common.next')} — ${t('home.featured_title')}`}
-            className="rounded-full border-2 border-neutral-900/25 bg-white p-2 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600"
+            className="rounded-full border-2 border-neutral-900/25 bg-white p-2 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-emerald-600 dark:border-white/25 dark:bg-transparent dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
           >
             {isRTL ? <ChevronLeft className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
           </button>

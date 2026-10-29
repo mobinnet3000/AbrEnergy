@@ -14,6 +14,9 @@ import axiosInstance from '@/api/axios';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useDirtyNavigationGuard } from '@/hooks/use-dirty-navigation-guard';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { EntityCategorySelect } from '@/components/admin/entity-category-select';
+import { buildArticlePayload } from '@/lib/cms-form-contracts';
+import { contentSaveErrorMessage } from '@/lib/cms-error-toast';
 import { useLocale } from '@/i18n';
 
 const LANGUAGES = [
@@ -88,34 +91,25 @@ export default function NewArticlePage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const translationList = LANGUAGES.map((l) => ({
-        language_code: l.code,
-        title: translations[l.code as keyof typeof translations].title,
-        slug: translations[l.code as keyof typeof translations].slug,
-        short_description: translations[l.code as keyof typeof translations].short_description,
-        content: translations[l.code as keyof typeof translations].content,
-      }));
-      await axiosInstance.post('/admin/articles/', {
-        translations: translationList,
+      await axiosInstance.post('/admin/articles/', buildArticlePayload({
+        translations,
         status,
         category,
         tags,
         publish_date: publishDate,
-        cover_image_url: coverImage,
-        // Phase 9.5 — reference-based cover reuse (existing MediaFile id, no copy).
-        cover_image: coverImageId || null,
+        cover_image: coverImageId,
         is_featured: featured,
-      });
-      toast.success('Article created');
+      }));
+      toast.success(t('admin.article_created'));
       router.push('/admin/articles');
-    } catch {
-      toast.error('Failed to create article');
+    } catch (error) {
+      toast.error(contentSaveErrorMessage(t('admin.article_save_failed'), error));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderLangTab = (code: string, label: string) => (
+  const renderLangTab = (code: string) => (
     <TabsContent key={code} value={code} className="space-y-4">
       <div>
         <label className="text-sm font-medium mb-1 block">{t('admin.title_label')}</label>
@@ -185,7 +179,7 @@ export default function NewArticlePage() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {LANGUAGES.map((l) => renderLangTab(l.code, l.label))}
+              {LANGUAGES.map((l) => renderLangTab(l.code))}
             </Tabs>
           </CardContent>
         </Card>
@@ -204,8 +198,8 @@ export default function NewArticlePage() {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">{t('admin.category_id')}</label>
-                <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Category UUID" />
+                <label className="text-sm font-medium mb-1 block">{t('admin.category')}</label>
+                <EntityCategorySelect kind="article" value={category} onChange={setCategory} />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t('admin.tags')} (comma)</label>

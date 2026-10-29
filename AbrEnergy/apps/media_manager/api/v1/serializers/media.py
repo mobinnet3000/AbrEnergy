@@ -92,6 +92,10 @@ class MediaFileListSerializer(serializers.ModelSerializer):
             "file_size", "width", "height", "alt_text", "subfolder",
             "uploaded_at",
         ]
+        read_only_fields = [
+            "id", "original_name", "file_type", "file_size",
+            "width", "height", "uploaded_at",
+        ]
 
     def get_url(self, obj):
         return obj.file.url if obj.file else ""

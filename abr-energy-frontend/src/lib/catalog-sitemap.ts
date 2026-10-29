@@ -71,6 +71,12 @@ export function buildCatalogEntries(input: {
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    {
+      url: `${site}/${CATALOG_LOCALE}/products/category`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
   ];
   for (const category of categories) {
     if (!isSitemapCategory(category)) continue;

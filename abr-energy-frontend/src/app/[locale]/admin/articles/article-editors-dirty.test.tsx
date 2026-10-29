@@ -75,16 +75,22 @@ function wrapper() {
 const articleDetail = {
   id: 'art-1',
   status: 'draft',
-  category: '',
+  category: null,
   is_featured: false,
   publish_date: '2026-09-01',
+  cover_image: '',
   cover_image_url: '',
   tags: [{ id: 't1', title: 'solar' }],
-  title_fa: 'عنوان موجود',
-  short_description_fa: 'خلاصه',
-  content_fa: 'متن',
-  title_ar: '', short_description_ar: '', content_ar: '',
-  title_en: '', short_description_en: '', content_en: '',
+  translations: {
+    fa: {
+      title: 'عنوان موجود',
+      slug: 'existing-article',
+      short_description: 'خلاصه',
+      content: 'متن',
+      meta_title: '',
+      meta_description: '',
+    },
+  },
 };
 
 beforeEach(() => {
@@ -176,6 +182,22 @@ describe('Article new — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.create_article' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/articles'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = postMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      tags: [],
+      category: null,
+      cover_image: null,
+      status: 'draft',
+      publish_date: null,
+      is_featured: false,
+      translations: {
+        fa: expect.objectContaining({ title: 'عنوان تازه' }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('language_code');
+    expect(payload).not.toHaveProperty('cover_image_url');
+    expect(payload).not.toHaveProperty('title_fa');
   });
 });
 
@@ -233,5 +255,24 @@ describe('Article edit — dirty guard (Phase 9.2)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'admin.save_changes' }));
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/articles'));
     expect(screen.queryByText('admin.unsaved_changes_title')).toBeNull();
+
+    const [, payload] = patchMock.mock.calls[0];
+    expect(payload).toEqual(expect.objectContaining({
+      tags: ['solar'],
+      category: null,
+      cover_image: null,
+      status: 'draft',
+      publish_date: '2026-09-01',
+      translations: {
+        fa: expect.objectContaining({
+          title: 'عنوان ویراسته',
+          slug: 'existing-article',
+          short_description: 'خلاصه',
+          content: 'متن',
+        }),
+      },
+    }));
+    expect(payload).not.toHaveProperty('title_fa');
+    expect(payload).not.toHaveProperty('cover_image_url');
   });
 });

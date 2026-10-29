@@ -66,7 +66,7 @@ class MediaListView(generics.ListAPIView):
         return qs
 
 
-class MediaDetailView(generics.RetrieveDestroyAPIView):
+class MediaDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Phase 9.5 — retrieve for stale-selection validation + admin delete.
 
     ``GET`` (``IsContentManager``) lets the picker validate that a

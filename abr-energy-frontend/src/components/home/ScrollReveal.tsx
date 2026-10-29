@@ -98,7 +98,7 @@ export function TextReveal({ text, className = '', delay = 0 }: { text: string; 
   const words = text.split(' ');
 
   return (
-    <div ref={ref} className={`flex flex-wrap ${className}`}>
+    <div ref={ref} className={`flex flex-nowrap justify-center whitespace-nowrap ${className}`}>
       {words.map((word, i) => (
         <motion.span
           key={i}

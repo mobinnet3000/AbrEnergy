@@ -1,11 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Zap } from 'lucide-react';
+import { Mail, Phone, MapPin, ExternalLink } from 'lucide-react';
 import { useLocale } from '@/i18n';
 import { localeNames, activeLocales } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { ScrollReveal } from '@/components/home/ScrollReveal';
+import { BrandLogo } from '@/components/layout/brand-logo';
+import { useSiteSettings } from '@/hooks/use-api';
 
 function SolarGrid() {
   return (
@@ -25,7 +27,7 @@ function SolarGrid() {
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="font-heading font-semibold text-xs text-emerald-400/60 mb-5 uppercase tracking-[0.2em]">{title}</h4>
+      <h4 className="font-heading font-semibold text-xs text-emerald-700/80 mb-5 uppercase tracking-[0.2em] dark:text-emerald-400/60">{title}</h4>
       <ul className="space-y-3">{children}</ul>
     </div>
   );
@@ -34,7 +36,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
 function FooterLink({ href, label }: { href: string; label: string }) {
   return (
     <li>
-      <Link href={href} className="text-sm text-white/25 hover:text-emerald-400/70 transition-all duration-500 hover:translate-x-0.5 inline-block">
+      <Link href={href} className="text-sm text-neutral-600 hover:text-emerald-700 transition-all duration-500 hover:translate-x-0.5 inline-block dark:text-neutral-300 dark:hover:text-emerald-300">
         {label}
       </Link>
     </li>
@@ -43,10 +45,40 @@ function FooterLink({ href, label }: { href: string; label: string }) {
 
 export function Footer() {
   const { locale, setLocale, t } = useLocale();
+  const { data: settings } = useSiteSettings();
   const year = new Date().getFullYear();
 
+  // Localized address components
+  const displayAddress = locale === 'en'
+    ? (settings?.address_en || settings?.address)
+    : locale === 'ar'
+      ? (settings?.address_ar || settings?.address)
+      : settings?.address;
+
+  const displayCity = locale === 'en'
+    ? (settings?.city_en || settings?.city)
+    : locale === 'ar'
+      ? (settings?.city_ar || settings?.city)
+      : settings?.city;
+
+  const displayProvince = locale === 'en'
+    ? (settings?.province_en || settings?.province)
+    : locale === 'ar'
+      ? (settings?.province_ar || settings?.province)
+      : settings?.province;
+
+  const displayCityProvince = [displayCity, displayProvince].filter(Boolean).join(locale === 'en' ? ', ' : '، ');
+
+  const hasContactDetails = Boolean(
+    settings?.email || settings?.phone_number || displayAddress || settings?.address,
+  );
+
+  const isValidMapUrl = Boolean(
+    settings?.map_url && settings.map_url.startsWith('https://'),
+  );
+
   return (
-    <footer data-section="footer" className="relative overflow-hidden bg-black border-t border-white/[0.03]">
+    <footer data-section="footer" data-testid="site-footer" className="relative overflow-hidden bg-neutral-100 border-t border-neutral-200 text-neutral-700 dark:bg-black dark:border-white/[0.03] dark:text-neutral-300">
       {/* Animated top light border */}
       <div className="relative h-px overflow-hidden">
         <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" animate={{ x: ['-100%', '100%'] }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }} />
@@ -54,9 +86,9 @@ export function Footer() {
 
       <SolarGrid />
 
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-500/3 blur-[150px]" />
-        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-blue-500/3 blur-[120px]" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-500/5 blur-[150px] dark:bg-emerald-500/3" />
+        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[120px] dark:bg-blue-500/3" />
       </div>
 
       <div className="container-page relative z-10 pt-20 pb-8">
@@ -64,14 +96,9 @@ export function Footer() {
           {/* Brand */}
           <ScrollReveal variant="fade" className="lg:col-span-3">
             <div className="lg:pr-6">
-              <Link href="/" className="inline-flex items-center gap-3 mb-5 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-                  <Zap className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-heading font-bold text-lg text-white/90">{t('common.site_name')}</span>
-              </Link>
-              <p className="text-sm text-white/25 leading-relaxed mb-6 max-w-xs">
-                {t('common.site_slogan')}
+              <BrandLogo className="mb-5 group" nameClassName="text-neutral-900 dark:text-white" />
+              <p className="text-sm text-neutral-600 leading-relaxed mb-6 max-w-xs dark:text-neutral-300">
+                {settings?.footer_text || t('common.site_slogan')}
               </p>
             </div>
           </ScrollReveal>
@@ -79,31 +106,82 @@ export function Footer() {
           {/* Quick links */}
           <ScrollReveal variant="fade" delay={0.1} className="lg:col-span-2">
             <FooterColumn title={t('footer.company')}>
-              {['about', 'services', 'projects', 'contact'].map((p) => (
-                <FooterLink key={p} href={`/${p}`} label={t(`nav.${p}`)} />
+              {['about', 'services', 'projects', 'articles', 'contact'].map((p) => (
+                <FooterLink key={p} href={`/${locale}/${p}`} label={t(`nav.${p}`)} />
               ))}
             </FooterColumn>
           </ScrollReveal>
 
           <ScrollReveal variant="fade" delay={0.15} className="lg:col-span-2">
             <FooterColumn title={t('services.title')}>
-              {['services', 'calculator', 'gallery'].map((p) => (
-                <FooterLink key={p} href={`/${p}`} label={t(`nav.${p}`)} />
+              {['services', 'calculator', 'gallery', 'downloads'].map((p) => (
+                <FooterLink key={p} href={`/${locale}/${p}`} label={t(`nav.${p}`)} />
               ))}
             </FooterColumn>
           </ScrollReveal>
 
-          {/* Contact */}
-          <ScrollReveal variant="fade" delay={0.2} className="lg:col-span-2">
+          {/* Contact & Structured Company Address */}
+          <ScrollReveal variant="fade" delay={0.2} className="lg:col-span-3">
             <FooterColumn title={t('contact.title')}>
-              <li className="flex items-center gap-3 text-sm text-white/25"><Mail className="h-3.5 w-3.5 text-emerald-500/40" /> info@abrenv.com</li>
-              <li className="flex items-center gap-3 text-sm text-white/25"><Phone className="h-3.5 w-3.5 text-emerald-500/40" /> +98 21 1234 5678</li>
-              <li className="flex items-center gap-3 text-sm text-white/25"><MapPin className="h-3.5 w-3.5 text-emerald-500/40" /> Tehran, Iran</li>
+              {settings?.email && (
+                <li className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300">
+                  <Mail className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
+                  <a href={`mailto:${settings.email}`} className="hover:text-emerald-600 transition-colors" dir="ltr">
+                    {settings.email}
+                  </a>
+                </li>
+              )}
+              {settings?.phone_number && (
+                <li className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300">
+                  <Phone className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
+                  <a href={`tel:${settings.phone_number.replace(/\s+/g, '')}`} className="hover:text-emerald-600 transition-colors" dir="ltr">
+                    {settings.phone_number}
+                  </a>
+                </li>
+              )}
+              {displayAddress && (
+                <li data-testid="footer-address-card" className="flex flex-col gap-1.5 rounded-lg border border-neutral-200/80 bg-white/50 p-3 text-sm text-neutral-700 shadow-xs dark:border-white/10 dark:bg-neutral-900/40 dark:text-neutral-300">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-500" />
+                    <span className="leading-relaxed">{displayAddress}</span>
+                  </div>
+                  {displayCityProvince && (
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 pl-6 rtl:pl-0 rtl:pr-6">
+                      {displayCityProvince}
+                    </div>
+                  )}
+                  {settings?.postal_code && (
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 pl-6 rtl:pl-0 rtl:pr-6">
+                      <span className="font-medium text-neutral-600 dark:text-neutral-300">
+                        {locale === 'en' ? 'Postal Code: ' : locale === 'ar' ? 'الرمز البريدي: ' : 'کد پستی: '}
+                      </span>
+                      <span dir="ltr">{settings.postal_code}</span>
+                    </div>
+                  )}
+                  {isValidMapUrl && (
+                    <div className="mt-1 pl-6 rtl:pl-0 rtl:pr-6">
+                      <a
+                        href={settings.map_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-testid="footer-map-link"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
+                      >
+                        <span>{locale === 'en' ? 'View on map' : locale === 'ar' ? 'عرض على الخريطة' : 'مشاهده روی نقشه'}</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
+                </li>
+              )}
+              {!hasContactDetails && (
+                <li className="text-sm leading-6 text-neutral-500 dark:text-neutral-400">{t('contact.details_unavailable')}</li>
+              )}
             </FooterColumn>
           </ScrollReveal>
 
           {/* Language */}
-          <ScrollReveal variant="fade" delay={0.25} className="lg:col-span-3">
+          <ScrollReveal variant="fade" delay={0.25} className="lg:col-span-2">
             <FooterColumn title={t('common.language')}>
               <div className="flex flex-wrap gap-2">
                 {activeLocales.map((l) => (
@@ -112,8 +190,8 @@ export function Footer() {
                     type="button"
                     className={`px-4 py-2 rounded-lg text-xs font-medium transition-all duration-500 ${
                       locale === l
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/15'
-                        : 'bg-white/[0.02] text-white/30 border border-white/[0.05] hover:text-white/50 hover:bg-white/[0.04]'
+                        ? 'bg-emerald-600/10 text-emerald-700 border border-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/15'
+                        : 'bg-neutral-900/[0.03] text-neutral-500 border border-neutral-900/10 hover:text-neutral-800 hover:bg-neutral-900/[0.06] dark:bg-white/[0.02] dark:text-white/30 dark:border-white/[0.05] dark:hover:text-white/50 dark:hover:bg-white/[0.04]'
                     }`}
                     onClick={() => setLocale(l as Locale)}
                   >
@@ -130,13 +208,9 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-14 pt-6 border-t border-white/[0.03] flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="mt-14 pt-6 border-t border-neutral-200 flex items-center justify-center dark:border-white/[0.03]"
         >
-          <p className="text-xs text-white/15">&copy; {year} AbrEnergy.</p>
-          <div className="flex items-center gap-5 text-xs text-white/15">
-            <a href="#" className="hover:text-white/30 transition-colors duration-300">{t('footer.privacy')}</a>
-            <a href="#" className="hover:text-white/30 transition-colors duration-300">{t('footer.terms')}</a>
-          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">&copy; {year} {settings?.company_name || t('common.site_name')}.</p>
         </motion.div>
       </div>
     </footer>

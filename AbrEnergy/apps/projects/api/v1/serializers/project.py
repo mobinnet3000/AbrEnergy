@@ -60,11 +60,12 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField()
     meta_title = serializers.SerializerMethodField()
     meta_description = serializers.SerializerMethodField()
+    translations = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
         fields = [
-            "id", "title", "slug", "description", "location",
+            "id", "title", "slug", "description", "translations", "location",
             "capacity", "project_type", "service_category",
             "start_date", "end_date", "status", "is_featured",
             "completion_percentage", "images",
@@ -96,6 +97,22 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         lang = self.context.get("language", "fa")
         t = obj.get_translation(lang)
         return t.meta_description if t else ""
+
+    def get_translations(self, obj):
+        """Expose every stored locale only to authenticated requests."""
+        request = self.context.get("request")
+        if request is None or not request.user.is_authenticated:
+            return {}
+        return {
+            t.language: {
+                "title": t.title,
+                "slug": t.slug,
+                "description": t.description,
+                "meta_title": t.meta_title,
+                "meta_description": t.meta_description,
+            }
+            for t in obj.translations.all()
+        }
 
 
 class ProjectWriteSerializer(serializers.ModelSerializer):

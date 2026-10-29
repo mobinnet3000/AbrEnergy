@@ -6,7 +6,7 @@ Usage:
   python manage.py seed_data
   python manage.py seed_data --force  (delete existing data first)
 """
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from apps.users.models import User
 from apps.users.choices import UserRole
@@ -26,7 +26,27 @@ class Command(BaseCommand):
         parser.add_argument("--force", action="store_true", help="Delete existing data first")
         parser.add_argument("--noinput", "--no-input", action="store_true", help="Skip confirmation")
 
+    def _assert_dev_environment(self):
+        """Phase 12.13 — refuse to create predictable demo users outside dev.
+
+        This command provisions privileged accounts (``admin@abrenv.com`` etc.)
+        with hard-coded, guessable passwords, and ``--force`` deletes content
+        and users. That is only ever acceptable in a development or test
+        environment. The safe signal is the active Django settings: the
+        dev/local settings set ``DEBUG=True`` and the test settings set
+        ``TESTING=True``; production sets neither.
+        """
+        if getattr(settings, "TESTING", False) or getattr(settings, "DEBUG", False):
+            return
+        raise CommandError(
+            "seed_data refuses to run outside a development/test environment: "
+            "it creates privileged users with predictable passwords and --force "
+            "deletes content. Run with config.settings.dev/config.settings.local "
+            "(DEBUG=True) or config.settings.test (TESTING=True)."
+        )
+
     def handle(self, *args, **options):
+        self._assert_dev_environment()
         if options["force"]:
             self.stdout.write("Clearing existing data...")
             from apps.calculator.models import CalculationHistory

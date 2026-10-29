@@ -33,10 +33,10 @@ export function homepageCopy(cmsValue: string | undefined | null, fallback: stri
 }
 
 /** Server-side fetch of the public homepage (for `generateMetadata`). */
-export async function fetchHomepage(): Promise<HomepagePayload | null> {
+export async function fetchHomepage(locale = 'fa'): Promise<HomepagePayload | null> {
   try {
     const res = await fetch(`${apiBaseUrl()}/homepage/`, {
-      headers: { 'Accept-Language': 'fa' },
+      headers: { 'Accept-Language': locale },
       next: { revalidate: 300 },
     });
     if (!res.ok) return null;

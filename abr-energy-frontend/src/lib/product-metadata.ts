@@ -14,26 +14,45 @@ function apiBase(): string {
   return apiBaseUrl();
 }
 
-async function fetchPublic<T>(path: string): Promise<T | null> {
+export interface FetchPublicResult<T> {
+  data: T | null;
+  status: number;
+}
+
+export async function fetchPublicWithStatus<T>(path: string): Promise<FetchPublicResult<T>> {
   try {
     const res = await fetch(`${apiBase()}${path}`, {
       headers: { 'Accept-Language': 'fa' },
       // Catalog metadata changes only when editors publish; revalidate lazily.
       next: { revalidate: 300 },
     });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
+    if (!res.ok) return { data: null, status: res.status };
+    const data = (await res.json()) as T;
+    return { data, status: res.status };
   } catch {
-    return null;
+    return { data: null, status: 0 };
   }
+}
+
+async function fetchPublic<T>(path: string): Promise<T | null> {
+  const result = await fetchPublicWithStatus<T>(path);
+  return result.data;
 }
 
 export function fetchPublicProduct(slug: string): Promise<ProductDetail | null> {
   return fetchPublic<ProductDetail>(`/products/${encodeURIComponent(slug)}/`);
 }
 
+export function fetchPublicProductWithStatus(slug: string): Promise<FetchPublicResult<ProductDetail>> {
+  return fetchPublicWithStatus<ProductDetail>(`/products/${encodeURIComponent(slug)}/`);
+}
+
 export function fetchPublicProductCategory(slug: string): Promise<ProductCategoryDetail | null> {
   return fetchPublic<ProductCategoryDetail>(`/product-categories/${encodeURIComponent(slug)}/`);
+}
+
+export function fetchPublicProductCategoryWithStatus(slug: string): Promise<FetchPublicResult<ProductCategoryDetail>> {
+  return fetchPublicWithStatus<ProductCategoryDetail>(`/product-categories/${encodeURIComponent(slug)}/`);
 }
 
 export function fetchPublicProductList(): Promise<{ results: ProductListItem[] } | null> {
@@ -79,6 +98,15 @@ function mapRobots(robots?: string): { index: boolean; follow: boolean } {
 
 const SITE_NAME = 'ابر انرژی';
 
+function plainText(str: string | undefined): string {
+  if (!str) return '';
+  return str
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+([.,;:!?،؛])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function buildCatalogMetadata(input: {
   metaTitle?: string;
   seoTitle?: string;
@@ -92,10 +120,12 @@ export function buildCatalogMetadata(input: {
   ogDescription?: string;
   ogImage?: string;
 }): Metadata {
-  const title = input.metaTitle || input.seoTitle || input.fallbackTitle;
-  const description = input.metaDescription || input.seoDescription || input.fallbackDescription;
+  const title = plainText(input.metaTitle || input.seoTitle || input.fallbackTitle);
+  const description = plainText(input.metaDescription || input.seoDescription || input.fallbackDescription);
   const { index, follow } = mapRobots(input.robots);
   const images = input.ogImage ? [{ url: resolveMediaUrl(input.ogImage) || input.ogImage }] : undefined;
+  const ogTitle = plainText(input.ogTitle) || title;
+  const ogDescription = plainText(input.ogDescription) || description;
   return {
     title: `${title} | ${SITE_NAME}`,
     description,
@@ -104,8 +134,8 @@ export function buildCatalogMetadata(input: {
     openGraph: {
       // Dedicated OG fields win when editors set them; otherwise the
       // resolved page title/description is reused (no invented copy).
-      title: input.ogTitle || title,
-      description: input.ogDescription || description,
+      title: ogTitle,
+      description: ogDescription,
       type: 'website',
       siteName: SITE_NAME,
       // Persian is the only active public locale (ar/en emit no URLs).
@@ -165,5 +195,13 @@ export function productsIndexMetadata(): Metadata {
     // The index route is static and known; a self-referencing canonical is
     // safe here (detail pages keep backend-driven canonicals only).
     canonicalUrl: `${siteUrl()}/fa/products`,
+  });
+}
+
+export function productCategoriesIndexMetadata(): Metadata {
+  return buildCatalogMetadata({
+    fallbackTitle: 'دسته‌بندی‌های محصولات',
+    fallbackDescription: 'راهنمای جامع و فهرست دسته‌بندی‌های کاتالوگ محصولات خورشیدی و تجهیزات صنعتی ابر انرژی.',
+    canonicalUrl: `${siteUrl()}/fa/products/category`,
   });
 }

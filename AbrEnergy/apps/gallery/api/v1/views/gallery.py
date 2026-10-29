@@ -47,8 +47,12 @@ class GalleryAdminListView(generics.ListCreateAPIView):
 class GalleryAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     queryset = GalleryImage.objects.all()
-    serializer_class = GalleryImageSerializer
     lookup_field = "pk"
+
+    def get_serializer_class(self):
+        if self.request.method in ["PUT", "PATCH"]:
+            return GalleryImageWriteSerializer
+        return GalleryImageSerializer
 
 
 class GalleryCategoryListView(generics.ListCreateAPIView):

@@ -3,20 +3,19 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, LogIn, User, Globe, Zap } from 'lucide-react';
+import { Menu, X, Sun, Moon, LogIn, User, Globe } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLocale } from '@/i18n';
 import { localeNames, activeLocales } from '@/i18n';
 import type { Locale } from '@/i18n';
 import { cn } from '@/lib/utils';
-import { navigationConfig } from '@/config/navigation';
-import { NavLinkDesktop, NavLinkMobile } from '@/components/shared/NavLink';
+import { BrandLogo } from '@/components/layout/brand-logo';
+import { DesktopNav, MobileNav } from '@/components/layout/header-nav';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   // next-themes resolves the stored theme only on the client, so the icon
   // must render a deterministic (server-identical) fallback until mount —
@@ -39,7 +38,6 @@ export function Header() {
   useEffect(() => {
     const onScroll = () => {
       const sy = window.scrollY;
-      setScrolled(sy > 40);
       setHidden(sy > 120 && sy > lastScrollY.current);
       lastScrollY.current = sy;
     };
@@ -71,41 +69,22 @@ export function Header() {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-out',
           hidden ? '-translate-y-full' : 'translate-y-0',
-          scrolled
-            ? 'bg-white/50 dark:bg-gray-950/50 backdrop-blur-2xl border-b border-white/10 dark:border-white/5'
-            : 'bg-transparent border-b border-transparent',
+          'bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-b border-neutral-900/10 dark:border-white/5',
         )}
       >
         {/* Top-edge highlight */}
-        <div className={cn(
-          'absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent transition-opacity duration-700',
-          scrolled ? 'opacity-100' : 'opacity-0',
-        )} />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
 
-        <div className="container-page flex h-16 md:h-20 items-center justify-between">
+        <div className="container-page flex h-14 md:h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="relative group flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/15 group-hover:shadow-emerald-500/30 group-hover:scale-105 transition-all duration-500">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-            <div className="font-heading font-bold text-xl tracking-tight">
-              <span className={cn('transition-colors duration-500', scrolled ? 'text-foreground' : 'text-white')}>{t('common.site_name')}</span>
-            </div>
-          </Link>
+          <BrandLogo
+            priority
+            className="shrink-0"
+            nameClassName="transition-colors duration-500 text-foreground"
+          />
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-            {navigationConfig.map((item) => (
-              <NavLinkDesktop
-                key={item.href}
-                href={item.href}
-                isActive={isActive(item.href)}
-                scrolled={scrolled}
-              >
-                {t(item.labelKey)}
-              </NavLinkDesktop>
-            ))}
-          </nav>
+          <DesktopNav isActive={isActive} />
 
           {/* Actions */}
           <div className="flex items-center gap-1">
@@ -114,12 +93,7 @@ export function Header() {
               <button
                 type="button"
                 onClick={() => setLangOpen(!langOpen)}
-                className={cn(
-                  'p-2 rounded-lg transition-all duration-300',
-                  scrolled
-                    ? 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/50'
-                    : 'text-white/50 hover:text-white hover:bg-white/5',
-                )}
+                className="p-2 rounded-lg transition-all duration-300 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
                 aria-label={t('common.language')}
                 aria-expanded={langOpen}
               >
@@ -132,7 +106,7 @@ export function Header() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-36 rounded-xl border border-white/10 bg-black/80 backdrop-blur-2xl p-1.5 shadow-2xl z-50"
+                    className="absolute end-0 top-full mt-3 w-36 origin-top rounded-xl border border-neutral-900/10 bg-white/75 p-1.5 shadow-2xl ring-1 ring-black/5 backdrop-blur-2xl backdrop-saturate-150 z-50 dark:border-white/10 dark:bg-neutral-950/75 dark:ring-white/5"
                     onMouseLeave={closeLang}
                   >
                     {activeLocales.map((l) => (
@@ -142,13 +116,13 @@ export function Header() {
                         className={cn(
                           'w-full text-start px-3 py-2 rounded-lg text-sm transition-all',
                           locale === l
-                            ? 'bg-emerald-500/10 text-emerald-400 font-medium'
-                            : 'text-white/50 hover:text-white hover:bg-white/5',
+                            ? 'bg-emerald-500/10 text-emerald-700 font-medium dark:text-emerald-400'
+                            : 'text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100 dark:text-white/50 dark:hover:text-white dark:hover:bg-white/5',
                         )}
                         onClick={() => { setLocale(l as Locale); setLangOpen(false); }}
                       >
                         {localeNames[l as Locale]}
-                        {locale === l && <span className="ml-2 text-emerald-400">✓</span>}
+                        {locale === l && <span className="ml-2 text-emerald-600 dark:text-emerald-400">✓</span>}
                       </button>
                     ))}
                   </motion.div>
@@ -160,13 +134,9 @@ export function Header() {
             <button
               type="button"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className={cn(
-                'p-2 rounded-lg transition-all duration-300',
-                scrolled
-                  ? 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/50'
-                  : 'text-white/50 hover:text-white hover:bg-white/5',
-              )}
-              aria-label="Toggle theme"
+              className="p-2 rounded-lg transition-all duration-300 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+              aria-label={t('common.toggle_theme')}
+              aria-pressed={mounted && theme === 'dark'}
             >
               {mounted && theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
@@ -175,12 +145,7 @@ export function Header() {
             {isAuthenticated ? (
               <Link
                 href={user?.role === 'super_admin' || user?.role === 'website_admin' ? '/admin' : '/dashboard'}
-                className={cn(
-                  'inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-300',
-                  scrolled
-                    ? 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
-                    : 'text-white/70 hover:text-white hover:bg-white/5',
-                )}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg transition-all duration-300 text-foreground/70 hover:text-foreground hover:bg-muted/50"
               >
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">{user?.full_name?.split(' ')[0]}</span>
@@ -199,12 +164,7 @@ export function Header() {
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className={cn(
-                'md:hidden p-2 rounded-lg transition-all duration-300',
-                scrolled
-                  ? 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/50'
-                  : 'text-white/50 hover:text-white hover:bg-white/5',
-              )}
+              className="md:hidden p-2 rounded-lg transition-all duration-300 text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileOpen}
             >
@@ -232,32 +192,15 @@ export function Header() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                'absolute top-0 bottom-0 w-72 bg-black/90 backdrop-blur-2xl border-r border-white/5 p-6 pt-24 overflow-y-auto',
+                'absolute top-0 bottom-0 w-72 bg-white/85 backdrop-blur-2xl backdrop-saturate-150 border-neutral-900/10 p-6 pt-24 overflow-y-auto shadow-2xl dark:bg-neutral-950/85 dark:border-white/5',
                 isRTL ? 'right-0 border-l' : 'left-0 border-r',
               )}
               aria-label="Mobile navigation"
             >
-              <div className="space-y-1">
-                {navigationConfig.map((item, i) => (
-                  <motion.div
-                    key={item.href}
-                    initial={{ opacity: 0, x: isRTL ? 12 : -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                  >
-                    <NavLinkMobile
-                      href={item.href}
-                      isActive={isActive(item.href)}
-                      onClick={closeMobile}
-                    >
-                      {t(item.labelKey)}
-                    </NavLinkMobile>
-                  </motion.div>
-                ))}
-              </div>
+              <MobileNav isActive={isActive} onNavigate={closeMobile} />
 
-              <div className="border-t border-white/5 mt-6 pt-6 space-y-3">
-                <p className="px-4 text-xs font-medium text-white/30 uppercase tracking-wider">
+              <div className="border-t border-neutral-900/10 mt-6 pt-6 space-y-3 dark:border-white/5">
+                <p className="px-4 text-xs font-medium text-neutral-500 uppercase tracking-wider dark:text-white/30">
                   {t('common.language')}
                 </p>
                 {activeLocales.map((l) => (
@@ -267,13 +210,13 @@ export function Header() {
                     className={cn(
                       'w-full text-start px-4 py-2.5 rounded-xl text-sm transition-all',
                       locale === l
-                        ? 'bg-emerald-500/10 text-emerald-400 font-medium'
-                        : 'text-white/40 hover:text-white/70 hover:bg-white/5',
+                        ? 'bg-emerald-500/10 text-emerald-700 font-medium dark:text-emerald-400'
+                        : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:text-white/40 dark:hover:text-white/70 dark:hover:bg-white/5',
                     )}
                     onClick={() => { setLocale(l as Locale); closeMobile(); }}
                   >
                     {localeNames[l as Locale]}
-                    {locale === l && <span className="ml-2 text-emerald-400">✓</span>}
+                    {locale === l && <span className="ml-2 text-emerald-600 dark:text-emerald-400">✓</span>}
                   </button>
                 ))}
               </div>
